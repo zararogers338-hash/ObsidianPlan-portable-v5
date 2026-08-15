@@ -1,0 +1,110 @@
+{
+  "design": {
+    "objective": "区分高反应速率与高均匀性冲突的砂柱实验",
+    "primary_hypothesis": "提高脲酶浓度提高速率但降低均匀性",
+    "competing_hypotheses": [
+      "速率与均匀性可同时最大化",
+      "均匀性由注入顺序决定"
+    ],
+    "groups": [
+      "低脲酶",
+      "高脲酶",
+      "阴性对照"
+    ],
+    "negative_control": true,
+    "positive_control": true,
+    "replicates": 29,
+    "endpoints": [
+      {
+        "name": "CaCO3沉淀速率",
+        "unit": "g/h"
+      },
+      {
+        "name": "空间均匀性",
+        "unit": "CV"
+      }
+    ],
+    "pathway": "urea",
+    "data_exclusion": "丢弃污染与堵塞样品",
+    "stop_condition": "均匀性 CV 超过 0.35 即停止",
+    "safety": [
+      "BSL-1",
+      "通风柜"
+    ],
+    "ammonium_accounting": true
+  },
+  "doe_power": {
+    "kind": "two_group_means",
+    "backend": "scipy",
+    "alpha": 0.05,
+    "two_sided": true,
+    "effect_size": 1.5,
+    "sigma": 2.0,
+    "cohens_d": 0.75,
+    "n_per_group": 29,
+    "total_n": 58,
+    "power_at_n": 0.8012688360765955,
+    "target_power": 0.8,
+    "target_effect": 1.5,
+    "tradeoffs": [],
+    "interpretation": "在给定效应量/α/功效下，所需每组样本量已确定。若样本预算无法满足，应回到设计阶段调整重复数或效应量假设。"
+  },
+  "sop": {
+    "mode": "generate",
+    "pass": true,
+    "blocking_issues": [],
+    "warnings": [
+      "materials",
+      "injection",
+      "equipment",
+      "data_template",
+      "nitrogen_mass_balance"
+    ],
+    "sop": {
+      "title": "区分高反应速率与高均匀性冲突的砂柱实验",
+      "steps": [
+        {
+          "step_id": "STEP-01",
+          "action": "prepare",
+          "detail": "Prepare materials & equipment per batch list; verify calibration records."
+        },
+        {
+          "step_id": "STEP-02",
+          "action": "inoculate",
+          "detail": "Prepare cell / enzyme / reagent solutions per recipe; record lot numbers."
+        },
+        {
+          "step_id": "STEP-03",
+          "action": "assign",
+          "detail": "Randomize units to groups per the randomization allocation table (seed recorded)."
+        },
+        {
+          "step_id": "STEP-04",
+          "action": "treat",
+          "detail": "Apply treatment per group (negative control receives sham / vehicle only)."
+        },
+        {
+          "step_id": "STEP-05",
+          "action": "measure",
+          "detail": "Record endpoint measurements at each sampling point using the data template columns."
+        },
+        {
+          "step_id": "STEP-06",
+          "action": "stop",
+          "detail": "Apply stop conditions / failure thresholds; record deviations in the deviation log."
+        },
+        {
+          "step_id": "STEP-07",
+          "action": "cleanup",
+          "detail": "Clean equipment, dispose of biological & chemical waste per safety plan."
+        },
+        {
+          "step_id": "STEP-08",
+          "action": "archive",
+          "detail": "Archive raw data, logs, and allocation table; store under the project data directory."
+        }
+      ]
+    },
+    "next_action": "SOP ready for human approval before execution"
+  }
+}

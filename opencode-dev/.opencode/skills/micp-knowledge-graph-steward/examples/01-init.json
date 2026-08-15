@@ -1,0 +1,11 @@
+{
+  "contract_version": "1.0",
+  "task_id": "ex1",
+  "project_id": "demo-kg-01",
+  "request": "建立 MICP 知识图谱：菌株、酶、离子、矿物相、证据",
+  "action": "kb.init",
+  "title": "MICP ureolysis 知识库",
+  "skill_version": "1.0.0",
+  "timestamp": "2026-08-06T00:00:00Z",
+  "constraints": ["图内事实必须带证据与认识论标签"]
+}

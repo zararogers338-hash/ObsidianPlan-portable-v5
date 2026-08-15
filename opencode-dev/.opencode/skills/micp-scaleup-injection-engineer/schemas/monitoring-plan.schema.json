@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-scaleup-injection-engineer.monitoring-plan.json",
+  "title": "micp-scaleup-injection-engineer — Monitoring Plan",
+  "description": "The monitoring plan artifact: per-parameter location, frequency, equipment, thresholds, alarms, stop rules and data retention. Every real-time parameter that can trigger a stop must be mapped.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["parameters", "sampling_schedule", "data_management"],
+  "properties": {
+    "parameters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "locations", "frequency", "equipment", "thresholds", "alarm", "stop_rule", "data_save"],
+        "properties": {
+          "name": { "type": "string" },
+          "locations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "type"],
+              "properties": {
+                "id": { "type": "string" },
+                "type": { "type": "string", "enum": ["injection_line", "extraction_line", "monitoring_well", "downhole", "surface", "core", "laboratory"] }
+              }
+            }
+          },
+          "frequency": { "type": "string" },
+          "equipment": { "type": "string" },
+          "thresholds": {
+            "type": "object",
+            "required": ["alarm_low", "alarm_high", "stop_low", "stop_high"],
+            "properties": {
+              "alarm_low": { "type": ["number", "null"] },
+              "alarm_high": { "type": ["number", "null"] },
+              "stop_low": { "type": ["number", "null"] },
+              "stop_high": { "type": ["number", "null"] },
+              "units": { "type": "string" }
+            }
+          },
+          "alarm": { "type": "string" },
+          "stop_rule": { "type": "string" },
+          "data_save": { "type": "string" }
+        }
+      }
+    },
+    "sampling_schedule": {
+      "type": "object",
+      "properties": {
+        "baseline": { "type": "string" },
+        "during_injection": { "type": "string" },
+        "post_treatment": { "type": "string" }
+      }
+    },
+    "data_management": {
+      "type": "object",
+      "required": ["storage", "retention"],
+      "properties": {
+        "storage": { "type": "string" },
+        "retention": { "type": "string" },
+        "audit": { "type": "string" }
+      }
+    }
+  }
+}

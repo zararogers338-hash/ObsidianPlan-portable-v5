@@ -1,0 +1,47 @@
+{
+  "contract_version": "1.0",
+  "task_id": "example-01",
+  "project_id": "sand-column-pilot",
+  "request": "审查实验室 MICP 砂柱实验的生物安全与环境风险，重点是尿素氮平衡与氨风险",
+  "action": "audit",
+  "skill_version": "1.0.0",
+  "controller_version": "1.4.2",
+  "timestamp": "2026-08-07T09:00:00Z",
+  "risk_level": "low",
+  "site": {
+    "name": "环境工程实验室 3 号砂柱台",
+    "location": "中国（实验室受控环境）",
+    "release_type": "contained",
+    "waste_treatment_capacity": true,
+    "groundwater_injection": false,
+    "site_sensitive_ecology": false,
+    "aerosol_potential": false,
+    "confined_space": false,
+    "personnel_exposure": false,
+    "strain": {
+      "name": "Sporosarcina pasteurii",
+      "culture_collection_id": "ATCC 11859",
+      "source": "ATCC 保藏中心，实验室传代记录 LR-2026-003"
+    },
+    "pathogen_list_ref": "国卫科教发〔2023〕24号（人间传染的病原微生物目录）"
+  },
+  "plan": {
+    "name": "柱-03 尿素注浆循环",
+    "nitrogen": {
+      "urea_input_g": 120.0,
+      "pH": 8.0,
+      "temperature_c": 25.0,
+      "liquid_residual_g": 20.0,
+      "sorbed_retained_g": 35.0,
+      "discharged_treated_g": 1.0
+    },
+    "waste": {
+      "volume_l": 5.0,
+      "nh4_n_conc_mgL": 800.0,
+      "urea_conc_mgL": 150.0,
+      "total_n_load_g": 4.0,
+      "discharge_to_environment": false
+    }
+  },
+  "evidence_refs": ["LR-2026-003/strain-log.json", "LR-2026-003/urea-inventory.xlsx"]
+}

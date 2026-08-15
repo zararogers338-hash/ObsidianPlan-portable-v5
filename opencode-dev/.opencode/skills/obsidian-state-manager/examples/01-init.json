@@ -1,0 +1,15 @@
+{
+  "contract_version": "1.0",
+  "task_id": "eval-demo-init",
+  "project_id": "demo-micp-01",
+  "request": "初始化 MICP 尿素水解研究流",
+  "action": "project.init",
+  "title": "MICP 尿素水解微重力实验",
+  "constraints": ["严禁网络", "离线可测"],
+  "context": {"mode": "baseline"},
+  "risk_level": "medium",
+  "actor": {"role": "controller", "id": "obsidian-controller"},
+  "skill_version": "1.0.0",
+  "controller_version": "0.1.0",
+  "timestamp": "2026-08-06T00:00:00Z"
+}

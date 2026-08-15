@@ -1,0 +1,308 @@
+{
+  "ok": true,
+  "result": {
+    "alternative_explanations": [],
+    "artifacts": [
+      {
+        "artifact_id": "review-report",
+        "content_type": "application/json",
+        "description": "对抗审查报告（含阻断规则结果）",
+        "kind": "review_report"
+      }
+    ],
+    "assumptions": [
+      {
+        "falsifiable_by": "作者原始措辞与证据链",
+        "statement": "被审目标 RT-F02-001 的作者自标 INFERRED"
+      },
+      {
+        "falsifiable_by": "作者原始措辞与证据链",
+        "statement": "被审目标 RT-F07-003 的作者自标 INFERRED"
+      },
+      {
+        "falsifiable_by": "作者原始措辞与证据链",
+        "statement": "被审目标 RT-GAP-1 的作者自标 HYPOTHESIS"
+      }
+    ],
+    "blocking_findings": [],
+    "counterexamples": [
+      {
+        "attack": "攻击：missing boundary conditions: I2 threshold 与 min studies 未在边界条件中声明，CRITICAL。在证据集未排除 证据链末端链接的强度 的情况下，结论直接成立？构造一个满足同一证据集、但得出相反结论的最小情景，并检查该情景是否被原始分析排除。",
+        "consequence": "若 missing boundary conditions: I2 threshold 与 min studies 未在边界条件中声明，CRITICAL 在真实场景中遭遇上述攻击情景，结论将被推翻或需降级；原分析未排除此情景时，不能放行升级/部署。",
+        "epistemic_tag": "HYPOTHESIS",
+        "target_id": "RT-F07-003"
+      },
+      {
+        "attack": "攻击：复检对象：审查报告是否遗漏最强反例 —— I2 受精度混淆，75% 阈值不能单独作为可合并判据；2 研究固定效应合并是方法学上公认不可靠的。在证据集未排除 证据链末端链接的强度 的情况下，结论直接成立？构造一个满足同一证据集、但得出相反结论的最小情景，并检查该情景是否被原始分析排除。",
+        "consequence": "若 复检对象：审查报告是否遗漏最强反例 —— I2 受精度混淆，75% 阈值不能单独作为可合并判据；2 研究固定效应合并是方法学上公认不可靠的 在真实场景中遭遇上述攻击情景，结论将被推翻或需降级；原分析未排除此情景时，不能放行升级/部署。",
+        "epistemic_tag": "HYPOTHESIS",
+        "target_id": "RT-GAP-1"
+      }
+    ],
+    "errors": [],
+    "evidence_used": [],
+    "findings": [
+      {
+        "blocks_state_upgrade": false,
+        "counterexample": "4 个精确研究 I²=0% 但效应方向各异 vs 30 个粗研究 I²=90% 但效应一致——按阈值前者合并后者隔离，结论完全相反",
+        "dimension": "statistical_analysis",
+        "evidence": "I² 的定义基于 Q 与自由度；k 小、样本量大时 I² 偏高，反之偏低",
+        "evidence_epistemic_tag": "CALCULATED",
+        "finding_id": "F05-001",
+        "location": "evals/bootstrap/step1-output.json findings[2]",
+        "required_fix": "报告 τ² 与预测区间、结合 k 与样本量解释 I²，或用 Q 检验作为辅助判据",
+        "severity": "CRITICAL",
+        "status": "OPEN",
+        "summary": "把 I² 当作异质性的绝对判据：I² 受精度（研究数/样本量）混淆，同一 I² 在不同 k 下含义不同，单独作可合并阈值会误判",
+        "target_id": "RT-F07-003",
+        "verification_method": "重新评测 can_pool 决策并附 τ²/预测区间",
+        "why": "I²≤75% 不是稳健的可合并判据；Borenstein/Higgins 均建议结合 τ² 与预测区间判断"
+      },
+      {
+        "blocks_state_upgrade": false,
+        "counterexample": "研究 A 效应 0.9±0.1、研究 B 效应 0.1±0.1，固定效应合并得到 0.5 且『显著』，但真实总体效应几乎确定是两者之间且不显著",
+        "dimension": "statistical_analysis",
+        "evidence": "随机效应模型在 k=2 时 τ² 不可识别；固定效应假设效应同质，k=2 下无法检验",
+        "evidence_epistemic_tag": "CALCULATED",
+        "finding_id": "F05-002",
+        "location": "evals/bootstrap/step1-output.json findings[2]",
+        "required_fix": "k<3 时不做定量合并，改为结构化叙述综合；或明确报告合并对单研究敏感性的依赖",
+        "severity": "CRITICAL",
+        "status": "OPEN",
+        "summary": "2 研究固定效应合并不可靠：k=2 无法估计随机效应方差 τ²，固定效应将异质性视为零，结论被两研究之一主导",
+        "target_id": "RT-F07-003",
+        "verification_method": "对 k=2 的合并结论执行 leave-one-out，报告合并方向是否翻转",
+        "why": "2 研究合并对效应量估计高度不稳定，任何一篇的偏倚都会直接写进结论"
+      },
+      {
+        "blocks_state_upgrade": false,
+        "counterexample": "4 个精确研究 I²=0% 但效应方向各异 vs 30 个粗研究 I²=90% 但效应一致——按阈值前者合并后者隔离，结论完全相反",
+        "dimension": "statistical_analysis",
+        "evidence": "I² 的定义基于 Q 与自由度；k 小、样本量大时 I² 偏高，反之偏低",
+        "evidence_epistemic_tag": "CALCULATED",
+        "finding_id": "F05-003",
+        "location": "bootstrap 自我复检输入",
+        "required_fix": "报告 τ² 与预测区间、结合 k 与样本量解释 I²，或用 Q 检验作为辅助判据",
+        "severity": "CRITICAL",
+        "status": "OPEN",
+        "summary": "把 I² 当作异质性的绝对判据：I² 受精度（研究数/样本量）混淆，同一 I² 在不同 k 下含义不同，单独作可合并阈值会误判",
+        "target_id": "RT-GAP-1",
+        "verification_method": "重新评测 can_pool 决策并附 τ²/预测区间",
+        "why": "I²≤75% 不是稳健的可合并判据；Borenstein/Higgins 均建议结合 τ² 与预测区间判断"
+      },
+      {
+        "blocks_state_upgrade": false,
+        "counterexample": "研究 A 效应 0.9±0.1、研究 B 效应 0.1±0.1，固定效应合并得到 0.5 且『显著』，但真实总体效应几乎确定是两者之间且不显著",
+        "dimension": "statistical_analysis",
+        "evidence": "随机效应模型在 k=2 时 τ² 不可识别；固定效应假设效应同质，k=2 下无法检验",
+        "evidence_epistemic_tag": "CALCULATED",
+        "finding_id": "F05-004",
+        "location": "bootstrap 自我复检输入",
+        "required_fix": "k<3 时不做定量合并，改为结构化叙述综合；或明确报告合并对单研究敏感性的依赖",
+        "severity": "CRITICAL",
+        "status": "OPEN",
+        "summary": "2 研究固定效应合并不可靠：k=2 无法估计随机效应方差 τ²，固定效应将异质性视为零，结论被两研究之一主导",
+        "target_id": "RT-GAP-1",
+        "verification_method": "对 k=2 的合并结论执行 leave-one-out，报告合并方向是否翻转",
+        "why": "2 研究合并对效应量估计高度不稳定，任何一篇的偏倚都会直接写进结论"
+      },
+      {
+        "blocks_state_upgrade": false,
+        "counterexample": "n=20 的研究 CI 极宽被判不精确而排除，但其效应量与大型研究一致——排除它反而引入偏倚",
+        "dimension": "statistical_analysis",
+        "evidence": "GRADE 不精确域应结合样本量、事件数与 CI 宽度；单一 CI 宽度判据会把高精度但有偏研究误判为精确",
+        "evidence_epistemic_tag": "INFERRED",
+        "finding_id": "F05-005",
+        "location": "bootstrap 自我复检输入",
+        "required_fix": "在不精确域明确要求报告各研究样本量、功效与事件数",
+        "severity": "MAJOR",
+        "status": "OPEN",
+        "summary": "GRADE 不精确域未显式要求样本量/功效证据：仅凭 CI 宽度判定不精确可能漏掉功效不足的小样本研究",
+        "target_id": "RT-GAP-1",
+        "verification_method": "重新执行 GRADE 分级并附每研究的样本量/功效清单",
+        "why": "缺功效证据时，小样本研究的高 CI 会被错误降级或升级"
+      }
+    ],
+    "provenance": {
+      "generated_at": "2026-08-06T16:00:54Z",
+      "generator": "ort:review",
+      "input_task_id": "boot-02",
+      "skill": "obsidian-red-team",
+      "skill_version": "1.0.0",
+      "target_ids": [
+        "RT-F02-001",
+        "RT-F07-003",
+        "RT-GAP-1"
+      ],
+      "tool_versions": {
+        "ort": "1.0.0"
+      }
+    },
+    "requested_next_skills": [],
+    "required_evidence": [
+      {
+        "evidence": "重新评测 can_pool 决策并附 τ²/预测区间",
+        "finding_id": "F05-001"
+      },
+      {
+        "evidence": "对 k=2 的合并结论执行 leave-one-out，报告合并方向是否翻转",
+        "finding_id": "F05-002"
+      },
+      {
+        "evidence": "重新评测 can_pool 决策并附 τ²/预测区间",
+        "finding_id": "F05-003"
+      },
+      {
+        "evidence": "对 k=2 的合并结论执行 leave-one-out，报告合并方向是否翻转",
+        "finding_id": "F05-004"
+      }
+    ],
+    "required_fixes": [
+      {
+        "acceptance": "重新评测 can_pool 决策并附 τ²/预测区间",
+        "finding_id": "F05-001",
+        "fix": "报告 τ² 与预测区间、结合 k 与样本量解释 I²，或用 Q 检验作为辅助判据",
+        "verify_by": "ort:retest + human"
+      },
+      {
+        "acceptance": "对 k=2 的合并结论执行 leave-one-out，报告合并方向是否翻转",
+        "finding_id": "F05-002",
+        "fix": "k<3 时不做定量合并，改为结构化叙述综合；或明确报告合并对单研究敏感性的依赖",
+        "verify_by": "ort:retest + human"
+      },
+      {
+        "acceptance": "重新评测 can_pool 决策并附 τ²/预测区间",
+        "finding_id": "F05-003",
+        "fix": "报告 τ² 与预测区间、结合 k 与样本量解释 I²，或用 Q 检验作为辅助判据",
+        "verify_by": "ort:retest + human"
+      },
+      {
+        "acceptance": "对 k=2 的合并结论执行 leave-one-out，报告合并方向是否翻转",
+        "finding_id": "F05-004",
+        "fix": "k<3 时不做定量合并，改为结构化叙述综合；或明确报告合并对单研究敏感性的依赖",
+        "verify_by": "ort:retest + human"
+      },
+      {
+        "acceptance": "重新执行 GRADE 分级并附每研究的样本量/功效清单",
+        "finding_id": "F05-005",
+        "fix": "在不精确域明确要求报告各研究样本量、功效与事件数",
+        "verify_by": "ort:retest + human"
+      }
+    ],
+    "retest_plan": {
+      "reopen_on": "任一 BLOCKING 复验失败即重新打开审查",
+      "steps": [
+        "关闭全部 BLOCKING/CRITICAL 发现的 required_fix",
+        "逐项按 verification_method 复验并标记 status=VERIFIED",
+        "重跑 review 管线，blocking_count 应为 0"
+      ]
+    },
+    "review_scope": {
+      "dimensions": [
+        {
+          "dimension": "source_authenticity",
+          "reason": "no target material touches this dimension",
+          "status": "not_applicable"
+        },
+        {
+          "dimension": "epistemic_escalation",
+          "reason": "",
+          "status": "reviewed"
+        },
+        {
+          "dimension": "units_dimension",
+          "reason": "no target material touches this dimension",
+          "status": "not_applicable"
+        },
+        {
+          "dimension": "experimental_design",
+          "reason": "",
+          "status": "reviewed"
+        },
+        {
+          "dimension": "statistical_analysis",
+          "reason": "no target material touches this dimension",
+          "status": "not_applicable"
+        },
+        {
+          "dimension": "micp_mechanism",
+          "reason": "no target material touches this dimension",
+          "status": "not_applicable"
+        },
+        {
+          "dimension": "model_boundary",
+          "reason": "",
+          "status": "reviewed"
+        },
+        {
+          "dimension": "engineering_scaleup",
+          "reason": "no target material touches this dimension",
+          "status": "not_applicable"
+        },
+        {
+          "dimension": "environment_safety",
+          "reason": "no target material touches this dimension",
+          "status": "not_applicable"
+        },
+        {
+          "dimension": "decision_gate",
+          "reason": "",
+          "status": "reviewed"
+        }
+      ],
+      "state_gate": "REVIEW",
+      "targets": [
+        "RT-F02-001",
+        "RT-F07-003",
+        "RT-GAP-1"
+      ]
+    },
+    "risks": [
+      {
+        "risk": "把 I² 当作异质性的绝对判据：I² 受精度（研究数/样本量）混淆，同一 I² 在不同 k 下含义不同，单独作可合并阈值会误判",
+        "severity": "high"
+      },
+      {
+        "risk": "2 研究固定效应合并不可靠：k=2 无法估计随机效应方差 τ²，固定效应将异质性视为零，结论被两研究之一主导",
+        "severity": "high"
+      },
+      {
+        "risk": "把 I² 当作异质性的绝对判据：I² 受精度（研究数/样本量）混淆，同一 I² 在不同 k 下含义不同，单独作可合并阈值会误判",
+        "severity": "high"
+      },
+      {
+        "risk": "2 研究固定效应合并不可靠：k=2 无法估计随机效应方差 τ²，固定效应将异质性视为零，结论被两研究之一主导",
+        "severity": "high"
+      }
+    ],
+    "state_recommendation": {
+      "blocking_count": 0,
+      "reason": "no BLOCKING findings",
+      "recommendation": "NO_OBJECTION"
+    },
+    "status": "SUCCESS",
+    "summary": "对抗审查完成: 5 项发现, 0 项 BLOCKING, 状态建议=NO_OBJECTION (gate=REVIEW).",
+    "uncertainty": [
+      {
+        "level": "medium",
+        "note": "REJECTED/SUSPECTED 需要人工或联网复核",
+        "topic": "引用核验为离线结构核验，未核全文"
+      }
+    ],
+    "validation": {
+      "gates": {
+        "blocking": true,
+        "state_recommendation": "NO_OBJECTION"
+      },
+      "self_audit_pass": true,
+      "tool_runs": [
+        {
+          "ok": true,
+          "tool": "review"
+        }
+      ]
+    }
+  },
+  "tool": "review",
+  "version": "1.0.0"
+}

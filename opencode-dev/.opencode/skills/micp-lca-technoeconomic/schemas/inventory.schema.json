@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-lca-technoeconomic/inventory.schema.json",
+  "title": "micp-lca-technoeconomic inventory contract",
+  "description": "Per-scenario life-cycle inventory: normalized per-FU flows + mass balance + provenance. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items", "per_fu_note", "scale_ratio", "mass_balance"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Normalized inventory flows. Each item is tied to a factor id.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "label", "category", "quantity", "unit", "qty_per_fu", "factor_id"],
+        "properties": {
+          "key": {"type": "string"},
+          "label": {"type": "string"},
+          "category": {"type": "string", "enum": ["materials", "energy", "water", "transport", "waste", "labour", "monitoring", "lab"]},
+          "quantity": {"type": "number"},
+          "unit": {"type": "string"},
+          "qty_per_fu": {"type": "number"},
+          "factor_id": {"type": "string"}
+        }
+      }
+    },
+    "per_fu_note": {"type": "string"},
+    "scale_ratio": {"type": "number"},
+    "mass_balance": {"type": "object"}
+  }
+}

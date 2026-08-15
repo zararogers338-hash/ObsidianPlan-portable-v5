@@ -1,0 +1,308 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-evidence-synthesizer/output.schema.json",
+  "title": "micp-evidence-synthesizer output contract",
+  "description": "Unified skill output envelope (Obsidian Plan spec §六). Every invocation returns this shape, success or failure. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version", "skill", "skill_version", "status", "summary",
+    "action", "project_id", "task_id",
+    "findings", "assumptions", "evidence_used", "uncertainty", "risks",
+    "artifacts", "requested_next_skills", "validation", "provenance", "errors"
+  ],
+  "properties": {
+    "contract_version": {"type": "string", "pattern": "^1\\.\\d+$"},
+    "skill": {"type": "string", "const": "micp-evidence-synthesizer"},
+    "skill_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+    },
+    "summary": {"type": "string"},
+    "action": {"type": ["string", "null"]},
+    "project_id": {"type": ["string", "null"]},
+    "task_id": {"type": ["string", "null"]},    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "statement"],
+        "properties": {
+          "label": {"type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]},
+          "statement": {"type": "string"},
+          "source": {"type": "string"}
+        }
+      }
+    },
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "evidence_used": {"type": "array", "items": {"type": "string"}},
+    "uncertainty": {"type": "array", "items": {"type": "string"}},
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "statement"],
+        "properties": {
+          "label": {"type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]},
+          "statement": {"type": "string"}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind"],
+        "properties": {
+          "kind": {"type": "string"},
+          "path": {"type": ["string", "null"]},
+          "note": {}
+        }
+      }
+    },
+    "requested_next_skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill", "reason"],
+        "properties": {
+          "skill": {"type": "string"},
+          "reason": {"type": "string"},
+          "inputs_needed": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "synthesis": {
+      "anyOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/synthesis"}
+      ],
+      "description": "Present on SUCCESS/PARTIAL/HUMAN_APPROVAL_REQUIRED envelopes; null on BLOCKED/FAILED envelopes."
+    },
+    "validation": {
+      "type": "object",
+      "required": ["input_schema", "output_schema", "self_check"],
+      "properties": {
+        "input_schema": {"type": "string", "enum": ["passed", "failed", "pending"]},
+        "output_schema": {"type": "string", "enum": ["passed", "failed", "pending"]},
+        "self_check": {"type": "string", "enum": ["passed", "failed", "not_run"]},
+        "checks": {"type": "array", "items": {"type": "object"}}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["started_at", "completed_at", "skill_version", "tool_versions", "input_digest"],
+      "properties": {
+        "started_at": {"type": ["string", "null"]},
+        "completed_at": {"type": ["string", "null"]},
+        "skill_version": {"type": "string"},
+        "tool_versions": {"type": "object"},
+        "input_digest": {"type": ["string", "null"]},
+        "host": {"type": ["string", "null"]}
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {"type": "string", "pattern": "^OES-E[0-9]{3}$"},
+          "message": {"type": "string"},
+          "detail": {"type": "object"},
+          "retryable": {"type": "boolean"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "synthesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pico_framework", "comparability_check", "evidence_matrix", "conflict_matrix", "conclusions", "synthesis_method", "conditions", "gaps"],
+      "properties": {
+        "pico_framework": {"type": "object"},
+        "comparability_check": {
+          "type": "object",
+          "required": ["status", "dimensions"],
+          "properties": {
+            "status": {"type": "string", "enum": ["comparable", "conditional", "incomparable", "insufficient"]},
+            "dimensions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["dimension", "status", "detail"],
+                "properties": {
+                  "dimension": {"type": "string"},
+                  "status": {"type": "string", "enum": ["comparable", "mixed", "incomparable", "missing"]},
+                  "detail": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "evidence_matrix": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ref_id", "outcome", "value", "unit", "normalized_value", "evidence_level", "layer", "risk_of_bias"],
+            "properties": {
+              "ref_id": {"type": "string"},
+              "outcome": {"type": "string"},
+              "value": {"type": ["number", "null"]},
+              "unit": {"type": "string"},
+              "normalized_value": {"type": ["number", "null"], "description": "Unit-normalized value; null when normalization not applicable."},
+              "evidence_level": {"type": "string"},
+              "layer": {"type": "string"},
+              "risk_of_bias": {"type": "string"}
+            }
+          }
+        },
+        "conflict_matrix": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["conflict_id", "between", "type", "direction", "severity", "explanation"],
+            "properties": {
+              "conflict_id": {"type": "string"},
+              "between": {"type": "array", "items": {"type": "string"}},
+              "type": {"type": "string"},
+              "direction": {"type": "string", "enum": ["direction", "magnitude", "both"]},
+              "severity": {"type": "string", "enum": ["high", "medium", "low"]},
+              "explanation": {"type": "string"}
+            }
+          }
+        },
+        "conclusions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "statement", "label", "evidence_level", "scope", "counterexample", "open_questions"],
+            "properties": {
+              "id": {"type": "string"},
+              "statement": {"type": "string"},
+              "label": {"type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]},
+              "evidence_level": {"type": "string", "enum": ["high", "moderate", "low", "very_low", "insufficient"]},
+              "scope": {"type": "string"},
+              "counterexample": {"type": "string"},
+              "open_questions": {"type": "array", "items": {"type": "string"}},
+              "conditions": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "synthesis_method": {"type": "string", "enum": ["quantitative_meta_analysis", "structured_narrative", "mixed"]},
+        "conditions": {"type": "array", "items": {"type": "string"}},
+        "gaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["gap", "impact", "how_to_fill"],
+            "properties": {
+              "gap": {"type": "string"},
+              "impact": {"type": "string"},
+              "how_to_fill": {"type": "string"}
+            }
+          }
+        },
+        "meta_analysis": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/meta_analysis"}], "description": "null when pooling was not admissible (narrative synthesis)."},
+        "heterogeneity": {"$ref": "#/$defs/heterogeneity"},
+        "sensitivity": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/sensitivity"}], "description": "null when pooling was not admissible."},
+        "grade": {"$ref": "#/$defs/grade"}
+      }
+    },
+    "meta_analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "pooled_effect", "ci95", "between_study_variance_tau2", "weights"],
+      "properties": {
+        "model": {"type": "string", "enum": ["fixed_effect", "random_effects", "not_pooled"]},
+        "pooled_effect": {"type": ["number", "null"]},
+        "ci95": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+        "between_study_variance_tau2": {"type": ["number", "null"]},
+        "weights": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ref_id", "effect_size", "variance", "weight"],
+            "properties": {
+              "ref_id": {"type": "string"},
+              "effect_size": {"type": "number"},
+              "variance": {"type": "number"},
+              "weight": {"type": "number"}
+            }
+          }
+        }
+      }
+    },
+    "heterogeneity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statistical", "types"],
+      "properties": {
+        "statistical": {
+          "type": "object",
+          "properties": {
+            "i2": {"type": ["number", "null"]},
+            "tau2": {"type": ["number", "null"]},
+            "q": {"type": ["number", "null"]},
+            "q_p_value": {"type": ["number", "null"]},
+            "interpretation": {"type": "string"}
+          }
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "present", "detail"],
+            "properties": {
+              "type": {"type": "string", "enum": ["statistical", "methodological", "mechanistic", "scale"]},
+              "present": {"type": "boolean"},
+              "detail": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "sensitivity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runs"],
+      "properties": {
+        "runs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "excluded", "pooled_effect", "delta"],
+            "properties": {
+              "name": {"type": "string"},
+              "excluded": {"type": "array", "items": {"type": "string"}},
+              "pooled_effect": {"type": ["number", "null"]},
+              "delta": {"type": ["number", "null"]}
+            }
+          }
+        }
+      }
+    },
+    "grade": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["certainty", "domains"],
+      "properties": {
+        "certainty": {"type": "string", "enum": ["high", "moderate", "low", "very_low"]},
+        "domains": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["domain", "rating", "reason"],
+            "properties": {
+              "domain": {"type": "string"},
+              "rating": {"type": "string"},
+              "reason": {"type": "string"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

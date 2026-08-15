@@ -1,0 +1,66 @@
+# Machine-readable metadata for micp-geotechnical-performance.
+# Consumed by the OSR registry indexer (tools/osr/registry.ts) and by Obsidian
+# Controller tooling. Fields mirror the effective contract; see schemas/.
+# NOTE: the OSR YAML-subset parser does NOT support block scalars (">-"), so
+# all multi-word values are kept on a single line.
+
+name: micp-geotechnical-performance
+version: 1.0.0
+entry: tools/src/cli.ts
+description: "Evaluate MICP biocementation engineering performance (strength, stiffness, permeability, deformation, durability) from geotechnical test data and judge engineering significance."
+
+capabilities:
+  - geotechnical
+  - geotechnical_performance_evaluation
+  - strength_stiffness_indicator_extraction
+  - permeability_strength_tradeoff
+  - spatial_uniformity_statistics
+  - durability_cycle_decay_fitting
+  - effect_size_and_safety_margin
+  - engineering_significance_audit
+
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - skill_version
+  - controller_version
+  - timestamp
+
+outputs:
+  - performance_evaluation
+  - statistical_report
+  - durability_forecast
+  - audit_report
+
+units:
+  strength: MPa | kPa
+  modulus: MPa | kPa
+  permeability: m/s | cm/s | m/d
+  strain: dimensionless
+  caCO3_content: mass_percent
+  density: g/cm3 | kg/m3
+  dimension: mm | cm | m
+  loading_rate: mm/min | %/min
+
+tool_permissions:
+  - read
+  - write_local_audit
+
+network: false
+writes:
+  - audit/**
+
+stop_conditions:
+  - 输出通过 output.schema.json 自检后停止
+  - 任一硬门控失败即返回 BLOCKED/FAILED 并停止
+  - 需要下游能力返回 NEED_ADDITIONAL_SKILL 并停止
+  - 高风险待批准返回 HUMAN_APPROVAL_REQUIRED 并停止
+
+compatible_controller: ">=1.0.0"
+dependencies: []
+cost_estimate:
+  tokens: 2500
+  usd: 0.025
+
+risk_tier: low

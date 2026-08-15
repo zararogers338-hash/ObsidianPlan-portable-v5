@@ -1,0 +1,17 @@
+{
+  "contract_version": "1.0",
+  "task_id": "example-03",
+  "project_id": "batch-screen",
+  "request": "核验一批候选菌株的生物安全等级，并比较两种废液处理方案的残余氨风险",
+  "action": "strain_verify",
+  "skill_version": "1.0.0",
+  "controller_version": "1.4.2",
+  "timestamp": "2026-08-07T11:00:00Z",
+  "risk_level": "medium",
+  "strain": {
+    "name": "Bacillus subtilis B7",
+    "culture_collection_id": "CGMCC 1.3358",
+    "source": "中国普通微生物菌种保藏中心"
+  },
+  "pathogen_list_ref": "国卫科教发〔2023〕24号"
+}

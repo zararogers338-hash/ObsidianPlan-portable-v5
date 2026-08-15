@@ -1,0 +1,387 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-data-analyst.input.json",
+  "title": "MICP Data Analyst — Input Contract",
+  "description": "Strict input contract for the micp-data-analyst skill (MDA). Every required field is mandatory; missing required fields MUST be reported with explicit field names, why they are critical, and how to obtain them (never a generic '信息不足'). Version 1.0.0. Breaking changes require a major version bump.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "project_id",
+    "request",
+    "skill_version",
+    "controller_version",
+    "timestamp"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "description": "Task node identifier. Required: audit anchor and reproducibility."
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "description": "Project/experiment identifier. Required: selects the data provenance file."
+    },
+    "request": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000,
+      "description": "The natural-language analysis request (must state a deliverable)."
+    },
+    "skill_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version of THIS skill (micp-data-analyst). Required: version compatibility gate."
+    },
+    "controller_version": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:\\-]*$",
+      "description": "Version of the calling Obsidian Controller (e.g. obsidian-ctl-0.1.0). Required: permission model version gate."
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}",
+      "description": "ISO 8601 timestamp of the request."
+    },
+    "samples": {
+      "type": "array",
+      "description": "Data records. Required when the request asks for statistical inference, uniformity, or visualization over data. Each record is a row; variables are declared in `data_columns`. If samples are omitted but data_refs point to files, the agent must read them and populate this array.",
+      "maxItems": 100000,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "A single data record (row). Values must be finite when numeric. Variable roles are declared in data_columns, not here."
+      }
+    },
+    "data_columns": {
+      "type": "array",
+      "description": "Declarative variable dictionary. Required whenever `samples` is present. Enables the unit checker and the schema checker.",
+      "maxItems": 500,
+      "items": {
+        "$ref": "#/$defs/column"
+      }
+    },
+    "data_refs": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "$ref": "#/$defs/ref"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "$ref": "#/$defs/ref"
+      }
+    },
+    "upstream_outputs": {
+      "type": "array",
+      "maxItems": 200,
+      "description": "Machine outputs from upstream specialist skills (chemistry, mineral-phase, transport, geotechnical-performance) for cross-layer inference.",
+      "items": {
+        "$ref": "#/$defs/upstreamOutput"
+      }
+    },
+    "context": {
+      "type": "object",
+      "description": "Execution context: task graph, memory refs, call chain, completed calls, environment snapshot.",
+      "additionalProperties": true,
+      "properties": {
+        "task_graph": {
+          "type": "object"
+        },
+        "memory_refs": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "call_chain": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "completed_calls": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "prior_decisions": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "environment": {
+          "type": "object",
+          "properties": {
+            "workspace": {
+              "type": "string"
+            },
+            "offline": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        },
+        "knowledge_base_refs": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Analysis bounds. Invalid numeric values are ignored; missing values fall back to skill defaults.",
+      "additionalProperties": true,
+      "properties": {
+        "max_samples": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200000
+        },
+        "significance_level": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "confidence_level": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "output_units": {
+          "type": "object",
+          "description": "Requested output units, e.g. { strength: 'kPa', permeability: 'm/s' }.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "engineering_thresholds": {
+          "type": "object"
+        },
+        "random_seed": {
+          "type": "integer"
+        },
+        "outlier_policy": {
+          "type": "object",
+          "description": "How to handle outliers for sensitivity analysis. Repeating the analysis under several policies is the default; this picks which are enabled.",
+          "additionalProperties": true,
+          "properties": {
+            "enabled_strategies": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "keep",
+                  "winsorize_1p5iqr",
+                  "winsorize_3sd",
+                  "trim_5pct",
+                  "flag_only"
+                ]
+              }
+            },
+            "flag_only": {
+              "type": "boolean"
+            }
+          }
+        },
+        "analysis_modes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "descriptive",
+              "inference",
+              "effect_size",
+              "anova",
+              "linear_regression",
+              "mixed_effects",
+              "time_series",
+              "uniformity",
+              "sensitivity",
+              "power",
+              "response_surface",
+              "multi_objective"
+            ]
+          }
+        },
+        "max_iterations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        }
+      }
+    },
+    "requested_output_format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "markdown+json"
+      ],
+      "description": "'json' = output.schema.json document only; 'markdown+json' = human summary plus the JSON document."
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "human_approval_state": {
+      "type": "string",
+      "enum": [
+        "not_required",
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "description": "When risk_level is high/critical and a real experiment, field deployment, hazardous-chemical handling, or long-term knowledge write is involved, approved is required before SUCCESS."
+    },
+    "reproducibility": {
+      "type": "object",
+      "description": "Seed material for deterministic re-runs. All tools are deterministic; this records the user-selected seed.",
+      "additionalProperties": true,
+      "properties": {
+        "random_seed": {
+          "type": "integer"
+        },
+        "rng_algorithm": {
+          "type": "string",
+          "enum": [
+            "python_random",
+            "numpy_random",
+            "splitmix64"
+          ]
+        },
+        "input_fingerprint": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_id",
+        "locator"
+      ],
+      "properties": {
+        "ref_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "media_type": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "upstreamOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "skill",
+        "task_node",
+        "output"
+      ],
+      "properties": {
+        "skill": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "task_node": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 4000
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    },
+    "column": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "data_type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "id",
+            "treatment",
+            "batch",
+            "position",
+            "time",
+            "response",
+            "covariate",
+            "metadata"
+          ]
+        },
+        "data_type": {
+          "type": "string",
+          "enum": [
+            "string",
+            "integer",
+            "number",
+            "boolean",
+            "date"
+          ]
+        },
+        "unit": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "SI or conventional unit token understood by the unit checker, e.g. MPa, kPa, m/s, %, g/L, mol/m3."
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "sampling_unit": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "The independent unit this variable is measured on (specimen, column, layer, well, injection point, time point). Enables pseudo-replication detection."
+        }
+      }
+    }
+  }
+}

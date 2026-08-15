@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.dev/skills/obsidian-mission-lock/output.schema.json",
+  "title": "obsidian-mission-lock output envelope",
+  "description": "Machine-readable result envelope emitted by the skill. Custom project convention (Obsidian Plan), version 1.0.0. Downstream skills parse status/summary/contract/findings without ambiguity.",
+  "type": "object",
+  "required": ["status", "summary", "validation", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"],
+      "description": "SUCCESS=contract passed all checks; PARTIAL=valid with soft conflicts/non-blocking gaps; BLOCKED=hard conflict or blocking gap; FAILED=unprocessable/corrupt; NEED_ADDITIONAL_SKILL=downstream capability required; HUMAN_APPROVAL_REQUIRED=approval gate pending"
+    },
+    "summary": { "type": "string", "minLength": 1 },
+    "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "evidence_used": { "type": "array", "items": { "type": "string" } },
+    "uncertainty": { "type": "object", "properties": { "level": { "enum": ["low", "medium", "high"] }, "notes": { "type": "string" } }, "additionalProperties": false },
+    "risks": { "type": "array", "items": { "type": "object", "properties": { "description": { "type": "string" }, "level": { "enum": ["low", "medium", "high"] } }, "required": ["description"], "additionalProperties": false } },
+    "artifacts": { "type": "array", "items": { "type": "string" } },
+    "requested_next_skills": { "type": "array", "items": { "type": "object", "properties": { "skill": { "type": "string" }, "why": { "type": "string" }, "required_inputs": { "type": "array", "items": { "type": "string" } } }, "required": ["skill", "why"], "additionalProperties": false } },
+    "contract": { "$ref": "#/$defs/contract" },
+    "conflict_matrix": { "type": "array", "items": { "$ref": "#/$defs/conflict" } },
+    "missing_inputs": { "type": "array", "items": { "$ref": "#/$defs/missing" } },
+    "validation": { "type": "object", "required": ["schema_passed", "self_check_passed", "tool_calls"], "properties": { "schema_passed": { "type": "boolean" }, "self_check_passed": { "type": "boolean" }, "tool_calls": { "type": "array", "items": { "type": "object", "properties": { "tool": { "type": "string" }, "ok": { "type": "boolean" }, "note": { "type": "string" } }, "required": ["tool", "ok"], "additionalProperties": false } } }, "additionalProperties": false },
+    "provenance": { "type": "object", "required": ["skill", "skill_version", "contract_version", "timestamp", "tools_used"], "properties": { "skill": { "type": "string" }, "skill_version": { "type": "string" }, "contract_version": { "type": "string" }, "timestamp": { "type": "string", "format": "date-time" }, "tools_used": { "type": "array", "items": { "type": "string" } }, "source_input": { "type": "string", "description": "Optional reference to the input envelope (path or digest) for audit" } }, "additionalProperties": false },
+    "errors": { "type": "array", "items": { "type": "object", "properties": { "code": { "type": "string", "pattern": "^OML-E1\\d{3}$" }, "message": { "type": "string" }, "retryable": { "type": "boolean" }, "details": { "type": "object" } }, "required": ["code", "message"], "additionalProperties": false } }
+  },
+  "$defs": {
+    "label": {
+      "type": "string",
+      "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+    },
+    "target": {
+      "type": "object",
+      "required": ["value", "unit"],
+      "properties": {
+        "value": { "type": "number", "description": "Must be finite and non-negative. Use zero only as a genuine threshold (e.g., zero-emission target)" },
+        "unit": { "type": "string", "minLength": 1 },
+        "error_bars": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "metric": {
+      "type": "object",
+      "required": ["name", "direction"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "direction": { "type": "string", "enum": ["maximize", "minimize", "maintain", "report"] },
+        "unit": { "type": "string" },
+        "current": { "$ref": "#/$defs/target", "description": "Baseline for maintain/report metrics" },
+        "target": { "$ref": "#/$defs/target", "description": "Goal for maximize/minimize metrics; MUST have a value, or the metric is a wish (SMART)" },
+        "threshold": { "$ref": "#/$defs/target", "description": "Minimum-acceptable / failure-adjacent value" }
+      },
+      "additionalProperties": false
+    },
+    "objective": {
+      "type": "object",
+      "required": ["id", "statement", "kind", "depends_on"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "statement": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "enum": ["scientific", "engineering", "decision"] },
+        "depends_on": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "statement": {
+      "type": "object",
+      "required": ["text", "label"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1 },
+        "label": { "$ref": "#/$defs/label" },
+        "source": { "type": "string", "description": "Required when label is OBSERVED or REPORTED; optional otherwise" }
+      },
+      "additionalProperties": false
+    },
+    "conflict": {
+      "type": "object",
+      "required": ["id", "between", "kind", "description", "severity", "resolution"],
+      "properties": {
+        "id": { "type": "string" },
+        "between": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
+        "kind": { "type": "string", "enum": ["metric-metric", "constraint-constraint", "objective-metric", "domain-blindspot", "goal-contradiction"] },
+        "description": { "type": "string" },
+        "severity": { "type": "string", "enum": ["hard", "soft"] },
+        "resolution": { "type": "string", "enum": ["unresolved", "human_decision_required", "resolved"] }
+      },
+      "additionalProperties": false
+    },
+    "missing": {
+      "type": "object",
+      "required": ["field", "why_critical", "how_to_obtain", "blocking"],
+      "properties": {
+        "field": { "type": "string" },
+        "why_critical": { "type": "string" },
+        "how_to_obtain": { "type": "string" },
+        "blocking": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "contract": {
+      "type": "object",
+      "required": [
+        "task_id", "contract_version", "title", "mission_type", "objectives",
+        "primary_objective_id", "secondary_objective_ids", "explicit_exclusions",
+        "metrics", "success_criteria", "failure_thresholds", "stop_conditions",
+        "human_approval_gates", "stakeholders", "decision_use", "statements",
+        "assumptions", "unknowns", "risks", "evidence_gaps", "domain_tags"
+      ],
+      "properties": {
+        "task_id": { "type": "string", "minLength": 1 },
+        "contract_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "title": { "type": "string", "minLength": 1 },
+        "mission_type": { "type": "string", "enum": ["research", "engineering", "decision", "mixed"] },
+        "objectives": { "type": "array", "items": { "$ref": "#/$defs/objective" }, "minItems": 1 },
+        "primary_objective_id": { "type": "string", "description": "Must reference an objective id" },
+        "secondary_objective_ids": { "type": "array", "items": { "type": "string" } },
+        "explicit_exclusions": { "type": "array", "items": { "type": "string" }, "description": "A mission that excludes nothing will drift; prefer ≥1" },
+        "metrics": { "type": "array", "items": { "$ref": "#/$defs/metric" } },
+        "success_criteria": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "failure_thresholds": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "stop_conditions": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "human_approval_gates": { "type": "array", "items": { "type": "string" } },
+        "stakeholders": { "type": "array", "items": { "type": "string" } },
+        "decision_use": { "type": "string", "minLength": 1 },
+        "statements": { "type": "array", "items": { "$ref": "#/$defs/statement" } },
+        "assumptions": { "type": "array", "items": { "type": "string" } },
+        "unknowns": { "type": "array", "items": { "type": "string" } },
+        "risks": { "type": "array", "items": { "type": "string" } },
+        "evidence_gaps": { "type": "array", "items": { "type": "string" } },
+        "domain_tags": { "type": "array", "items": { "type": "string" } },
+        "spatial_scale": { "type": "string", "description": "e.g. 'lab: 38 mm × 76 mm cylinder'; absence → non-blocking gap" },
+        "temporal_scale": { "type": "string", "description": "e.g. '28 day curing'; absence → non-blocking gap" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

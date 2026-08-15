@@ -1,0 +1,90 @@
+{
+  "contract_version": "1.0",
+  "version": "1.0.0",
+  "states": ["REJECTED", "OPEN", "EVIDENCE_GATHERING", "SUPPORTED", "VALIDATED", "PILOT_READY", "DEPLOYABLE", "SUSPENDED", "EXPIRED"],
+  "state_grades": {
+    "REJECTED": 0,
+    "OPEN": 1,
+    "EVIDENCE_GATHERING": 2,
+    "SUPPORTED": 3,
+    "VALIDATED": 4,
+    "PILOT_READY": 5,
+    "DEPLOYABLE": 6,
+    "SUSPENDED": 2,
+    "EXPIRED": 1
+  },
+  "dimensions": [
+    "SCIENTIFIC_VALIDITY", "EVIDENCE_QUALITY", "REPRODUCIBILITY",
+    "ENGINEERING_FEASIBILITY", "SCALE_READINESS", "ENVIRONMENTAL_ACCEPTABILITY",
+    "BIOSAFETY", "REGULATORY_STATUS", "ECONOMIC_VIABILITY",
+    "MONITORABILITY", "REVERSIBILITY", "RESIDUAL_RISK"
+  ],
+  "dimension_floors": {
+    "1": { "EVIDENCE_QUALITY": 0.20, "REPRODUCIBILITY": 0.20 },
+    "2": { "EVIDENCE_QUALITY": 0.30, "REPRODUCIBILITY": 0.30, "RESIDUAL_RISK": 0.30 },
+    "3": { "SCIENTIFIC_VALIDITY": 0.55, "EVIDENCE_QUALITY": 0.55, "REPRODUCIBILITY": 0.45, "RESIDUAL_RISK": 0.40 },
+    "4": {
+      "SCIENTIFIC_VALIDITY": 0.70, "EVIDENCE_QUALITY": 0.70, "REPRODUCIBILITY": 0.65,
+      "ENGINEERING_FEASIBILITY": 0.55, "SCALE_READINESS": 0.50, "RESIDUAL_RISK": 0.50,
+      "REGULATORY_STATUS": 0.50
+    },
+    "5": {
+      "SCIENTIFIC_VALIDITY": 0.75, "EVIDENCE_QUALITY": 0.75, "REPRODUCIBILITY": 0.70,
+      "ENGINEERING_FEASIBILITY": 0.70, "SCALE_READINESS": 0.70, "ENVIRONMENTAL_ACCEPTABILITY": 0.70,
+      "BIOSAFETY": 0.70, "REGULATORY_STATUS": 0.70, "MONITORABILITY": 0.70, "REVERSIBILITY": 0.60,
+      "RESIDUAL_RISK": 0.60
+    },
+    "6": {
+      "SCIENTIFIC_VALIDITY": 0.80, "EVIDENCE_QUALITY": 0.80, "REPRODUCIBILITY": 0.75,
+      "ENGINEERING_FEASIBILITY": 0.75, "SCALE_READINESS": 0.75, "ENVIRONMENTAL_ACCEPTABILITY": 0.80,
+      "BIOSAFETY": 0.80, "REGULATORY_STATUS": 0.80, "ECONOMIC_VIABILITY": 0.70,
+      "MONITORABILITY": 0.80, "REVERSIBILITY": 0.70, "RESIDUAL_RISK": 0.75
+    }
+  },
+  "edges": [
+    { "from": "OPEN", "to": "EVIDENCE_GATHERING", "grade": 2, "min_dimension": 0.30, "requires_human_approval": false, "irreversible": false, "note": "Begin gathering evidence." },
+    { "from": "EVIDENCE_GATHERING", "to": "SUPPORTED", "grade": 3, "min_dimension": 0.45, "requires_human_approval": false, "irreversible": false, "note": "Evidence supports direction; independent validation pending." },
+    { "from": "EVIDENCE_GATHERING", "to": "OPEN", "grade": 1, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Backward: reopen scope." },
+    { "from": "SUPPORTED", "to": "EVIDENCE_GATHERING", "grade": 2, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Backward: more evidence needed." },
+    { "from": "SUPPORTED", "to": "VALIDATED", "grade": 4, "min_dimension": 0.50, "requires_human_approval": true, "irreversible": false, "note": "Independent validation + approval." },
+    { "from": "SUPPORTED", "to": "EXPIRED", "grade": 1, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Review horizon passed." },
+    { "from": "VALIDATED", "to": "SUPPORTED", "grade": 3, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Downgrade: independent validation lost/contradicted." },
+    { "from": "VALIDATED", "to": "SUSPENDED", "grade": 2, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Pause due to resource/regulatory/data-quality reasons." },
+    { "from": "VALIDATED", "to": "EXPIRED", "grade": 1, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Standards/site/version changed." },
+    { "from": "VALIDATED", "to": "PILOT_READY", "grade": 5, "min_dimension": 0.60, "requires_human_approval": true, "irreversible": false, "note": "Controlled pilot with monitoring/shutdown/rollback + approval." },
+    { "from": "VALIDATED", "to": "REJECTED", "grade": 0, "min_dimension": 0.0, "requires_human_approval": true, "irreversible": false, "note": "Refuted by reliable evidence." },
+    { "from": "VALIDATED", "to": "DEPLOYABLE", "grade": 6, "min_dimension": 0.70, "requires_human_approval": true, "irreversible": true, "note": "Full deployment release. Human-only, irreversible." },
+    { "from": "PILOT_READY", "to": "VALIDATED", "grade": 4, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Pilot paused/reverted to validation stage." },
+    { "from": "PILOT_READY", "to": "SUSPENDED", "grade": 2, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Pause pilot for external reasons." },
+    { "from": "PILOT_READY", "to": "EXPIRED", "grade": 1, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Pilot window/review expired." },
+    { "from": "PILOT_READY", "to": "DEPLOYABLE", "grade": 6, "min_dimension": 0.70, "requires_human_approval": true, "irreversible": true, "note": "Deploy after successful pilot + approval." },
+    { "from": "SUSPENDED", "to": "EVIDENCE_GATHERING", "grade": 2, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Resume at evidence stage." },
+    { "from": "SUSPENDED", "to": "SUPPORTED", "grade": 3, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Resume at supported stage." },
+    { "from": "SUSPENDED", "to": "VALIDATED", "grade": 4, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Resume at validated stage." },
+    { "from": "SUSPENDED", "to": "EXPIRED", "grade": 1, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Pause outlived review horizon." },
+    { "from": "SUSPENDED", "to": "REJECTED", "grade": 0, "min_dimension": 0.0, "requires_human_approval": true, "irreversible": false, "note": "Abandon the line on review." },
+    { "from": "EXPIRED", "to": "EVIDENCE_GATHERING", "grade": 2, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Re-gather under new conditions." },
+    { "from": "EXPIRED", "to": "OPEN", "grade": 1, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Re-open problem framing." },
+    { "from": "EXPIRED", "to": "SUPPORTED", "grade": 3, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Re-affirm support under current conditions." },
+    { "from": "REJECTED", "to": "OPEN", "grade": 1, "min_dimension": 0.0, "requires_human_approval": true, "irreversible": false, "note": "Reopen a rejected line ONLY with human approval." },
+    { "from": "REJECTED", "to": "EVIDENCE_GATHERING", "grade": 2, "min_dimension": 0.0, "requires_human_approval": true, "irreversible": false, "note": "Reopen with new evidence-gathering plan + human approval." },
+    { "from": "DEPLOYABLE", "to": "SUSPENDED", "grade": 2, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Deployment paused (never silent rollback below VALIDATED)." },
+    { "from": "DEPLOYABLE", "to": "EXPIRED", "grade": 1, "min_dimension": 0.0, "requires_human_approval": false, "irreversible": false, "note": "Deployment conclusion expired." }
+  ],
+  "blocking_rules": [
+    { "rule": "B1", "description": "Red Team 存在 BLOCKING 级别问题", "severity": "BLOCKING", "when": "any_upgrade" },
+    { "rule": "B2", "description": "证据来源不可核验（ref 无法解析/校验）", "severity": "BLOCKING", "when": "any_upgrade" },
+    { "rule": "B3", "description": "数据不可复现（reproducibility 未达标）", "severity": "BLOCKING", "when": "any_upgrade" },
+    { "rule": "B4", "description": "缺少关键对照（experiment 无对照）", "severity": "BLOCKING", "when": "any_upgrade" },
+    { "rule": "B5", "description": "质量守恒失败（mass balance 闭合失败）", "severity": "BLOCKING", "when": "any_upgrade" },
+    { "rule": "B6", "description": "模型无独立验证（model 无 external_validation）", "severity": "BLOCKING", "when": "upgrade_to_validated_plus" },
+    { "rule": "B7", "description": "现场尺度未经阶段放大（scale ladder 断档）", "severity": "BLOCKING", "when": "upgrade_to_pilot_plus" },
+    { "rule": "B8", "description": "环境风险未关闭（环境审计存在未关闭 high 风险）", "severity": "BLOCKING", "when": "upgrade_to_pilot_plus" },
+    { "rule": "B9", "description": "法规未核验（法规状态非 verified 或已过期）", "severity": "BLOCKING", "when": "upgrade_to_validated_plus" },
+    { "rule": "B10", "description": "人类审批缺失（目标状态要求人工批准但未记录/已过期）", "severity": "BLOCKING", "when": "always" },
+    { "rule": "B11", "description": "没有监测和停工条件（PILOT_READY/DEPLOYABLE 必需）", "severity": "BLOCKING", "when": "upgrade_to_pilot_plus" },
+    { "rule": "B12", "description": "成功指标没有达到（mission success criteria 未达标）", "severity": "BLOCKING", "when": "any_upgrade" },
+    { "rule": "B13", "description": "失败阈值已经触发（mission failure thresholds 触发）", "severity": "BLOCKING", "when": "always" }
+  ],
+  "default_review_horizon_days": 180
+}

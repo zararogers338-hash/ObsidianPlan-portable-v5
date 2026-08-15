@@ -1,0 +1,33 @@
+{
+  "task_id": "ex-001-sand-column",
+  "project_id": "obsidian-plan",
+  "request": "设计区分高反应速率与高均匀性冲突的砂柱实验,给定有限样本预算,含对照、重复、随机化与停止条件。",
+  "context": {
+    "hypothesis_card": {
+      "primary_hypothesis": "提高脲酶浓度会在短期内提高 CaCO3 沉淀速率,但降低空间均匀性。",
+      "competing_hypotheses": [
+        "沉淀速率与均匀性不冲突,可同时最大化",
+        "均匀性差异由菌液注入顺序引起,与脲酶浓度无关"
+      ],
+      "independent_variables": ["脲酶浓度"],
+      "dependent_variables": ["CaCO3 沉淀速率", "空间均匀性"],
+      "control_variables": ["温度", "砂粒径", "pH"],
+      "nuisance_variables": ["菌液批次", "注入压力波动"],
+      "pathway": "urea"
+    },
+    "pathway": "urea",
+    "matrix": "porous-medium"
+  },
+  "constraints": {
+    "sample_budget": 12,
+    "require_negative_control": true,
+    "biosafety_level": "BSL-1"
+  },
+  "evidence_refs": ["S10:DeJong2010", "S11:Krajewska2018"],
+  "requested_output_format": "json",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "skill_version": "1.0.0",
+  "controller_version": "0.1.0",
+  "timestamp": "2026-08-06T00:00:00Z"
+}

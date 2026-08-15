@@ -1,0 +1,14 @@
+{
+  "name": "@obsidian/launcher",
+  "type": "module",
+  "private": true,
+  "main": "launcher/splash.ts",
+  "exports": {
+    "./splash": "./launcher/splash.ts",
+    "./bootstrap": "./launcher/bootstrap.ts",
+    "./brand": "./brand/logo-sixel.ts"
+  },
+  "dependencies": {
+    "@opencode-ai/tui": "workspace:*"
+  }
+}

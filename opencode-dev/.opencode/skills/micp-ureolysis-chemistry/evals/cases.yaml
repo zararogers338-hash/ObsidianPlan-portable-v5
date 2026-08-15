@@ -1,0 +1,166 @@
+# MUC (micp-ureolysis-chemistry) evaluation cases
+# >= 8 cases covering normal, missing, conflict, adversarial, and boundary inputs.
+# Runner: tests/run_evals.py (stdlib only, offline).
+#
+# Each case:
+#   id          — unique
+#   name        — human label
+#   mode        — envelope type:
+#                   "spec"    → engine function call (fn + args)
+#                   "cli"     → cli.py subcommand + stdin payload
+#   expected    — assertion block:
+#     ok            — expected envelope ok flag
+#     exit          — expected CLI exit code
+#     status        — for fn-mode result key to check (e.g. element passed)
+#     check         — list of {path, op, value} assertions on result
+#     expect_error  — expected error code (when the case must fail)
+#     expect_no     — things that must NOT happen (list of path patterns)
+#   score       — weight for indicator pass-rate math
+
+cases:
+  - id: eval-01
+    name: "正常:平衡可沉淀量 vs 有限时间实际沉淀量(动力学≠平衡)"
+    mode: spec
+    fn: simulate_batch
+    args:
+      initial: {urea: 0.5, ca: 0.5, ct: 0.01, nh3_tot: 0.0}
+      kinetics: {mode: first, k: 0.00005}
+      precipitation: {enabled: true, k_precip: 1e-9, a_specific: 10.0, si_threshold: 1.0}
+      t_end_s: 3600
+      dt_s: 300
+      cl: 0.1
+    expected:
+      ok: true
+      check:
+        - {path: "kinetic_precipitated <= equilibrium_bound_precipitable", op: true}
+        - {path: "final.urea_hydrolyzed > 0", op: true}
+        - {path: "stoichiometry_check.passed", op: true}
+    score: 2
+
+  - id: eval-02
+    name: "正常:相同 Ca 不同 pH 下 SI 单调变化"
+    mode: spec
+    fn: si_vs_ph
+    args: {c_total: 0.05, ca_total: 0.05, cl_total: 0.1, ph_low: 7.0, ph_high: 9.0}
+    expected:
+      ok: true
+      check:
+        - {path: "si_increases_with_ph", op: true}
+    score: 2
+
+  - id: eval-03
+    name: "缺失:非尿素路径触发 BLOCKED 纪律(不套用尿素模型)"
+    mode: spec
+    fn: pathway_guard
+    args: {pathway: denitrification, request: "反硝化诱导碳酸钙沉淀"}
+    expected:
+      ok: true
+      check:
+        - {path: "blocked", op: true}
+        - {path: "code", op: "==", value: "MUC-E1006"}
+    score: 2
+
+  - id: eval-04
+    name: "对抗:伪造钙质量守恒被拒绝"
+    mode: spec
+    fn: check_elemental_balance
+    args:
+      species: {Ca2+: 0.02}
+      total_ca: 0.05
+    expected:
+      ok: true
+      check:
+        - {path: "passed", op: false}
+        - {path: "Ca.passed", op: false}
+    score: 2
+
+  - id: eval-05
+    name: "对抗:SI>1 不等于实际产率(自检拦截)"
+    mode: spec
+    fn: si_not_yield
+    args: {}
+    expected:
+      ok: true
+      check:
+        - {path: "passed", op: false}   # a claim "SI=2 so 10% yield" must fail self-check
+    score: 2
+
+  - id: eval-06
+    name: "边界:单位维度不一致被拦截"
+    mode: cli
+    tool: units
+    input:
+      quantities:
+        - {name: "c", value: 0.5, unit: "M"}
+        - {name: "rate", value: 1e-6, unit: "mol/L/s"}
+    expected:
+      ok: true
+      check:
+        - {path: "all_ok", op: true}
+    score: 1
+
+  - id: eval-07
+    name: "对抗:未知单位被拒绝"
+    mode: cli
+    tool: units
+    input:
+      quantities:
+        - {name: "c", value: 0.5, unit: "wibble"}
+    expected:
+      ok: true
+      check:
+        - {path: "all_ok", op: false}
+        - {path: "quantities[0].error contains unknown unit", op: true}
+    score: 2
+
+  - id: eval-08
+    name: "回归:相同输入两次运行结果一致(确定性)"
+    mode: spec
+    fn: determinism
+    args: {}
+    expected:
+      ok: true
+      check:
+        - {path: "identical", op: true}
+    score: 2
+
+  - id: eval-09
+    name: "边界:拟合参数反演恢复已知真值"
+    mode: spec
+    fn: fit_recovers
+    args: {}
+    expected:
+      ok: true
+      check:
+        - {path: "k_error < 1e-4", op: true}
+    score: 2
+
+  - id: eval-10
+    name: "缺失:空输入 → 结构化失败(不编造)"
+    mode: cli
+    tool: version
+    input: {}
+    expected:
+      ok: true
+    score: 1
+
+  - id: eval-11
+    name: "对抗:ph 越界被拒绝"
+    mode: cli
+    tool: speciate
+    input: {ph: 15, c_total: 0.01, ca_total: 0.0}
+    expected:
+      ok: false
+      expect_error: MUC-E2004
+    score: 2
+
+  - id: eval-12
+    name: "回归:PHREEQC 适配器离线降级(不可用 ≠ 崩溃)"
+    mode: cli
+    tool: phreeqc-in
+    input: {ph: 8.0, c_total: 0.05, ca_total: 0.05}
+    expected:
+      ok: true
+      check:
+        - {path: "generated_input contains SOLUTION", op: true}
+    score: 1

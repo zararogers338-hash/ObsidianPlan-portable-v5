@@ -1,0 +1,10 @@
+{
+  "contract_version": "1.0",
+  "task_id": "ex2",
+  "project_id": "demo-kg-02",
+  "request": "登记样品并录入两条矛盾的矿物相结论（calcite vs vaterite），应共存为 OPEN 冲突",
+  "action": "kb.init",
+  "title": "矛盾晶体相演示",
+  "skill_version": "1.0.0",
+  "timestamp": "2026-08-06T00:00:00Z"
+}

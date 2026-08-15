@@ -1,0 +1,104 @@
+name: micp-lca-technoeconomic
+display_name: MICP 生命周期与技术经济评价器 (LCA/TEA)
+version: 1.0.0
+description: "Life-cycle assessment (LCA) and techno-economic analysis (TEA) for MICP / biocementation ground-improvement schemes: functional-unit and system-boundary definition, life-cycle inventory, carbon / energy / water / nitrogen-load / eutrophication impact, CAPEX/OPEX and per-functional-unit cost, scale-up, sensitivity, Monte-Carlo uncertainty, hotspot (Pareto) analysis, and symmetric comparison against cement / chemical-grouting baselines. Never assumes MICP is green or cheap by default; requires a declared functional unit and baseline before any formal calculation."
+contract_version: 1.0
+entry:
+  cli: tools/micp_lca.py
+  mode: stdin_stdout
+capabilities:
+  - lca
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - context
+  - evidence_refs
+  - data_refs
+  - upstream_outputs
+outputs:
+  - status
+  - summary
+  - findings
+  - assumptions
+  - evidence_used
+  - uncertainty
+  - risks
+  - artifacts
+  - requested_next_skills
+  - validation
+  - provenance
+  - errors
+  - functional_unit
+  - system_boundary
+  - baseline
+  - inventory
+  - environmental_results
+  - cost_results
+  - hotspots
+  - scenario_comparison
+  - sensitivity
+  - limitations
+  - recommendations
+domain_keywords:
+  - 生命周期
+  - LCA
+  - 全生命周期评价
+  - 生命周期评价
+  - 技术经济
+  - techno-economic
+  - technoeconomic
+  - TEA
+  - 碳
+  - 碳排
+  - 碳足迹
+  - carbon
+  - CO2
+  - 成本
+  - cost
+  - CAPEX
+  - OPEX
+  - 功能单位
+  - functional unit
+  - 系统边界
+  - system boundary
+  - 敏感性
+  - sensitivity
+  - 蒙特卡洛
+  - monte carlo
+  - 不确定性
+  - uncertainty
+  - 情景
+  - scenario
+  - 基准
+  - baseline
+  - 水泥
+  - cement
+  - 注浆
+  - grouting
+  - 经济性
+  - economics
+dependencies:
+  - "python3 >= 3.10"
+  - pytest
+  - pyyaml
+dependencies_detail:
+  runtime: "python3 (>= 3.10)"
+  libs: []
+  network: none
+permissions:
+  filesystem: []
+  approvals_required:
+    - field.deployment
+    - cost.commit
+    - environmental.claim
+  dry_run: true
+compatibility:
+  opencode_loader: "discovery pattern {skill,skills}/**/SKILL.md; frontmatter name+description (verified in packages/opencode/src/skill/index.ts)"
+  contract_major: 1
+  schema_breaking_bump: major
+  optional_field_bump: minor
+  implementation_fix_bump: patch
+  migrate_or_reject: Outputs written under an older major contract are either migrated by an explicit migration step or rejected with LCA-E802; never silently reinterpreted.
+maintainer: Panshi / Obsidian Plan
+license: MIT (project convention; repo root LICENSE)

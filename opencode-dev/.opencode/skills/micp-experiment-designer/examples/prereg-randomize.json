@@ -1,0 +1,21 @@
+{
+  "task_id": "ex-003-prereg-randomize",
+  "project_id": "obsidian-plan",
+  "request": "为尿素水解砂柱实验生成随机化分配、实验编号、预注册摘要与原始数据表模板。",
+  "context": {
+    "hypothesis_card": {
+      "primary_hypothesis": "尿素浓度提高 CaCO3 沉淀量",
+      "pathway": "urea"
+    }
+  },
+  "constraints": {
+    "sample_budget": 6,
+    "require_negative_control": true
+  },
+  "requested_output_format": "json",
+  "risk_level": "low",
+  "human_approval_state": "not_required",
+  "skill_version": "1.0.0",
+  "controller_version": "0.1.0",
+  "timestamp": "2026-08-06T00:00:00Z"
+}

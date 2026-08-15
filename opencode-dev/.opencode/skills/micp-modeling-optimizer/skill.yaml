@@ -1,0 +1,95 @@
+# Machine-readable metadata for micp-modeling-optimizer.
+# Consumed by the OSR registry indexer (tools/osr/registry.ts) and by Obsidian
+# Controller tooling. Fields mirror the effective contract; see schemas/.
+# Layout of error codes: MMO-E<category><ordinal> — see tools/micp/errors.py.
+#
+# IMPORTANT (router contract, verified against registry.ts + schema-match.ts):
+#   capabilities/inputs_required/outputs/tool_permissions/writes/stop_conditions/
+#   domain_keywords/dependencies must ALL be arrays of strings — anything else
+#   makes the entry unusable (usable:false).
+#   capabilities must contain the bare token "modeling" to be reachable by the
+#   planner (DOMAIN_MAP: 建模|数值模拟|数值|numerical|simulation|优化|optimiz).
+#   inputs_required should only list fields the router can supply.
+
+name: micp-modeling-optimizer
+version: 1.0.0
+entry: tools/modeling.py
+description: >-
+  MICP mechanistic modeling, parameter inference and multi-objective
+  optimization: ureolysis & calcite precipitation kinetics, biomass decay,
+  porosity/permeability evolution, reactive-transport coupling, parameter
+  fitting with practical identifiability, Sobol/Morris global sensitivity,
+  DOE and response surfaces, Bayesian optimization, NSGA-II Pareto fronts,
+  and Monte-Carlo uncertainty & robustness. Model purpose must be locked
+  before building; missing boundary conditions / units / parameter sources
+  return MODEL_BLOCKED.
+
+capabilities:
+  - modeling
+  - parameter_inference
+  - identifiability_analysis
+  - global_sensitivity_analysis
+  - design_of_experiments
+  - response_surface
+  - bayesian_optimization
+  - multi_objective_optimization
+  - uncertainty_quantification
+  - robustness_analysis
+  - conservation_checking
+
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - skill_version
+  - controller_version
+  - timestamp
+
+outputs:
+  - unified_report
+  - model_specification
+  - equations
+  - parameters
+  - calibration_report
+  - identifiability_report
+  - sensitivity_report
+  - optimization_results
+  - pareto_candidates
+  - uncertainty_report
+  - visualization_assets
+
+units:
+  concentration: mol/m3 | mol/L | g/L
+  permeability: m2 | m/s | cm/s
+  strength: MPa | kPa
+  porosity: dimensionless
+  time: s | min | h | d
+  mass: kg | g
+
+tool_permissions:
+  - read
+  - write_local_audit
+
+network: false
+writes:
+  - audit/**
+
+stop_conditions:
+  - 输出通过 output.schema.json 自检后停止
+  - 任一硬门控失败即返回 BLOCKED/FAILED 并停止
+  - 守恒或数值自检失败返回 PARTIAL 并停止（不冒充 SUCCESS）
+  - 需要下游能力返回 NEED_ADDITIONAL_SKILL 并停止
+  - 高风险待批准返回 HUMAN_APPROVAL_REQUIRED 并停止
+
+compatible_controller: ">=1.0.0"
+dependencies:
+  - python3
+  - numpy
+  - scipy
+  - jsonschema
+
+cost_estimate:
+  tokens: 3500
+  usd: 0.035
+
+risk_tier: medium

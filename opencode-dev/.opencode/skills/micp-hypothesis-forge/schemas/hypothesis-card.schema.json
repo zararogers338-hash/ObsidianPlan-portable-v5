@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.dev/skills/micp-hypothesis-forge/schemas/hypothesis-card.schema.json",
+  "title": "Hypothesis Card",
+  "description": "A single falsifiable mechanism hypothesis with premise, mechanism chain, prediction direction, observable variables, time scale and scope of applicability.",
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "statement",
+    "mechanism_chain",
+    "prediction_direction",
+    "observables",
+    "refutation",
+    "time_scale",
+    "scope",
+    "epistemic_label",
+    "evidence_for",
+    "evidence_against"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "kind": { "const": "hypothesis_card" },
+    "role": {
+      "type": "string",
+      "enum": ["main", "competing_1", "competing_2"]
+    },
+    "statement": { "type": "string", "minLength": 10 },
+    "premise": { "type": "string", "minLength": 1 },
+    "mechanism_chain": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "prediction_direction": {
+      "type": "string",
+      "enum": ["increase", "decrease", "no_change", "non_monotonic", "null"]
+    },
+    "observables": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "refutation": { "type": "string", "minLength": 1 },
+    "supports": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["positive", "negative", "no_change", "non_monotonic"]
+      }
+    },
+    "weakens": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["positive", "negative", "no_change", "non_monotonic"]
+      }
+    },
+    "time_scale": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "epistemic_label": {
+      "type": "string",
+      "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+    },
+    "evidence_for": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref_id", "strength"],
+        "properties": {
+          "ref_id": { "type": "string", "minLength": 1 },
+          "strength": { "type": "string", "enum": ["strong", "moderate", "weak"] },
+          "note": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "evidence_against": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref_id", "strength"],
+        "properties": {
+          "ref_id": { "type": "string", "minLength": 1 },
+          "strength": { "type": "string", "enum": ["strong", "moderate", "weak"] },
+          "note": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "discriminating_experiments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "distinguishes"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "distinguishes": { "type": "array", "items": { "type": "string" } },
+          "expected_outcome": { "type": "string" },
+          "cost": { "type": "string" },
+          "risk": { "type": "string" },
+          "time_scale": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "time_scale_hint": { "type": "string" },
+    "conditional_on": { "type": "string" },
+    "mechanism_domain": { "type": "string", "minLength": 1 },
+    "alternative_explanations": { "type": "array", "items": { "type": "string" } },
+    "unit_inconsistency": { "type": "array", "items": { "type": "string" } },
+    "falsifiability": {
+      "type": "object",
+      "required": ["falsifiable", "verdict", "reason"],
+      "properties": {
+        "falsifiable": { "type": "boolean" },
+        "verdict": { "type": "string", "enum": ["FALSIFIABLE", "PARTIALLY_FALSIFIABLE", "NOT_FALSIFIABLE"] },
+        "reason": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "scores": {
+      "type": "object",
+      "required": ["falsifiability", "measurability", "discriminability", "overall"],
+      "properties": {
+        "falsifiability": { "type": "number", "minimum": 0 },
+        "measurability": { "type": "number", "minimum": 0 },
+        "discriminability": { "type": "number", "minimum": 0 },
+        "overall": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

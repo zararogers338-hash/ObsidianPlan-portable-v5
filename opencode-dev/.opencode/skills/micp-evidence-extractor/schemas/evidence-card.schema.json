@@ -1,0 +1,705 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-evidence-extractor.evidence-card.json",
+  "title": "MICP Evidence Card",
+  "description": "One comparable, traceable, verifiable evidence record extracted from an MICP source document. Every numerical quantity carries raw value + raw unit, normalized value + normalized unit, sample size, statistic-type, uncertainty, experimental-group binding, time-point binding, provenance locator, and an acquisition mode. Acquisition modes NOT_REPORTED / AMBIGUOUS are recorded as placeholders that must never be used in calculations. All values carry an epistemic tag: OBSERVED | REPORTED | CALCULATED | INFERRED | HYPOTHESIS | RECOMMENDATION. Version 1.0.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "card_id",
+    "epistemic_tag",
+    "acquisition_mode",
+    "literature",
+    "scope",
+    "experimental_groups",
+    "time_points",
+    "conditions",
+    "results",
+    "sources"
+  ],
+  "properties": {
+    "card_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Stable card identifier: <source_id>.<serial>."
+    },
+    "epistemic_tag": {
+      "type": "string",
+      "enum": [
+        "OBSERVED",
+        "REPORTED",
+        "CALCULATED",
+        "INFERRED",
+        "HYPOTHESIS",
+        "RECOMMENDATION"
+      ],
+      "description": "Epistemic status of the card's claims. NEVER write an inference as OBSERVED."
+    },
+    "acquisition_mode": {
+      "$ref": "#/$defs/acquisitionMode"
+    },
+    "literature": {
+      "$ref": "#/$defs/literatureRef"
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scale",
+        "system_kind"
+      ],
+      "properties": {
+        "scale": {
+          "type": "string",
+          "enum": [
+            "lab_vial",
+            "lab_batch",
+            "lab_column",
+            "meter_scale",
+            "field",
+            "simulation",
+            "unknown"
+          ]
+        },
+        "system_kind": {
+          "type": "string",
+          "enum": [
+            "pure_culture",
+            "mixed_community",
+            "in_situ_stimulation",
+            "simulation_model",
+            "review_secondary",
+            "unknown"
+          ]
+        },
+        "media_kind": {
+          "type": "string",
+          "enum": [
+            "soil",
+            "sand",
+            "biocemented_soil",
+            "biocemented_sand",
+            "mortar",
+            "concrete",
+            "solution_only",
+            "other",
+            "unknown"
+          ]
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "experimental_groups": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "$ref": "#/$defs/group"
+      }
+    },
+    "time_points": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "$ref": "#/$defs/timePoint"
+      }
+    },
+    "conditions": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Biological/chemical/porous-media/process condition quantities keyed by condition key (od600, urease_activity, urea_conc, ...). Keys are declared in the skills/mee lexicon."
+    },
+    "results": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Result quantities keyed by result key (ucs, permeability, caco3_content, ...). Each value is a single quantity object or an array of quantity objects (one per group/time point). Keys are declared in the skills/mee lexicon."
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/sourceLocator"
+      }
+    }
+  },
+  "$defs": {
+    "acquisitionMode": {
+      "type": "string",
+      "enum": [
+        "REPORTED_TEXT",
+        "REPORTED_TABLE",
+        "DIGITIZED_FROM_FIGURE",
+        "CALCULATED_FROM_REPORTED_DATA",
+        "INFERRED",
+        "NOT_REPORTED",
+        "AMBIGUOUS"
+      ]
+    },
+    "literatureRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "title",
+        "year"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Locator of the input document/source, e.g. evidence_refs ref_id or a file path."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "year": {
+          "type": "string",
+          "pattern": "^\\d{4}$"
+        },
+        "journal": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "doi": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Stable identifier; verified by the doi tool (offline structural + live metadata consistency when online)."
+        },
+        "document_type": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "access_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}"
+        },
+        "fulltext_source": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      }
+    },
+    "group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group_id",
+        "label"
+      ],
+      "properties": {
+        "group_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Unique within the card. Stable against re-labeling."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "The paper's own label, verbatim."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "control",
+            "treatment",
+            "baseline",
+            "condition",
+            "unknown"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "replicates": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "n_note": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "parent_group_id": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    "timePoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timepoint_id",
+        "label"
+      ],
+      "properties": {
+        "timepoint_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "The paper's own label (e.g. day 7, 14, 28)."
+        },
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "sort_key": {
+          "type": "number",
+          "description": "Numerical sort key when value/unit are present; absent values sort textually by label."
+        }
+      }
+    },
+    "conditions_bio": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strain": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "accession": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "source": {
+              "type": "string",
+              "maxLength": 1000
+            },
+            "epistemic_tag": {
+              "$ref": "#/$defs/epistemicTag"
+            }
+          }
+        },
+        "culture_type": {
+          "type": "string",
+          "enum": [
+            "pure_culture",
+            "mixed_community",
+            "in_situ_stimulation",
+            "unknown"
+          ]
+        },
+        "medium": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "culture_time": {
+          "$ref": "#/$defs/quantity"
+        },
+        "temperature_c": {
+          "$ref": "#/$defs/quantity"
+        },
+        "ph": {
+          "$ref": "#/$defs/quantity"
+        },
+        "od600": {
+          "$ref": "#/$defs/quantity",
+          "description": "Optical density at 600 nm — a turbidity proxy, never equated with cell concentration, CFU, or urease activity."
+        },
+        "cell_concentration": {
+          "$ref": "#/$defs/quantity"
+        },
+        "cfu": {
+          "$ref": "#/$defs/quantity"
+        },
+        "viable_cell_ratio": {
+          "$ref": "#/$defs/quantity"
+        },
+        "urease_activity": {
+          "$ref": "#/$defs/quantity",
+          "description": "Urease activity, e.g. mM urea hydrolysed per minute per OD unit. Never conflated with OD600 or CFU."
+        },
+        "urease_unit": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "urease_method": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "inoculum_volume": {
+          "$ref": "#/$defs/quantity"
+        },
+        "injection_conc": {
+          "$ref": "#/$defs/quantity"
+        },
+        "storage_conditions": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      }
+    },
+    "conditions_chem": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "urea_conc": {
+          "$ref": "#/$defs/quantity"
+        },
+        "calcium_source": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "calcium_conc": {
+          "$ref": "#/$defs/quantity"
+        },
+        "mg2_conc": {
+          "$ref": "#/$defs/quantity"
+        },
+        "nh4_conc": {
+          "$ref": "#/$defs/quantity"
+        },
+        "phosphate_conc": {
+          "$ref": "#/$defs/quantity"
+        },
+        "salinity": {
+          "$ref": "#/$defs/quantity"
+        },
+        "ionic_strength": {
+          "$ref": "#/$defs/quantity"
+        },
+        "initial_ph": {
+          "$ref": "#/$defs/quantity"
+        },
+        "process_ph": {
+          "$ref": "#/$defs/quantity"
+        },
+        "conductivity": {
+          "$ref": "#/$defs/quantity"
+        },
+        "reaction_time": {
+          "$ref": "#/$defs/quantity"
+        },
+        "cementation_solution": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "injection_order": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "mixing_method": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      }
+    },
+    "conditions_media": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "soil_type": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "particle_size": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "d50_mm": {
+          "$ref": "#/$defs/quantity"
+        },
+        "cu": {
+          "$ref": "#/$defs/quantity"
+        },
+        "cc": {
+          "$ref": "#/$defs/quantity"
+        },
+        "fines_percent": {
+          "$ref": "#/$defs/quantity"
+        },
+        "mineralogy": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "initial_density": {
+          "$ref": "#/$defs/quantity"
+        },
+        "porosity": {
+          "$ref": "#/$defs/quantity"
+        },
+        "saturation": {
+          "$ref": "#/$defs/quantity"
+        },
+        "specimen_size": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "specimen_dims": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/quantity"
+          }
+        },
+        "initial_permeability": {
+          "$ref": "#/$defs/quantity"
+        },
+        "preparation_method": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "boundary_conditions": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      }
+    },
+    "conditions_process": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "phase": {
+          "type": "string",
+          "enum": [
+            "single_phase",
+            "two_phase",
+            "multi_phase",
+            "unknown"
+          ]
+        },
+        "injection_rate": {
+          "$ref": "#/$defs/quantity"
+        },
+        "injection_pressure": {
+          "$ref": "#/$defs/quantity"
+        },
+        "injection_direction": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "residence_time": {
+          "$ref": "#/$defs/quantity"
+        },
+        "treatment_rounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "curing_conditions": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "flushing": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "spatial_scale": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "sourceLocator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "page",
+        "locator_type"
+      ],
+      "properties": {
+        "page": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Page, table, figure, or supplementary-material reference in the original document."
+        },
+        "locator_type": {
+          "type": "string",
+          "enum": [
+            "page",
+            "table",
+            "figure",
+            "supplementary",
+            "text",
+            "equation",
+            "appendix"
+          ]
+        },
+        "locator": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Stable anchor (e.g. Table 2, Fig. 4a, p.12)."
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "epistemicTag": {
+      "type": "string",
+      "enum": [
+        "OBSERVED",
+        "REPORTED",
+        "CALCULATED",
+        "INFERRED",
+        "HYPOTHESIS",
+        "RECOMMENDATION"
+      ]
+    },
+    "quantity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "unit",
+        "normalized_value",
+        "normalized_unit",
+        "acquisition_mode"
+      ],
+      "properties": {
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Raw value as reported; null when NOT_REPORTED or AMBIGUOUS."
+        },
+        "unit": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Raw unit exactly as reported (may be empty string when the paper omitted it)."
+        },
+        "normalized_value": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Value converted to the canonical unit below; null when it cannot be derived."
+        },
+        "normalized_unit": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Canonical unit for cross-paper comparison. Empty string when the raw unit is absent/ambiguous."
+        },
+        "acquisition_mode": {
+          "$ref": "#/$defs/acquisitionMode"
+        },
+        "statistic_type": {
+          "type": "string",
+          "enum": [
+            "mean",
+            "median",
+            "single_measurement",
+            "sum",
+            "min",
+            "max",
+            "raw_series",
+            "unknown",
+            "not_applicable"
+          ],
+          "description": "What kind of statistic the value is."
+        },
+        "n": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Sample size; 0 when not reported."
+        },
+        "n_note": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "uncertainty_type": {
+          "type": "string",
+          "enum": [
+            "sd",
+            "se",
+            "ci",
+            "range",
+            "iqr",
+            "error_bar",
+            "none",
+            "unknown"
+          ]
+        },
+        "uncertainty_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "uncertainty_ci_level": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "group_id": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "experimental_groups[].group_id this quantity belongs to."
+        },
+        "timepoint_id": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "time_points[].timepoint_id this quantity belongs to."
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sourceLocator"
+          }
+        },
+        "digitization": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "e.g. manual cursor readout, pixel extraction script."
+            },
+            "error_estimate": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Estimated reading error (absolute, in the raw unit)."
+            },
+            "figure_ref": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "note": {
+              "type": "string",
+              "maxLength": 1000
+            }
+          },
+          "description": "Present and mandatory in spirit whenever acquisition_mode == DIGITIZED_FROM_FIGURE."
+        },
+        "epistemic_tag": {
+          "$ref": "#/$defs/epistemicTag"
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Free-text extraction note, quoting the paper where useful."
+        }
+      }
+    }
+  }
+}

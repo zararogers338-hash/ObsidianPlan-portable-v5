@@ -1,0 +1,430 @@
+{
+  "cases": [
+    {
+      "id": "pos-01-micp-vs-cement",
+      "description": "双情景 LCA+TEA 完整比较: MICP vs 水泥 DSM",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "schema status passed"
+        },
+        {
+          "name": "has_comparison",
+          "pass": true,
+          "detail": "comparison metrics missing"
+        },
+        {
+          "name": "has_hotspots",
+          "pass": true,
+          "detail": "hotspot items missing"
+        },
+        {
+          "name": "scenario_count",
+          "pass": true,
+          "detail": "got 2"
+        },
+        {
+          "name": "schema_self_check",
+          "pass": true,
+          "detail": "schema self-check not run"
+        }
+      ],
+      "artifacts": 5
+    },
+    {
+      "id": "pos-02-monte-carlo",
+      "description": "蒙特卡洛 200 次, seed 确定, 输出 90% 区间",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "schema status passed"
+        },
+        {
+          "name": "mc_present",
+          "pass": true,
+          "detail": "monte_carlo empty"
+        },
+        {
+          "name": "mc_n",
+          "pass": true,
+          "detail": "got [200, 200]"
+        },
+        {
+          "name": "mc_interval_valid",
+          "pass": true,
+          "detail": "bad interval"
+        },
+        {
+          "name": "schema_self_check",
+          "pass": true,
+          "detail": "schema self-check not run"
+        }
+      ],
+      "artifacts": 5
+    },
+    {
+      "id": "pos-03-anammox-route",
+      "description": "废液路线 anammox 比 nitrification 碳排更低",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "schema status passed"
+        },
+        {
+          "name": "anammox_lower_gwp",
+          "pass": true,
+          "detail": "got {'cement-dsm': 2.29042826, 'micp-urea-cacl2': 1.8326467938561444}"
+        },
+        {
+          "name": "schema_self_check",
+          "pass": true,
+          "detail": "schema self-check not run"
+        }
+      ],
+      "artifacts": 5
+    },
+    {
+      "id": "miss-01-no-functional-unit",
+      "description": "缺功能单位必须 BLOCKED",
+      "status": "BLOCKED",
+      "error_code": "LCA-E103",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==BLOCKED",
+          "pass": true,
+          "detail": "got BLOCKED"
+        },
+        {
+          "name": "error==LCA-E103",
+          "pass": true,
+          "detail": "got LCA-E103"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "schema status pending"
+        },
+        {
+          "name": "schema_self_check",
+          "pass": true,
+          "detail": "schema self-check not run"
+        }
+      ],
+      "artifacts": 0
+    },
+    {
+      "id": "miss-02-no-baseline",
+      "description": "缺基准方案必须 BLOCKED",
+      "status": "BLOCKED",
+      "error_code": "LCA-E104",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==BLOCKED",
+          "pass": true,
+          "detail": "got BLOCKED"
+        },
+        {
+          "name": "error==LCA-E104",
+          "pass": true,
+          "detail": "got LCA-E104"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "schema status pending"
+        },
+        {
+          "name": "schema_self_check",
+          "pass": true,
+          "detail": "schema self-check not run"
+        }
+      ],
+      "artifacts": 0
+    },
+    {
+      "id": "miss-03-incomplete-scope",
+      "description": "scope 缺能源结构等边界字段必须 BLOCKED",
+      "status": "BLOCKED",
+      "error_code": "LCA-E106",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==BLOCKED",
+          "pass": true,
+          "detail": "got BLOCKED"
+        },
+        {
+          "name": "error==LCA-E106",
+          "pass": true,
+          "detail": "got LCA-E106"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "schema status pending"
+        },
+        {
+          "name": "schema_self_check",
+          "pass": true,
+          "detail": "schema self-check not run"
+        }
+      ],
+      "artifacts": 0
+    },
+    {
+      "id": "adv-01-lab-price-as-field",
+      "description": "实验室试剂价直接当现场成本必须被标记 LCA-E204",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "schema status passed"
+        },
+        {
+          "name": "lab_tier_flagged",
+          "pass": true,
+          "detail": "warnings=['材料 urea 使用 lab_catalogue 目录价 19.92 CNY/CNY/kg 直接作为现场成本 — 违反现场成本纪律(LCA-E204);已按 ×{lab_mult} 放大但仍不可代表现场价', '材料 cacl2 使用 lab_catalogue 目录价 6.64 CNY/CNY/kg 直接作为现场成本 — 违反现场成本纪律(LCA-E204);已按 ×{lab_mult} 放大但仍不可代表现场价', '材料 media_yeast 使用 lab_catalogue 目录价 200.00 CNY/CNY/kg 直接作为现场成本 — 违反现场成本纪律(LCA-E204);已按 ×{lab_mult} 放大但仍不可代表现场价']"
+        },
+        {
+          "name": "schema_self_check",
+          "pass": true,
+          "detail": "schema self-check not run"
+        }
+      ],
+      "artifacts": 5
+    },
+    {
+      "id": "adv-02-asymmetric-boundary",
+      "description": "MICP 计入废液处理而水泥基准完全没有废液 → 不对称必须被如实暴露",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "schema status passed"
+        },
+        {
+          "name": "waste_asymmetry_surfaced",
+          "pass": true,
+          "detail": "micp_waste=True cement_waste=False"
+        },
+        {
+          "name": "schema_self_check",
+          "pass": true,
+          "detail": "schema self-check not run"
+        }
+      ],
+      "artifacts": 5
+    },
+    {
+      "id": "adv-03-expired-factor",
+      "description": "过期因子(>5年)必须产生 warning",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "schema status passed"
+        },
+        {
+          "name": "expired_warning",
+          "pass": true,
+          "detail": "no stale-factor warning"
+        },
+        {
+          "name": "schema_self_check",
+          "pass": true,
+          "detail": "schema self-check not run"
+        }
+      ],
+      "artifacts": 5
+    },
+    {
+      "id": "adv-04-dimension-conflict",
+      "description": "单位量纲冲突必须被工具拒绝(不崩溃)",
+      "status": "BLOCKED",
+      "error_code": "LCA-E101",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==BLOCKED",
+          "pass": true,
+          "detail": "got BLOCKED"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "schema status pending"
+        },
+        {
+          "name": "schema_self_check",
+          "pass": true,
+          "detail": "schema self-check not run"
+        }
+      ],
+      "artifacts": 0
+    },
+    {
+      "id": "bnd-01-transport-sensitivity",
+      "description": "运输距离 500 km vs 10 km 必须改变 GWP",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "schema status passed"
+        },
+        {
+          "name": "transport_changes_gwp",
+          "pass": true,
+          "detail": "far=2.5707245827339333"
+        },
+        {
+          "name": "schema_self_check",
+          "pass": true,
+          "detail": "schema self-check not run"
+        }
+      ],
+      "artifacts": 5
+    },
+    {
+      "id": "bnd-02-waste-on-off",
+      "description": "含/不含废液处理必须改变 GWP 且氮负荷始终报告",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "schema status passed"
+        },
+        {
+          "name": "nitrogen_load_reported",
+          "pass": true,
+          "detail": "n=18.654678654678655"
+        },
+        {
+          "name": "schema_self_check",
+          "pass": true,
+          "detail": "schema self-check not run"
+        }
+      ],
+      "artifacts": 5
+    }
+  ],
+  "summary": {
+    "passed": 12,
+    "total": 12,
+    "all_pass": true
+  },
+  "metrics": {
+    "report": {
+      "M1_structured_output_pass_rate": {
+        "measured": 1.0,
+        "threshold": 0.95,
+        "method": "validate every CLI output against schemas/output.schema.json; pass_rate = passes / total outputs",
+        "pass": true
+      },
+      "M2_tool_real_call_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "for N compute actions, require real artifacts in the output (environmental_results / cost_results / uncertainty); rate = actions_with_artifacts / success_actions",
+        "pass": true
+      },
+      "M3_traceability_rate": {
+        "measured": 1.0,
+        "threshold": 0.9,
+        "method": "successful outputs whose provenance.factors lists factor ids that were actually used, over all successful outputs",
+        "pass": true
+      },
+      "M4_missing_input_recognition_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "for each of K fabricated missing fields (functional_unit, baseline, scope), require BLOCKED naming the field",
+        "pass": true
+      },
+      "M5_adversarial_interception_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "adversarial cases (lab-price-as-field, asymmetric boundary, expired factor, dimension conflict) that were blocked or flagged",
+        "pass": true
+      },
+      "M6_repeated_run_consistency": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "run the same comparison payload twice with fixed seed+clock; output envelopes must be byte-identical",
+        "pass": true
+      },
+      "M7_mean_failure_recovery_ms": {
+        "measured": 82.26741999988008,
+        "threshold": 2000.0,
+        "method": "feed a structurally broken payload 5 times; mean wall-clock to a valid output envelope",
+        "pass": true
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "task_id": "TASK-MICP-0142",
+  "project_id": "PRJ-MICP-BIO",
+  "request": "评估 MICP 处理砂在尿素水解路径下的强度提升、渗透系数变化与方解石矿相组成,并给出铵态氮副产物的质量守恒核查建议。需要化学、渗流与岩土性能的联合评估。",
+  "context": {
+    "call_chain": ["obsidian-controller"],
+    "completed_calls": [],
+    "environment": { "workspace": "PRJ-MICP-BIO", "offline": true }
+  },
+  "constraints": {
+    "max_depth": 4,
+    "max_total_calls": 16,
+    "max_retries_per_skill": 2
+  },
+  "evidence_refs": [
+    { "ref_id": "ev:ureolysis:stoi", "uri": "file:///state/evidence/ureolysis_stoich.json", "media_type": "application/json" }
+  ],
+  "data_refs": [
+    { "ref_id": "data:uab:2026-01", "uri": "file:///state/data/strength_uab.json", "media_type": "application/json" }
+  ],
+  "upstream_outputs": [
+    {
+      "skill": "micp-ureolysis-chemistry",
+      "task_node": "TASK-MICP-0142-chem",
+      "summary": "尿素水解按 1:2:1 生成 2 铵+1 碳酸根;建议关注铵态氮质量守恒。",
+      "output": { "value": "2.0", "unit": "mol_ammonium_per_mol_urea", "label": "CALCULATED" }
+    }
+  ],
+  "requested_output_format": "route_plan",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "skill_version": "1.0.0",
+  "controller_version": "1.2.0",
+  "timestamp": "2026-08-06T10:00:00Z"
+}

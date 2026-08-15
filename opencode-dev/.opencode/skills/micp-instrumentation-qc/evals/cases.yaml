@@ -1,0 +1,149 @@
+# MICP Instrumentation QC — 评测用例集 (v1.0.0)
+#
+# 每个 case 用真实工具管线执行(禁止 mock),并对输出做断言。分类:
+#   normal     正常/成功路径
+#   missing    缺失关键输入
+#   conflict   输入内冲突(单位、编号、时间戳)
+#   adversarial 对抗/恶意输入(伪造引用、NaN、超长、注入)
+#   boundary   边界情况(单标准、空测量、版本不匹配)
+#
+# expected_status 是工具层 qc_report 的 overall_passed 期望值;status_ok 是
+# 信封 status 的期望语义(SUCCESS/BLOCKED/FAILED)。
+
+cases:
+  - id: CASE-01
+    category: normal
+    name: "pH 校准曲线完美线性 + 单一测量通过"
+    requested_output_format: qc_report
+    qc_input:
+      instruments:
+        - {instrument_id: "pH-1", kind: "pH", model: "Mettler S220",
+           measurement_range: [0, 14], saturation_threshold: 14.0,
+           calibration_ref: "cal-1"}
+      calibrations:
+        - {calibration_id: "cal-1", instrument_id: "pH-1", method: "linear", status: "passed",
+           standards: [{concentration: 4.0, response: -170.0},
+                       {concentration: 7.0, response: 0.0},
+                       {concentration: 10.0, response: 177.0}]}
+      measurements:
+        - {measurement_id: "m0", instrument_id: "pH-1", sample_id: "s1", value: 7.02,
+           unit: "pH", timestamp: "2026-08-01T10:00:00"}
+      samples:
+        - {sample_id: "s1", collection_time: "2026-08-01T09:00:00"}
+    expect: {overall_passed: true, errors: []}
+
+  - id: CASE-02
+    category: normal
+    name: "纯 QC 计划生成(无数据仍可给 plan)"
+    requested_output_format: qc_plan
+    qc_input:
+      instruments:
+        - {instrument_id: "pH-1", kind: "pH", model: "Mettler S220"}
+    expect: {overall_passed: true, errors: []}
+
+  - id: CASE-03
+    category: normal
+    name: "尿素水解 NH4+ 测量质量守恒上下文通过"
+    requested_output_format: qc_report
+    qc_input:
+      instruments:
+        - {instrument_id: "nh4-1", kind: "NH4", model: "Thermo Orion",
+           measurement_range: [0, 1000], saturation_threshold: 950}
+      measurements:
+        - {measurement_id: "m0", instrument_id: "nh4-1", sample_id: "s1", value: 125.0,
+           unit: "mg/L", timestamp: "2026-08-01T10:00:00",
+           qc: {mean: 120.0, sd: 5.0}}
+      samples:
+        - {sample_id: "s1", collection_time: "2026-08-01T09:00:00"}
+    expect: {overall_passed: true, errors: []}
+
+  - id: CASE-04
+    category: missing
+    name: "缺 skill_version → 必须被拒绝"
+    requested_output_format: qc_report
+    drop_fields: ["skill_version"]
+    qc_input: {}
+    expect: {reject: true, code: "MICQ-E1001"}
+
+  - id: CASE-05
+    category: missing
+    name: "请求 qc_report 但无任何数据 → BLOCKED(逐字段指出缺失)"
+    requested_output_format: qc_report
+    qc_input: {}
+    expect: {overall_passed: false, errors_include: ["MICQ-E1001"]}
+
+  - id: CASE-06
+    category: conflict
+    name: "标定标准单位混合 M / mM → MICQ-E1003"
+    requested_output_format: qc_report
+    qc_input:
+      calibrations:
+        - {calibration_id: "cal-1", instrument_id: "EC-1", method: "linear", status: "passed",
+           standards: [{concentration: 1.0, response: 100.0, unit: "M"},
+                       {concentration: 2.0, response: 200.0, unit: "mM"}]}
+    expect: {overall_passed: false, errors_include: ["MICQ-E1003"]}
+
+  - id: CASE-07
+    category: conflict
+    name: "样品编号重复 → DUPLICATE_ID + 分析限制"
+    requested_output_format: qc_report
+    qc_input:
+      samples:
+        - {sample_id: "S-1", collection_time: "2026-08-01T09:00:00"}
+        - {sample_id: "S-1", collection_time: "2026-08-01T09:00:00"}
+      measurements:
+        - {measurement_id: "m0", instrument_id: "pH-1", sample_id: "S-1", value: 7.0,
+           unit: "pH", timestamp: "2026-08-01T10:00:00"}
+    expect: {overall_passed: false, sample_flags_include: ["DUPLICATE_ID"]}
+
+  - id: CASE-08
+    category: conflict
+    name: "时间戳错位(测量早于采集)→ TIMESTAMP_MISALIGNMENT"
+    requested_output_format: qc_report
+    qc_input:
+      samples:
+        - {sample_id: "s1", collection_time: "2026-08-01T09:00:00"}
+      measurements:
+        - {measurement_id: "m0", instrument_id: "pH-1", sample_id: "s1", value: 7.0,
+           unit: "pH", timestamp: "2026-08-01T08:30:00"}
+    expect: {overall_passed: false, sample_flags_include: ["TIMESTAMP_MISALIGNMENT"]}
+
+  - id: CASE-09
+    category: adversarial
+    name: "伪造不可解析的 evidence_refs → MICQ-E1002"
+    requested_output_format: qc_report
+    data_refs: ["/no/such/file.csv"]
+    qc_input:
+      instruments:
+        - {instrument_id: "pH-1", kind: "pH", model: "x"}
+    expect: {overall_passed: false, errors_include: ["MICQ-E1002"]}
+
+  - id: CASE-10
+    category: adversarial
+    name: "NaN 测量值 → 拒绝而非 SUCCESS"
+    requested_output_format: qc_report
+    qc_input:
+      instruments:
+        - {instrument_id: "pH-1", kind: "pH", model: "x"}
+      measurements:
+        - {measurement_id: "m0", instrument_id: "pH-1", sample_id: "s1", value: null,
+           unit: "pH", timestamp: "2026-08-01T10:00:00"}
+    expect: {overall_passed: false, errors_include: ["MICQ-E1001"]}
+
+  - id: CASE-11
+    category: boundary
+    name: "版本不兼容 → MICQ-E1010"
+    requested_output_format: qc_report
+    skill_version: "0.9.0"
+    qc_input: {}
+    expect: {reject: true, code: "MICQ-E1010"}
+
+  - id: CASE-12
+    category: normal
+    name: "完整性:原始数据哈希 + 审计日志追加"
+    requested_output_format: integrity_report
+    qc_input:
+      raw:
+        - {sample: "s1", value: 7.02}
+    integrity: {append_audit: true}
+    expect: {overall_passed: true, errors: []}

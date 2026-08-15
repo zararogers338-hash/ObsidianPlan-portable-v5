@@ -1,0 +1,36 @@
+{
+  "task_id": "boot-01",
+  "project_id": "panshi-bootstrap",
+  "request": "自举审查：对 micp-evidence-synthesizer 的定量合并方法学主张做对抗审查",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T13:00:00Z",
+  "constraints": {"state_gate": "VALIDATED"},
+  "targets": [
+    {
+      "id": "MES-1",
+      "type": "model",
+      "summary": "meta_analyze.can_pool: 当 I2 <= 75% 且研究数 >= 2 时允许定量合并（随机效应需 >=3 研究，2 研究用固定效应）",
+      "location": "skills/micp-evidence-synthesizer/SKILL.md §5.6",
+      "epistemic_label": "RECOMMENDATION",
+      "status_support": "VALIDATED",
+      "model": {
+        "name": "can_pool",
+        "required_boundary_conditions": ["I2 threshold", "min studies"],
+        "boundary_conditions": ["I2 <= 75%", "n >= 2"],
+        "data_split": {"same_rows": false},
+        "validation_domain": {"scale": "meta-analytic"},
+        "claimed_domain": {"scale": "meta-analytic"}
+      }
+    },
+    {
+      "id": "MES-2",
+      "type": "conclusion",
+      "summary": "证据分级采用 GRADE 式五域，降级于偏倚/不一致/间接/不精确；但未明确要求报告样本量与功效对'不精确'域的作用",
+      "location": "skills/micp-evidence-synthesizer/SKILL.md §5.9",
+      "epistemic_label": "RECOMMENDATION",
+      "status_support": "VALIDATED",
+      "claims": ["I2<=75% 即视为可合并", "2 研究固定效应合并合理", "GRADE 不精确域不要求样本量证据"]
+    }
+  ]
+}

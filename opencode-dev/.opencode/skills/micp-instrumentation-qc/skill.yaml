@@ -1,0 +1,154 @@
+schema_version: 1.0
+name: micp-instrumentation-qc
+display_name: "MICP Instrumentation QC | 仪器、标定、采样链与质量控制"
+version: 1.0.0
+license: MIT
+description: "QC planning, calibration curves, measurement uncertainty, control-chart / drift detection, sample-chain & barcode management, raw-data integrity and audit logging for MICP instruments and water-chemistry measurements in the Obsidian Plan / Panshi research project. Panshi-governed, controller-invoked."
+kind: research_qc
+governance:
+  constitution: panshi-constitution
+  controller: obsidian-controller
+  self_invokes_other_skills: false
+  human_approval_gate: enforced
+  raw_data_immutable: true
+compatibility:
+  opencode:
+    min: 1.18
+  python:
+    min: 3.10
+  runtimes:
+    - python3
+  offline: true
+  os:
+    - windows
+    - linux
+    - macos
+dependencies:
+  - "toolset_version: 1.0.0"
+permissions:
+  network: false
+  filesystem_write: false
+  long_term_memory_write: false
+  external_commands: false
+entry_points:
+  cli:
+    command: python
+    args:
+      - tools/cli.py
+  qc:
+    command: python
+    args:
+      - tools/cli.py
+      - qc
+  calibration:
+    command: python
+    args:
+      - tools/cli.py
+      - calibration
+  control:
+    command: python
+    args:
+      - tools/cli.py
+      - control
+  sample_chain:
+    command: python
+    args:
+      - tools/cli.py
+      - sample-chain
+  integrity:
+    command: python
+    args:
+      - tools/cli.py
+      - integrity
+  adapters:
+    command: python
+    args:
+      - tools/cli.py
+      - adapters
+schemas:
+  input: schemas/input.schema.json
+  output: schemas/output.schema.json
+capabilities:
+  - qc
+  - calibration
+  - uncertainty
+  - control_chart
+  - drift_detection
+  - sample_chain
+  - data_integrity
+  - unit_normalization
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - skill_version
+  - controller_version
+  - timestamp
+outputs:
+  - qc_report
+  - qc_plan
+  - integrity_report
+  - calibration_report
+units:
+  concentration: "mol/L, mg/L, mmol/L"
+  ph: pH units
+  ec: "S/m, µS/cm, mS/cm"
+  od: "absorbance, dimensionless"
+  enzyme: "U/L, U/g, µmol/min/mL"
+  force: "N, kN"
+  stress: "kPa, MPa"
+  flow: "mL/min, L/h"
+  pressure: "Pa, kPa, bar"
+  mass: "g, mg"
+  time: ISO-8601 timestamp
+stop_conditions:
+  - 输出通过 output.schema.json 自检后停止
+  - 任一硬门控失败即返回 BLOCKED/FAILED 并停止
+  - 无能力覆盖返回 NEED_ADDITIONAL_SKILL 并停止
+  - 高风险/数据写入待批准返回 HUMAN_APPROVAL_REQUIRED 并停止
+compatible_controller: ">=1.0.0"
+risk_tier: medium
+cost_estimate:
+  tokens: 2500
+  usd: 0.02
+version_policy:
+  major: "Breaking contract changes: removing or renaming required input/output fields, changing the status enum, renumbering error codes, changing a tool's exit-code contract."
+  minor: "Additive contract changes: new optional fields, new enum values, new tools, new optional schema keywords. Old documents remain valid."
+  patch: Implementation fixes that preserve every contract exactly (no schema/field/exit-code change).
+  migration:
+    - "When the controller sees an artifact carrying a provenance.skill_version whose MAJOR differs from the installed skill's MAJOR, it MUST NOT feed it straight into analysis; it either requests regeneration under the new contract or applies the documented conversion in CHANGELOG.md (v2 migration notes, when they exist)."
+    - "When MAJOR matches but MINOR differs, older documents remain valid (additive-only contract); downstream may proceed."
+  rejection: E_VERSION_MISMATCH (MICQ-E1010) is reported in provenance and errors; the request is not fabricated around.
+evaluation:
+  indicators:
+    - name: structured_output_pass_rate
+      min_threshold: 0.95
+      unit: ratio
+      measurement: evals/run_evals.py — every case output validates against output.schema.json
+    - name: tool_invocation_rate
+      min_threshold: 1
+      unit: ratio
+      measurement: every SUCCESS case must invoke the real tool pipeline (never a mock)
+    - name: evidence_traceability_rate
+      min_threshold: 0.9
+      unit: ratio
+      measurement: every evidence_used.ref_id exists in input evidence_refs/data_refs
+    - name: missing_input_detection_rate
+      min_threshold: 1
+      unit: ratio
+      measurement: cases with missing required fields must return BLOCKED with missing_inputs
+    - name: adversarial_interception_rate
+      min_threshold: 1
+      unit: ratio
+      measurement: "adversarial cases (drift bait, duplicate barcodes, timestamp misalignment, raw overwrite) must be caught"
+    - name: repeat_run_consistency
+      min_threshold: 1
+      unit: ratio
+      measurement: "deterministic tools: two runs on identical input produce identical output (except timestamps)"
+    - name: mean_failure_recovery_time
+      min_threshold: 60
+      unit: seconds
+      measurement: "stdin-to-result wall time across all evals, worst case"
+dependencies_detail:
+  runtime: []
+  toolset_version: 1.0.0

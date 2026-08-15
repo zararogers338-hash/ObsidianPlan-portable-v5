@@ -1,0 +1,20 @@
+{
+  "task_id": "ex-01-basic-micp",
+  "project_id": "panshi-demo",
+  "request": "Optimize the uniformity of MICP-treated sand columns. Decompose this into research tasks covering literature, mechanism, experiment design, measurement, audit, and decision, including an ammonium fate / mass-balance task for the ureolytic pathway.",
+  "context": "Mission Lock: improve spatial uniformity of CaCO3 precipitation in 1m sand columns treated with Sporosarcina pasteurii and urea-CaCl2 cementation solution.",
+  "constraints": {"max_nodes": 12, "currency": "USD"},
+  "evidence_refs": [
+    {"ref_id": "whiffin2007", "kind": "paper", "locator": "https://doi.org/10.1080/01490450701436505"},
+    {"ref_id": "biogrout2011", "kind": "paper", "locator": "https://doi.org/10.1007/s11242-010-9691-8"}
+  ],
+  "data_refs": [
+    {"ref_id": "column-batch-01", "locator": "s3://panshi/columns/batch-01", "sensitivity": "sensitive"}
+  ],
+  "requested_output_format": "json",
+  "risk_level": "medium",
+  "human_approval_state": {"required": false, "granted": false},
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T10:00:00Z"
+}

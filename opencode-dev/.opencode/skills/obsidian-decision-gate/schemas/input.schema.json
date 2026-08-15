@@ -1,0 +1,372 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.dev/skills/obsidian-decision-gate/input.schema.json",
+  "title": "obsidian-decision-gate input contract",
+  "description": "Input envelope for the Obsidian Decision Gate. Consumes Mission Lock contract, Evidence Cards, synthesis, Hypothesis Cards, experiment/model/QC results, geotechnical/scale-up, biosafety/environment audit, LCA, reproducibility, red-team findings, and human-approval state. contract_version 1.0.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "task_id",
+    "project_id",
+    "request",
+    "action",
+    "skill_version",
+    "timestamp",
+    "current_state",
+    "mission_lock"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": { "type": "string", "pattern": "^1\\.\\d+$" },
+    "task_id": { "type": "string", "minLength": 1 },
+    "project_id": { "type": "string", "minLength": 1 },
+    "request": { "type": "string", "minLength": 1 },
+    "action": {
+      "type": "string",
+      "enum": ["gate.evaluate", "evidence.maturity", "mission.check", "memo.generate", "transition.request", "expiry.review", "compare", "mcda", "risk.matrix", "validate"]
+    },
+    "skill_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "context": { "type": ["object", "null"], "additionalProperties": true },
+    "current_state": {
+      "type": "string",
+      "enum": ["REJECTED", "OPEN", "EVIDENCE_GATHERING", "SUPPORTED", "VALIDATED", "PILOT_READY", "DEPLOYABLE", "SUSPENDED", "EXPIRED"]
+    },
+    "proposed_state": {
+      "type": ["string", "null"],
+      "enum": ["REJECTED", "OPEN", "EVIDENCE_GATHERING", "SUPPORTED", "VALIDATED", "PILOT_READY", "DEPLOYABLE", "SUSPENDED", "EXPIRED", null],
+      "description": "Optional target state. When absent, the engine proposes the legal lowest-level target consistent with the evidence (pick-next mode)."
+    },
+    "mission_lock": { "$ref": "#/$defs/mission_lock" },
+    "evidence_cards": { "type": "array", "items": { "$ref": "#/$defs/evidence_card" }, "description": "Evidence Cards from micp-evidence-extractor / literature-scout." },
+    "synthesis": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/synthesis" }], "description": "Evidence-synthesis conclusion (micp-evidence-synthesizer)." },
+    "hypothesis_cards": { "type": "array", "items": { "$ref": "#/$defs/hypothesis_card" }, "description": "Hypothesis Cards from micp-hypothesis-forge." },
+    "experiment_results": { "type": "array", "items": { "$ref": "#/$defs/experiment_result" }, "description": "Experimental results incl. QC, statistics, geotechnical performance." },
+    "model_results": { "$ref": "#/$defs/model_results" },
+    "scaleup_plan": { "$ref": "#/$defs/scaleup_plan" },
+    "environment_audit": { "$ref": "#/$defs/audit_result", "description": "Biosafety & environmental audit." },
+    "lca": { "$ref": "#/$defs/audit_result", "description": "LCA and techno-economic assessment." },
+    "reproducibility": { "$ref": "#/$defs/reproducibility" },
+    "red_team_report": { "$ref": "#/$defs/red_team_report" },
+    "regulatory_status": { "$ref": "#/$defs/regulatory_status" },
+    "human_approval_state": { "$ref": "#/$defs/human_approval_state" },
+    "review_expiry": { "type": ["string", "null"], "format": "date-time", "description": "Current conclusion's review-by horizon." },
+    "failure_thresholds_triggered": { "type": "array", "items": { "type": "string" }, "description": "Mission failure thresholds already triggered (as declared by upstream evidence)." },
+    "dimension_overrides": { "type": ["object", "null"], "additionalProperties": true, "description": "Optional per-dimension scores/weights overriding inference." },
+    "history": { "type": "array", "items": { "$ref": "#/$defs/history_entry" }, "description": "Prior decision memos for drift/regression comparison." }
+  },
+  "$defs": {
+    "mission_lock": {
+      "type": "object",
+      "required": ["task_id", "contract_version", "title", "mission_type", "objectives", "metrics", "success_criteria", "failure_thresholds", "human_approval_gates", "decision_use"],
+      "additionalProperties": true,
+      "properties": {
+        "task_id": { "type": "string", "minLength": 1 },
+        "contract_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "title": { "type": "string", "minLength": 1 },
+        "mission_type": { "type": "string", "enum": ["research", "engineering", "decision", "mixed"] },
+        "objectives": { "type": "array", "items": { "type": "object" } },
+        "primary_objective_id": { "type": "string" },
+        "secondary_objective_ids": { "type": "array", "items": { "type": "string" } },
+        "explicit_exclusions": { "type": "array", "items": { "type": "string" } },
+        "metrics": { "type": "array", "items": { "$ref": "#/$defs/metric" } },
+        "success_criteria": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "failure_thresholds": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "stop_conditions": { "type": "array", "items": { "type": "string" } },
+        "human_approval_gates": { "type": "array", "items": { "type": "string" } },
+        "stakeholders": { "type": "array", "items": { "type": "string" } },
+        "decision_use": { "type": "string", "minLength": 1 },
+        "statements": { "type": "array", "items": { "type": "object" } },
+        "assumptions": { "type": "array", "items": { "type": "string" } },
+        "unknowns": { "type": "array", "items": { "type": "string" } },
+        "risks": { "type": "array", "items": { "type": "string" } },
+        "evidence_gaps": { "type": "array", "items": { "type": "string" } },
+        "domain_tags": { "type": "array", "items": { "type": "string" } },
+        "spatial_scale": { "type": "string" },
+        "temporal_scale": { "type": "string" }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "required": ["name", "direction"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "direction": { "type": "string", "enum": ["maximize", "minimize", "maintain", "report"] },
+        "unit": { "type": "string" },
+        "current": { "$ref": "#/$defs/number_value" },
+        "target": { "$ref": "#/$defs/number_value" },
+        "threshold": { "$ref": "#/$defs/number_value" }
+      }
+    },
+    "number_value": {
+      "type": "object",
+      "required": ["value", "unit"],
+      "additionalProperties": false,
+      "properties": {
+        "value": { "type": "number" },
+        "unit": { "type": "string", "minLength": 1 },
+        "error_bars": { "type": "number" }
+      }
+    },
+    "evidence_card": {
+      "type": "object",
+      "required": ["ref_id", "source", "label", "verifiable"],
+      "additionalProperties": false,
+      "properties": {
+        "ref_id": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"] },
+        "verifiable": { "type": "boolean", "description": "Source can be resolved and integrity-checked." },
+        "sha256": { "type": "string", "description": "Content hash when available (integrity check)." },
+        "retracted": { "type": "boolean", "default": false },
+        "outcome": { "type": "string" },
+        "value": { "type": ["number", "null"] },
+        "unit": { "type": "string" },
+        "study_type": { "type": "string" },
+        "n": { "type": ["integer", "null"] },
+        "scale": { "type": "string", "description": "e.g. lab: 38mm cylinder / pilot / field." },
+        "risk_of_bias": { "type": ["string", "null"] },
+        "evidence_level": { "type": ["string", "null"], "enum": ["high", "moderate", "low", "very_low", "insufficient", null] }
+      }
+    },
+    "synthesis": {
+      "type": "object",
+      "required": ["conclusions", "gaps"],
+      "additionalProperties": true,
+      "properties": {
+        "conclusions": { "type": "array", "items": { "$ref": "#/$defs/conclusion" } },
+        "gaps": { "type": "array", "items": { "type": "object" } },
+        "comparability_check": { "type": "object" },
+        "conflict_matrix": { "type": "array", "items": { "type": "object" } },
+        "synthesis_method": { "type": "string" },
+        "grade": { "type": "object", "properties": { "certainty": { "type": "string", "enum": ["high", "moderate", "low", "very_low"] } } }
+      }
+    },
+    "conclusion": {
+      "type": "object",
+      "required": ["id", "statement", "label", "evidence_level", "scope"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "statement": { "type": "string" },
+        "label": { "type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"] },
+        "evidence_level": { "type": "string", "enum": ["high", "moderate", "low", "very_low", "insufficient"] },
+        "scope": { "type": "string" },
+        "counterexample": { "type": "string" },
+        "open_questions": { "type": "array", "items": { "type": "string" } },
+        "conditions": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "hypothesis_card": {
+      "type": "object",
+      "required": ["id", "kind", "statement", "mechanism_chain", "prediction_direction", "observables", "refutation", "time_scale", "scope", "epistemic_label"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "const": "hypothesis_card" },
+        "role": { "type": "string", "enum": ["main", "competing_1", "competing_2"] },
+        "statement": { "type": "string", "minLength": 10 },
+        "premise": { "type": "string" },
+        "mechanism_chain": { "type": "array", "items": { "type": "string" } },
+        "prediction_direction": { "type": "string", "enum": ["increase", "decrease", "no_change", "non_monotonic", "null"] },
+        "observables": { "type": "array", "items": { "type": "string" } },
+        "refutation": { "type": "string" },
+        "time_scale": { "type": "string" },
+        "scope": { "type": "string" },
+        "epistemic_label": { "type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"] },
+        "status": { "type": "string", "enum": ["PROPOSED", "SUPPORTED", "CONTESTED", "REFUTED", "SUPERSEDED"] },
+        "evidence_for": { "type": "array", "items": { "type": "object" } },
+        "evidence_against": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "experiment_result": {
+      "type": "object",
+      "required": ["id", "kind", "status", "scale"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "description": "e.g. strength_test / ammonia_emission / qc / statistics / transport / geotechnical." },
+        "status": { "type": "string", "enum": ["completed", "partial", "failed", "invalid"] },
+        "scale": { "type": "string", "description": "scale ladder: lab / bench / pilot / field." },
+        "outcomes": { "type": "array", "items": { "$ref": "#/$defs/outcome" } },
+        "has_control": { "type": "boolean", "description": "Key control arm present." },
+        "controls": { "type": "array", "items": { "type": "string" } },
+        "n": { "type": ["integer", "null"] },
+        "sampling_units": { "type": ["integer", "null"] },
+        "qc_passed": { "type": "boolean" },
+        "mass_balance": { "$ref": "#/$defs/mass_balance" },
+        "statistics": { "$ref": "#/$defs/statistics" }
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "required": ["name", "value", "unit"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "value": { "type": ["number", "null"] },
+        "unit": { "type": "string" },
+        "threshold": { "type": ["number", "null"], "description": "Engineering threshold for this outcome." },
+        "direction": { "type": "string", "enum": ["maximize", "minimize", "maintain"] },
+        "status": { "type": "string", "enum": ["met", "not_met", "n/a", "unknown"] }
+      }
+    },
+    "mass_balance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "closure_error_percent": { "type": ["number", "null"] },
+        "tolerance_percent": { "type": ["number", "null"] },
+        "closed": { "type": "boolean" }
+      }
+    },
+    "statistics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "n": { "type": ["integer", "null"] },
+        "p_value": { "type": ["number", "null"] },
+        "effect_size": { "type": ["number", "null"] },
+        "ci95": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+        "power": { "type": ["number", "null"] },
+        "normality_checked": { "type": "boolean" },
+        "independent_units": { "type": ["integer", "null"] }
+      }
+    },
+    "model_results": {
+      "type": "object",
+      "required": ["name", "fitted", "external_validation"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "fitted": { "type": "boolean" },
+        "external_validation": { "type": "boolean", "description": "Validated on independent/hold-out data." },
+        "metrics": { "type": "object", "additionalProperties": true },
+        "extrapolation_scale": { "type": "string", "description": "e.g. lab->field." },
+        "known_limits": { "type": "array", "items": { "type": "string" } },
+        "validation_note": { "type": "string" }
+      }
+    },
+    "scaleup_plan": {
+      "type": "object",
+      "required": ["stages", "monitoring_plan", "rollback_plan"],
+      "additionalProperties": false,
+      "properties": {
+        "stages": { "type": "array", "items": { "$ref": "#/$defs/scale_stage" }, "minItems": 1 },
+        "monitoring_plan": { "type": "string", "description": "What is monitored, how, at what frequency." },
+        "shutdown_conditions": { "type": "array", "items": { "type": "string" } },
+        "rollback_plan": { "type": "string", "description": "How to revert if the pilot goes wrong." },
+        "environmental_controls": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "scale_stage": {
+      "type": "object",
+      "required": ["scale", "objective", "duration"],
+      "additionalProperties": false,
+      "properties": {
+        "scale": { "type": "string", "enum": ["lab", "bench", "pilot", "field"] },
+        "objective": { "type": "string" },
+        "duration": { "type": "string" },
+        "capacity": { "type": "string" },
+        "success_criteria": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "audit_result": {
+      "type": "object",
+      "required": ["status", "findings"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "type": "string", "enum": ["cleared", "conditional", "open", "not_run", "expired"] },
+        "findings": { "type": "array", "items": { "$ref": "#/$defs/audit_finding" } },
+        "note": { "type": "string" }
+      }
+    },
+    "audit_finding": {
+      "type": "object",
+      "required": ["id", "severity", "status", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "severity": { "type": "string", "enum": ["high", "medium", "low"] },
+        "status": { "type": "string", "enum": ["open", "mitigated", "closed", "waived"] },
+        "description": { "type": "string" },
+        "remediation": { "type": "string" }
+      }
+    },
+    "reproducibility": {
+      "type": "object",
+      "required": ["reproducible", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "reproducible": { "type": "boolean" },
+        "evidence": { "type": "string", "description": "How reproducibility was demonstrated (archived data+code, repeated run, etc.)." },
+        "data_archived": { "type": "boolean" },
+        "code_archived": { "type": "boolean" },
+        "versioned": { "type": "boolean" }
+      }
+    },
+    "red_team_report": {
+      "type": "object",
+      "required": ["status", "findings"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "type": "string", "enum": ["passed", "failed", "conditional", "not_run"] },
+        "findings": { "type": "array", "items": { "$ref": "#/$defs/red_team_finding" } }
+      }
+    },
+    "red_team_finding": {
+      "type": "object",
+      "required": ["id", "severity", "title", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "severity": { "type": "string", "enum": ["BLOCKING", "HIGH", "MEDIUM", "LOW", "INFO"] },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "resolution": { "type": "string", "enum": ["unresolved", "resolved", "accepted_risk", "n/a"] },
+        "note": { "type": "string" }
+      }
+    },
+    "regulatory_status": {
+      "type": "object",
+      "required": ["verified", "current"],
+      "additionalProperties": false,
+      "properties": {
+        "verified": { "type": "boolean" },
+        "current": { "type": "boolean", "description": "Regulations/survey current as of now; false when expired." },
+        "jurisdiction": { "type": "string" },
+        "permit_required": { "type": "boolean" },
+        "permit_status": { "type": "string", "enum": ["not_required", "granted", "pending", "denied", "unknown"] },
+        "reviewed_at": { "type": ["string", "null"], "format": "date-time" },
+        "expires_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "human_approval_state": {
+      "type": "object",
+      "required": ["granted", "scope", "revision", "granted_at"],
+      "additionalProperties": false,
+      "properties": {
+        "granted": { "type": "boolean" },
+        "scope": { "type": "string", "description": "State/action the approval covers, e.g. DEPLOYABLE." },
+        "revision": { "type": ["integer", "null"], "description": "Stream revision the approval was granted against." },
+        "granted_at": { "type": ["string", "null"], "format": "date-time" },
+        "by": { "type": ["string", "null"] },
+        "expires_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "history_entry": {
+      "type": "object",
+      "required": ["recorded_at", "decision", "current_state", "proposed_state", "gate_results", "blocking_items"],
+      "additionalProperties": false,
+      "properties": {
+        "recorded_at": { "type": "string", "format": "date-time" },
+        "decision": { "type": "string" },
+        "current_state": { "type": "string" },
+        "proposed_state": { "type": ["string", "null"] },
+        "gate_results": { "type": "object" },
+        "blocking_items": { "type": "array", "items": { "type": "object" } }
+      }
+    }
+  }
+}

@@ -1,0 +1,252 @@
+suite:
+  name: micp-modeling-optimizer-evals
+  contract_version: "1.0"
+
+base:
+  contract_version: "1.0"
+  task_id: "eval"
+  project_id: "evals-project"
+  request: "eval suite case"
+  action: null
+  skill_version: "1.0.0"
+  controller_version: "obsidian-ctl-0.1.0"
+  timestamp: "2026-08-07T00:00:00Z"
+  risk_level: "low"
+  human_approval_state: "not_required"
+
+# Expectation keys are interpreted by evals/run_evals.py:
+#   status            output status must equal this
+#   error_code        errors[0].code must contain this
+#   schema_ok         output must pass output.schema.json
+#   field_gt / field_lt  numeric comparison on a dotted output path
+#   field_nonempty    dotted path must exist and be non-empty
+#   ident_verdict     identifiability.verdict must be one of these
+#   theta_close       calibration.theta[i] within 20% of this value
+#   runs_gt           doe_report.n_runs must be > this
+
+cases:
+  # --- normal -------------------------------------------------------------
+  - id: eval-01
+    description: "Normal: solve a ureolysis/precipitation model; conservation must pass."
+    action: solve
+    extra:
+      model_specification:
+        purpose: EXPLANATION
+        model_kind: ode
+        state_variables: ["urea", "ca", "nh4", "biomass", "calcite"]
+        parameters:
+          - {name: k_ure, role: literature_prior, value: 1e-4, unit: "1/s"}
+          - {name: k_pre, role: literature_prior, value: 1e-4, unit: "1/s"}
+        equations:
+          kind: ode
+          ureolysis: michaelis_menten
+          precipitation: first_order_min
+        initial_conditions: {urea0: 500, ca0: 500, biomass0: 1.0, phi0: 0.4, t_end: 86400}
+        observations: ["urea", "nh4", "caco3"]
+        error_model: additive_gaussian
+        space_scale: lab_column
+        time_scale: days
+      constraints: {random_seed: 42}
+    expect:
+      status: SUCCESS
+      schema_ok: true
+      conservation_ok: true
+
+  - id: eval-02
+    description: "Normal: synthetic-data parameter inversion recovers k_ure."
+    action: fit
+    extra:
+      model_specification:
+        purpose: PARAMETER_INFERENCE
+        model_kind: ode
+        state_variables: ["urea", "ca", "nh4", "biomass", "calcite"]
+        parameters:
+          - {name: k_ure, role: calibration, value: 1e-4, unit: "1/s", bounds: [1e-6, 1e-2]}
+          - {name: k_pre, role: calibration, value: 1e-4, unit: "1/s", bounds: [1e-6, 1e-2]}
+        equations: {kind: ode, ureolysis: michaelis_menten, precipitation: first_order_min}
+        initial_conditions: {urea0: 500, ca0: 500, biomass0: 1.0, phi0: 0.4}
+        observations: ["urea", "nh4", "caco3"]
+        error_model: additive_gaussian
+        space_scale: lab_column
+        time_scale: days
+      calibration:
+        model: kinetic_urea
+        data:
+          - {t: 6912, urea: 499.57, caco3: 0.011}
+          - {t: 13824, urea: 499.14, caco3: 0.038}
+          - {t: 20736, urea: 498.71, caco3: 0.074}
+          - {t: 27648, urea: 498.28, caco3: 0.113}
+          - {t: 34560, urea: 497.86, caco3: 0.154}
+          - {t: 41472, urea: 497.43, caco3: 0.196}
+          - {t: 48384, urea: 497.00, caco3: 0.239}
+          - {t: 55296, urea: 496.57, caco3: 0.282}
+          - {t: 62208, urea: 496.14, caco3: 0.324}
+          - {t: 69120, urea: 495.71, caco3: 0.367}
+          - {t: 76032, urea: 495.29, caco3: 0.410}
+          - {t: 86400, urea: 494.67, caco3: 0.472}
+        parameters:
+          - {name: k_ure, value: 1e-4, bounds: [1e-6, 1e-2]}
+          - {name: k_pre, value: 1e-4, bounds: [1e-6, 1e-2]}
+      constraints: {random_seed: 42, n_starts: 2}
+    expect:
+      status: SUCCESS
+      schema_ok: true
+      theta_close: 1e-4
+
+  - id: eval-03
+    description: "Normal: multi-objective NSGA-II returns a Pareto front with knee."
+    action: multiobjective
+    extra:
+      model_specification:
+        purpose: OPTIMIZATION
+        model_kind: ode
+        state_variables: ["urea", "ca", "nh4", "biomass", "calcite"]
+        parameters:
+          - {name: k_ure, role: literature_prior, value: 1e-4, unit: "1/s"}
+          - {name: k_pre, role: literature_prior, value: 1e-4, unit: "1/s"}
+        equations: {kind: ode, ureolysis: michaelis_menten, precipitation: first_order_min}
+        initial_conditions: {urea0: 500, ca0: 500, biomass0: 1.0, phi0: 0.4}
+        observations: ["urea", "nh4", "caco3"]
+        error_model: additive_gaussian
+        space_scale: lab_column
+        time_scale: days
+      optimization:
+        mode: multi
+        variables: [{name: k_ure}, {name: k_pre}]
+        bounds: [[1e-5, 5e-4], [1e-5, 5e-4]]
+        objectives:
+          - {name: max_caco3, target: {output: caco3_kg}, maximize: true}
+          - {name: min_ammonia, target: {output: ammonia_release}, maximize: false}
+      constraints: {random_seed: 7, pop_size: 16, n_gen: 12}
+    expect:
+      status: SUCCESS
+      schema_ok: true
+      front_min: 2
+      knee_present: true
+
+  # --- missing / blocked ---------------------------------------------------
+  - id: eval-04
+    description: "Missing: model_specification absent -> MODEL_BLOCKED with field guidance."
+    action: solve
+    extra:
+      model_specification: {}
+    expect:
+      status: BLOCKED
+      error_code: MMO-E102
+      missing_inputs: true
+
+  - id: eval-05
+    description: "Missing: spatial model without boundary conditions -> MODEL_BLOCKED."
+    action: solve
+    extra:
+      model_specification:
+        purpose: PREDICTION
+        model_kind: reactive_transport
+        state_variables: ["urea"]
+        parameters: [{name: k_ure, role: fixed, value: 1e-4, unit: "1/s"}]
+        equations: {kind: reactive_transport, ureolysis: michaelis_menten}
+        initial_conditions: {urea0: 500}
+        observations: ["urea"]
+        error_model: additive_gaussian
+        space_scale: lab_column
+        time_scale: days
+    expect:
+      status: BLOCKED
+      error_code: MMO-E102
+      missing_boundary: true
+
+  - id: eval-06
+    description: "Adversarial: unknown action must be blocked (MMO-E103)."
+    action: teleport
+    extra: {}
+    expect:
+      status: BLOCKED
+      error_code: MMO-E103
+
+  - id: eval-07
+    description: "Adversarial: same-data PREDICTION fit must not be presented as validated."
+    action: fit
+    extra:
+      model_specification:
+        purpose: PREDICTION
+        model_kind: ode
+        state_variables: ["urea", "ca", "nh4", "biomass", "calcite"]
+        parameters:
+          - {name: k_ure, role: calibration, value: 1e-4, unit: "1/s", bounds: [1e-6, 1e-2]}
+        equations: {kind: ode, ureolysis: michaelis_menten, precipitation: first_order_min}
+        initial_conditions: {urea0: 500, ca0: 500, biomass0: 1.0, phi0: 0.4}
+        observations: ["urea", "nh4", "caco3"]
+        error_model: additive_gaussian
+        space_scale: lab_column
+        time_scale: days
+        validation_data: "the same training data (not allowed)"
+      calibration:
+        model: kinetic_urea
+        data:
+          - {t: 6912, urea: 499.57}
+          - {t: 13824, urea: 499.14}
+          - {t: 20736, urea: 498.71}
+          - {t: 27648, urea: 498.28}
+          - {t: 34560, urea: 497.86}
+          - {t: 41472, urea: 497.43}
+          - {t: 48384, urea: 497.00}
+          - {t: 55296, urea: 496.57}
+        parameters:
+          - {name: k_ure, value: 1e-4, bounds: [1e-6, 1e-2]}
+      constraints: {random_seed: 42, n_starts: 1}
+    expect:
+      status: BLOCKED
+      error_code: MMO-E104
+
+  - id: eval-08
+    description: "Adversarial: bad contract version must be blocked."
+    action: validate
+    extra:
+      contract_version: "9.0"
+    expect:
+      status: BLOCKED
+      error_code: MMO-E801
+
+  - id: eval-09
+    description: "Boundary: DOE Box-Behnken for 3 factors has exactly 15 runs."
+    action: doe
+    extra:
+      model_specification: {}
+      doe:
+        factors:
+          - {name: urea, low: 200, high: 800}
+          - {name: ca, low: 200, high: 800}
+          - {name: k_ure, low: 1e-5, high: 1e-3}
+        kind: box_behnken
+      constraints: {random_seed: 3}
+    expect:
+      status: SUCCESS
+      runs_eq: 15
+
+  - id: eval-10
+    description: "Boundary: sensitivity Sobol' indices are in [0,1]."
+    action: sensitivity
+    extra:
+      model_specification:
+        purpose: PARAMETER_INFERENCE
+        model_kind: ode
+        state_variables: ["urea", "ca", "nh4", "biomass", "calcite"]
+        parameters:
+          - {name: k_ure, role: literature_prior, value: 1e-4, unit: "1/s"}
+          - {name: k_pre, role: literature_prior, value: 1e-4, unit: "1/s"}
+        equations: {kind: ode, ureolysis: michaelis_menten, precipitation: first_order_min}
+        initial_conditions: {urea0: 500, ca0: 500, biomass0: 1.0, phi0: 0.4}
+        observations: ["urea", "nh4", "caco3"]
+        error_model: additive_gaussian
+        space_scale: lab_column
+        time_scale: days
+      sensitivity:
+        parameters: ["k_ure", "k_pre"]
+        bounds: [[1e-5, 3e-4], [1e-5, 3e-4]]
+        target: caco3_kg
+        method: sobol
+        n_base: 150
+      constraints: {random_seed: 1}
+    expect:
+      status: SUCCESS
+      sobol_in_range: true

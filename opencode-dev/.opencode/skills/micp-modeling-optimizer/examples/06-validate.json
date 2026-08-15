@@ -1,0 +1,26 @@
+{
+  "contract_version": "1.0",
+  "task_id": "MMO-EX-06",
+  "project_id": "P-MICP-OPT-01",
+  "request": "校验本载荷满足输入契约（dry-run，不计算）",
+  "action": "validate",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "model_specification": {
+    "purpose": "EXPLANATION",
+    "state_variables": ["urea", "ca"],
+    "parameters": [
+      {"name": "k_ure", "role": "literature_prior", "value": 1e-4, "unit": "1/s"}
+    ],
+    "equations": {"kind": "ode"},
+    "initial_conditions": {"urea0": 500},
+    "observations": ["urea"],
+    "error_model": "additive_gaussian",
+    "space_scale": "lab_column",
+    "time_scale": "days"
+  },
+  "constraints": {"random_seed": 0},
+  "risk_level": "low",
+  "human_approval_state": "not_required"
+}

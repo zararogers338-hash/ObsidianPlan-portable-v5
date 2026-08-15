@@ -1,0 +1,50 @@
+{
+  "$schema": "https://obsidian.dev/manifest.schema.json",
+  "name": "micp-biosafety-environment-auditor",
+  "title": "MICP 生物安全与环境风险审计器",
+  "version": "1.0.0",
+  "contract_version": "1.0.0",
+  "layer": "panshi-governed-capability",
+  "license": "MIT",
+  "compatibility": {
+    "opencode": ">=1.18",
+    "runtime": "bun >=1.3",
+    "python": ">=3.11",
+    "node": ">=18"
+  },
+  "entrypoint": "tools/mbs_auditor.py",
+  "discovery": {
+    "format": "SKILL.md",
+    "locations": ["skills/", ".opencode/skills/", ".claude/skills/", ".agents/skills/"]
+  },
+  "inputs": {
+    "schema": "schemas/input.schema.json",
+    "reference": "https://obsidian.dev/skills/micp-biosafety-environment-auditor/input.schema.json"
+  },
+  "outputs": {
+    "schema": "schemas/output.schema.json",
+    "statuses": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+  },
+  "errors": ["MBS-E101", "MBS-E102", "MBS-E201", "MBS-E202", "MBS-E203", "MBS-E204", "MBS-E205", "MBS-E301", "MBS-E302", "MBS-E303", "MBS-E401", "MBS-E402", "MBS-E501", "MBS-E502", "MBS-E601", "MBS-E602", "MBS-E701", "MBS-E702", "MBS-E801", "MBS-E802"],
+  "tools": [
+    { "name": "audit", "entrypoint": "tools/mbs_auditor.py", "subcommand": "audit", "purpose": "Full biosafety & environmental audit of a MICP sand-column/field plan: hazards, nitrogen balance, waste streams, regulatory context, monitoring, control, residual risk, approval gates, stop conditions, emergency actions" },
+    { "name": "mass-balance", "entrypoint": "tools/mbs_auditor.py", "subcommand": "mass_balance", "purpose": "Urea -> total-N -> NH4+ -> NH3 nitrogen mass balance with conservation gating (MBS-E301)" },
+    { "name": "nh3-speciation", "entrypoint": "tools/mbs_auditor.py", "subcommand": "nh3_speciation", "purpose": "Free NH3 fraction/concentration vs pH, temperature, ionic strength (Davies + Bates-Pinching)" },
+    { "name": "waste-loading", "entrypoint": "tools/mbs_auditor.py", "subcommand": "waste_loading", "purpose": "Waste-stream volume & NH4-N/NH3-N/total-N pollution loading" },
+    { "name": "strain-verify", "entrypoint": "tools/mbs_auditor.py", "subcommand": "strain_verify", "purpose": "Strain identity verification + biosafety classification; never defaults a common MICP strain to safe" },
+    { "name": "regulatory-lookup", "entrypoint": "tools/mbs_auditor.py", "subcommand": "regulatory_lookup", "purpose": "Verified local regulation/limit lookup; failure marks REGULATORY_VERIFICATION_REQUIRED, never fabricates" },
+    { "name": "risk-matrix", "entrypoint": "tools/mbs_auditor.py", "subcommand": "risk_matrix", "purpose": "5x5 likelihood x severity risk matrix (LOW/MODERATE/HIGH/CRITICAL)" },
+    { "name": "monitoring", "entrypoint": "tools/mbs_auditor.py", "subcommand": "monitoring", "purpose": "Monitoring thresholds, alarm rules, stop-condition evaluation" },
+    { "name": "treatment-compare", "entrypoint": "tools/mbs_auditor.py", "subcommand": "treatment_compare", "purpose": "Waste-treatment option comparison; high-residual-NH3 routes never greenlit" },
+    { "name": "sampling-plan", "entrypoint": "tools/mbs_auditor.py", "subcommand": "sampling_plan", "purpose": "Environmental sampling plan (effluent/groundwater/soil/air) template" },
+    { "name": "emergency", "entrypoint": "tools/mbs_auditor.py", "subcommand": "emergency", "purpose": "Emergency-response checklist generation from site profile + alarms" },
+    { "name": "permit-check", "entrypoint": "tools/mbs_auditor.py", "subcommand": "permit_check", "purpose": "Permit/approval status checker; missing approvals force HUMAN_APPROVAL_REQUIRED" }
+  ],
+  "permissions": {
+    "read": "project files (read-only)",
+    "write": "none",
+    "requires_approval": ["field deployment", "environmental release", "groundwater injection", "wastewater discharge", "confined-space entry", "network access", "invoking other skills"]
+  },
+  "offline": true,
+  "deterministic": true
+}

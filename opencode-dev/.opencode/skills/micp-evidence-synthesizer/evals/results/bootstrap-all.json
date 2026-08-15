@@ -1,0 +1,47 @@
+{
+  "skill": "micp-evidence-synthesizer",
+  "skill_version": "1.0.0",
+  "date": "2026-08-06",
+  "harness": "real CLI invocation (python tools/mes_cli.py < example.json)",
+  "scenarios": {
+    "S1_caco3_similar_content": {
+      "status": "SUCCESS",
+      "passed": true,
+      "claims_checked": "crystal location differs (contact vs pore) between cards"
+    },
+    "S2_ucs_scale_nonmerge": {
+      "status": "PARTIAL",
+      "passed": true,
+      "comparability": "conditional"
+    },
+    "S3_high_bias_sensitivity": {
+      "status": "PARTIAL",
+      "passed": true,
+      "runs": [
+        {
+          "excluded": [
+            "doi:10.1000/highbias"
+          ],
+          "delta": -4.0533
+        },
+        {
+          "excluded": [
+            "doi:10.1000/study1"
+          ],
+          "delta": 4.563
+        },
+        {
+          "excluded": [
+            "doi:10.1000/study2"
+          ],
+          "delta": 3.8612
+        }
+      ]
+    },
+    "S4_self_attack": {
+      "self_check_passed": true,
+      "conclusions_scoped": true,
+      "passed": true
+    }
+  }
+}

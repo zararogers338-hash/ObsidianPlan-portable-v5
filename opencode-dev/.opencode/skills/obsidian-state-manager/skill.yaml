@@ -1,0 +1,40 @@
+name: obsidian-state-manager
+display_name: Obsidian State Manager｜工程循环状态机与长期恢复
+version: 1.0.1
+description: "Maintain Obsidian Plan research lifecycle state as a governed state machine with event-sourced, auditable history: create/transition/rollback streams, register evidence and hypotheses, checkpoint and resume long tasks, watch for staleness and contradiction, and gate long-term knowledge writes on human approval."
+contract_version: 1.0
+entry:
+  cli: tools/state_manager.py
+  mode: stdin_stdout
+dependencies:
+  - "runtime: python3 (>= 3.10)"
+  - "libs: jsonschema>=4.0"
+  - "libs: pyyaml"
+  - "libs: pytest"
+  - "network: none"
+permissions:
+  filesystem:
+    - "write: {store}/**"
+  approvals_required:
+    - memory.promote
+    - evidence.attach tier=verified_knowledge
+    - state.rollback
+    - "transition VALIDATED->DEPLOYABLE"
+    - "transition REJECTED->OPEN"
+  dry_run: true
+compatibility:
+  opencode_loader: "discovery pattern {skill,skills}/**/SKILL.md; frontmatter name+description (verified in packages/opencode/src/skill/index.ts)"
+  contract_major: 1
+  schema_breaking_bump: major
+  optional_field_bump: minor
+  implementation_fix_bump: patch
+  migrate_or_reject: Outputs written under an older major contract are either migrated by an explicit migration step or rejected with OSM-E802; never silently reinterpreted.
+maintainer: Panshi / Obsidian Plan
+license: MIT (project convention; repo root LICENSE)
+dependencies_detail:
+  runtime: "python3 (>= 3.10)"
+  libs:
+    - "jsonschema>=4.0"
+    - pyyaml
+    - pytest
+  network: none

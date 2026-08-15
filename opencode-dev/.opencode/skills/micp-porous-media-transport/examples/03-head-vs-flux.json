@@ -1,0 +1,34 @@
+{
+  "contract_version": "1.0",
+  "task_id": "example-head-vs-flux",
+  "project_id": "micp-bc-comparison-03",
+  "request": "Compare constant-head vs constant-flux boundary: which treatment keeps injection flowing longer?",
+  "action": "analyze",
+  "skill_version": "1.0.0",
+  "controller_version": "1.0.0",
+  "timestamp": "2026-08-06T10:00:00Z",
+  "scenario": {
+    "geometry": {
+      "length": { "value": 0.1, "unit": "m" },
+      "nx": 32
+    },
+    "porosity": { "value": 0.40, "unit": "-" },
+    "permeability": { "value": 1e-11, "unit": "m2" },
+    "flow": {
+      "mode": "head",
+      "p_in": { "value": 3000, "unit": "Pa" },
+      "p_out": { "value": 0, "unit": "Pa" }
+    },
+    "species": {
+      "c_urea_in": { "value": 500, "unit": "mol/m3" },
+      "c_ca_in": { "value": 500, "unit": "mol/m3" },
+      "c_biomass": { "value": 10, "unit": "kg/m3" }
+    },
+    "scale": "column"
+  },
+  "k_ure": 0.1,
+  "k_pre": 0.05,
+  "k_half": 10,
+  "t_end": 36000,
+  "risk_level": "medium"
+}

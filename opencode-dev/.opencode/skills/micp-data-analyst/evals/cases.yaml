@@ -1,0 +1,344 @@
+# Evaluation cases — micp-data-analyst
+
+Offline, deterministic evaluation of the tool pipeline and the skill contract.
+Each case defines a JSON input and the checks that must hold after running it
+through the service. The runner (`run_evals.py`) is pure stdlib, needs no
+network, and reports the minimum performance indicators declared in
+`skill.yaml`.
+
+Indicator → measurement mapping:
+
+| Indicator | Where measured |
+|---|---|
+| `structured_output_pass_rate` | every SUCCESS/PARTIAL case's output validates against `schemas/output.schema.json` |
+| `tool_invocation_rate` | per case, the set of tools actually invoked (runner calls the real CLI for each) |
+| `evidence_traceability_rate` | every `evidence_used.ref_id` in SUCCESS outputs exists in input refs |
+| `missing_input_detection_rate` | cases with missing required fields must yield `BLOCKED` with `missing_inputs` |
+| `adversarial_interception_rate` | adversarial cases (pseudo-replication, unit conflict, fabricated refs, non-finite) must be caught |
+| `repeat_run_consistency` | each case run twice; byte-identical output required |
+| `mean_failure_recovery_time` | wall time per case (stdin→result); reported as max and mean |
+
+Cases are grouped:
+
+- `positive` — normal, well-formed requests.
+- `conflict` — contradictory constraints or evidence.
+- `adversarial` — inputs engineered to break the analysis contract.
+- `boundary` — degenerate but valid input shapes (including missing).
+
+---
+
+## 1. positive/micp-ucs-pseudo-replication
+
+Pseudo-replicated UCS data (2 columns × 3 heights per treatment). The service
+must detect pseudo-replication, aggregate to the specimen unit for the group
+effect, report mean ± CI, and pass self-check.
+
+```json
+{
+  "task_id": "eval-01",
+  "project_id": "panshi-demo",
+  "request": "Analyze UCS strength across treatments, detect pseudo-replication, report statistics and uniformity.",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:00:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "data_columns": [
+    {"name": "specimen", "role": "id", "data_type": "string", "sampling_unit": "column"},
+    {"name": "treatment", "role": "treatment", "data_type": "string"},
+    {"name": "position", "role": "position", "data_type": "string"},
+    {"name": "ucs", "role": "response", "data_type": "number", "unit": "MPa"}
+  ],
+  "samples": [
+    {"specimen": "A1", "treatment": "ctrl", "position": "top", "ucs": 1.0},
+    {"specimen": "A1", "treatment": "ctrl", "position": "mid", "ucs": 1.1},
+    {"specimen": "A1", "treatment": "ctrl", "position": "bot", "ucs": 1.2},
+    {"specimen": "A2", "treatment": "ctrl", "position": "top", "ucs": 1.3},
+    {"specimen": "A2", "treatment": "ctrl", "position": "mid", "ucs": 1.4},
+    {"specimen": "A2", "treatment": "ctrl", "position": "bot", "ucs": 1.5},
+    {"specimen": "B1", "treatment": "micp", "position": "top", "ucs": 3.0},
+    {"specimen": "B1", "treatment": "micp", "position": "mid", "ucs": 3.4},
+    {"specimen": "B1", "treatment": "micp", "position": "bot", "ucs": 3.8},
+    {"specimen": "B2", "treatment": "micp", "position": "top", "ucs": 3.2},
+    {"specimen": "B2", "treatment": "micp", "position": "mid", "ucs": 3.5},
+    {"specimen": "B2", "treatment": "micp", "position": "bot", "ucs": 3.9}
+  ]
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - `validation.self_audit_pass is true`
+  - `pseudo_replication.detected is true` and `effective_n == 4`
+  - `statistics.group_comparison.unit_aggregated is true`
+  - `statistics.variables.ucs.ci.ci_lower < ci_upper` (finite CI)
+  - every `findings[].epistemic_tag` is a valid tag
+
+## 2. positive/significant-but-tiny-effect
+
+Statistically significant (large n, small spread) but engineering-negligible
+difference. The service must report effect size + CI and the power estimate,
+not just a p-value.
+
+```json
+{
+  "task_id": "eval-02",
+  "project_id": "panshi-demo",
+  "request": "Compare UCS between two treatments; report effect size, CI, and power.",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:05:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "data_columns": [
+    {"name": "specimen", "role": "id", "data_type": "string", "sampling_unit": "column"},
+    {"name": "treatment", "role": "treatment", "data_type": "string"},
+    {"name": "ucs", "role": "response", "data_type": "number", "unit": "MPa"}
+  ],
+  "samples": [
+    {"specimen": "A1", "treatment": "ctrl", "ucs": 10.0},
+    {"specimen": "A2", "treatment": "ctrl", "ucs": 10.1},
+    {"specimen": "A3", "treatment": "ctrl", "ucs": 10.0},
+    {"specimen": "A4", "treatment": "ctrl", "ucs": 9.9},
+    {"specimen": "A5", "treatment": "ctrl", "ucs": 10.0},
+    {"specimen": "B1", "treatment": "micp", "ucs": 10.2},
+    {"specimen": "B2", "treatment": "micp", "ucs": 10.3},
+    {"specimen": "B3", "treatment": "micp", "ucs": 10.1},
+    {"specimen": "B4", "treatment": "micp", "ucs": 10.2},
+    {"specimen": "B5", "treatment": "micp", "ucs": 10.2}
+  ]
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - `statistics.group_comparison.effect_size` present with `cohens_d` and `ci_lower_95 <= ci_upper_95`
+  - a finding explicitly reports effect size magnitude (magnitude in `small`..`negligible`)
+  - `statistics.group_comparison.power_est.power` is present
+
+## 3. positive/ureolysis-ammonium-time
+
+Ureolysis ammonium data over time. The service must not claim ureolysis
+chemistry; it analyzes the curve and keeps the mass-balance guardrail in view
+(no fabricated NH₄ stoichiometry as OBSERVED).
+
+```json
+{
+  "task_id": "eval-03",
+  "project_id": "panshi-demo",
+  "request": "Describe ammonium concentration over time and report CI; check monotonic time.",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:10:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "data_columns": [
+    {"name": "hour", "role": "time", "data_type": "number", "unit": "h"},
+    {"name": "nh4", "role": "response", "data_type": "number", "unit": "g/L"}
+  ],
+  "samples": [
+    {"hour": 0, "nh4": 0.1}, {"hour": 2, "nh4": 0.4},
+    {"hour": 4, "nh4": 0.9}, {"hour": 6, "nh4": 1.5},
+    {"hour": 8, "nh4": 2.1}, {"hour": 10, "nh4": 2.6},
+    {"hour": 12, "nh4": 2.9}, {"hour": 24, "nh4": 3.4}
+  ]
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - no finding tags the ureolysis stoichiometry as OBSERVED; no fabricated
+    stoichiometry claim at all
+  - `statistics.variables.nh4` present with descriptive + CI
+  - `data_quality.issues` may note time monotonicity; analysis is not blocked
+
+## 4. conflict/unit-inconsistency
+
+Two response columns with incompatible dimensions must be flagged.
+
+```json
+{
+  "task_id": "eval-04",
+  "project_id": "panshi-demo",
+  "request": "Report descriptive statistics for both response columns.",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:15:00Z",
+  "risk_level": "low",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "data_columns": [
+    {"name": "s", "role": "id", "data_type": "string"},
+    {"name": "strength", "role": "response", "data_type": "number", "unit": "MPa"},
+    {"name": "k", "role": "response", "data_type": "number", "unit": "m/s"}
+  ],
+  "samples": [
+    {"s": "x", "strength": 2.0, "k": 1e-6},
+    {"s": "y", "strength": 3.0, "k": 2e-6}
+  ]
+}
+```
+
+checks:
+  - `status in (SUCCESS, PARTIAL)` — analysis continues but the conflict is surfaced
+  - `data_quality.issues` contains a `UNIT_DIMENSION_CONFLICT` or the service
+    notes incompatibility in findings/risks
+  - no unit-confused numeric claim (strength reported in MPa, k in m/s)
+
+## 5. adversarial/fabricated-evidence-ref
+
+A plan cites an evidence ref that was never provided. The output must not
+fabricate it.
+
+```json
+{
+  "task_id": "eval-05",
+  "project_id": "panshi-demo",
+  "request": "Compare two treatment groups' permeability and cite the basis.",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:20:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "data_columns": [
+    {"name": "s", "role": "id", "data_type": "string", "sampling_unit": "column"},
+    {"name": "treatment", "role": "treatment", "data_type": "string"},
+    {"name": "k", "role": "response", "data_type": "number", "unit": "m/s"}
+  ],
+  "samples": [
+    {"s": "a", "treatment": "ctrl", "k": 1e-6},
+    {"s": "b", "treatment": "ctrl", "k": 2e-6},
+    {"s": "c", "treatment": "micp", "k": 5e-7},
+    {"s": "d", "treatment": "micp", "k": 6e-7}
+  ],
+  "evidence_refs": []
+}
+```
+
+checks:
+  - every `evidence_used.ref_id` in the output exists in input `evidence_refs`
+  - no fabricated citation: `evidence_used` must be empty (no refs provided)
+
+## 6. adversarial/non-finite-value
+
+NaN in a numeric column must not silently pass.
+
+```json
+{
+  "task_id": "eval-06",
+  "project_id": "panshi-demo",
+  "request": "Statistics on this permeability data.",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:25:00Z",
+  "risk_level": "low",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "data_columns": [
+    {"name": "s", "role": "id", "data_type": "string"},
+    {"name": "k", "role": "response", "data_type": "number", "unit": "m/s"}
+  ],
+  "samples": [
+    {"s": "a", "k": 1e-6},
+    {"s": "b", "k": "NaN"},
+    {"s": "c", "k": 2e-6}
+  ]
+}
+```
+
+checks:
+  - non-finite values are dropped (not silently kept) OR the tool returns a
+    clean error envelope — never a NaN propagating into statistics
+  - if `status == SUCCESS`, `statistics.variables.k.descriptive` has no NaN and
+    the CI is finite
+
+## 7. boundary/missing-samples
+
+Statistics requested but no data. Must yield `BLOCKED` with per-field
+`missing_inputs`.
+
+```json
+{
+  "task_id": "eval-07",
+  "project_id": "panshi-demo",
+  "request": "Run statistical inference on the MICP strength data.",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:30:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json"
+}
+```
+
+checks:
+  - `status == BLOCKED`
+  - `missing_inputs` names `samples` (or `data_refs`) with `why_critical` and `how_to_obtain`
+  - `errors[0].code in (MDA-E101, MDA-E102)`
+
+## 8. boundary/request-without-deliverable
+
+A vague request with no deliverable must be blocked, not guessed.
+
+```json
+{
+  "task_id": "eval-08",
+  "project_id": "panshi-demo",
+  "request": "?",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:35:00Z",
+  "risk_level": "low",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json"
+}
+```
+
+checks:
+  - `status == BLOCKED`
+  - `missing_inputs` names `request` (too short / no deliverable)
+
+## 9. boundary/malformed-envelope
+
+The tools themselves must never crash on hostile input.
+
+```json
+{ "op": "descriptive", "values": [1, 2, "NaN"] }
+```
+
+checks:
+  - `stats` returns a clean error envelope (`E_NUMERIC_NON_FINITE`) or drops
+    the non-finite with a report — never a traceback on stdout
+  - empty stdin returns `E_INPUT_EMPTY`
+
+## 10. adversarial/pseudo-replication-without-columns
+
+Rows repeat a specimen id but no `data_columns` were provided — must block.
+
+```json
+{
+  "task_id": "eval-10",
+  "project_id": "panshi-demo",
+  "request": "Analyze these values with pseudo-replication awareness.",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:40:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "samples": [
+    {"specimen": "A1", "ucs": 1.0}, {"specimen": "A1", "ucs": 1.1},
+    {"specimen": "A1", "ucs": 1.2}, {"specimen": "B1", "ucs": 3.0},
+    {"specimen": "B1", "ucs": 3.4}, {"specimen": "B1", "ucs": 3.8}
+  ]
+}
+```
+
+checks:
+  - `status == BLOCKED`
+  - `missing_inputs` names `data_columns` (the variable dictionary is required
+    to interpret and to detect pseudo-replication)

@@ -1,0 +1,231 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-biology-reasoner/input.schema.json",
+  "title": "micp-biology-reasoner input contract",
+  "description": "Unified skill input envelope (Obsidian Plan spec §六) plus biology-domain payloads. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "task_id", "project_id", "request", "action", "skill_version", "timestamp"],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "SemVer-ish contract version. Runtime checks the major: 1.x accepted, 2.x rejected with MBR-E801."
+    },
+    "task_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "project_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "request": {"type": "string", "minLength": 1, "description": "Natural-language task statement (spec §六)."},
+    "action": {
+      "type": "string",
+      "enum": [
+        "analyze",
+        "compare",
+        "assess",
+        "convert",
+        "evaluate"
+      ]
+    },
+    "context": {"type": "object", "description": "Controller-supplied working context (ephemeral tier)."},
+    "constraints": {"type": "array", "items": {"type": "string"}},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "data_refs": {"type": "array", "items": {"type": "string"}},
+    "upstream_outputs": {"type": "array", "items": {"type": "object"}},
+    "requested_output_format": {"type": "string", "enum": ["json", "summary", "table"], "default": "json"},
+    "risk_level": {"type": "string", "enum": ["low", "medium", "high", "critical"], "default": "low"},
+    "human_approval_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["granted"],
+      "properties": {
+        "granted": {"type": "boolean"},
+        "approver": {"type": "string"},
+        "revision": {"type": "integer", "minimum": 0},
+        "scope": {"type": "string"}
+      }
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role"],
+      "properties": {
+        "role": {"type": "string", "enum": ["controller", "skill", "human", "auditor"]},
+        "id": {"type": "string"}
+      },
+      "default": {"role": "skill"}
+    },
+    "skill_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "controller_version": {"type": "string"},
+    "timestamp": {"type": "string", "description": "ISO-8601 caller timestamp."},
+
+    "dry_run": {"type": "boolean", "default": false,
+                "description": "Validate + simulate only; never mutates anything."},
+
+    "strain": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Microbial strain description (analyze/compare/assess).",
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "description": "Isolation origin, culture collection, deposit, or provenance chain."},
+        "culture_collection_id": {"type": "string"}
+      }
+    },
+    "culture": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Culture/cultivation data (analyze/compare/assess).",
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "description": "Batch/sample identifier."},
+        "media": {"type": "string"},
+        "name": {"type": "string", "minLength": 1, "description": "Strain name (e.g. 'Sporosarcina pasteurii'); required for strain-specific assessments."},
+        "medium_components": {"type": "object", "additionalProperties": true},
+        "temperature": {"type": "number", "description": "Celsius, actual culture temperature."},
+        "salinity": {"type": "number", "description": "g/L NaCl-equivalent."},
+        "ph": {"type": "number", "description": "Culture pH (not cementation solution pH)."},
+        "growth_phase": {"type": "string", "enum": ["lag", "early_exponential", "mid_exponential", "late_exponential", "stationary", "death"]},
+        "incubation_time_h": {"type": "number", "minimum": 0},
+        "aeration": {"type": "string"},
+        "od600": {"type": "number", "minimum": 0, "description": "Optical density at 600 nm (biomass proxy, NOT activity)."},
+        "cfu_per_ml": {"type": "number", "minimum": 0, "description": "Colony-forming units per mL."},
+        "dry_weight_g_per_l": {"type": "number", "minimum": 0, "description": "Cell dry weight per liter."},
+        "viable_fraction": {"type": "number", "minimum": 0, "maximum": 1, "description": "Fraction of viable cells, 0..1."},
+        "urease_activity": {"type": "number", "description": "Numerical activity value (with urease_activity_unit)."},
+        "urease_activity_unit": {"type": "string",
+          "description": "Unit of urease activity. MUST carry explicit unit — OD600 is never a proxy. Examples: 'U/ml', 'mM urea/min', 'mM urea/min/OD600', 'U/g CDW'."},
+        "non_ureolytic_pathway": {
+          "type": "string",
+          "enum": ["none", "denitrification", "methane_oxidation", "sulfur_reduction", "carbon_anhydrase", "other"],
+          "description": "If set (not 'none'), urea-hydrolysis models must NOT be applied (MBR-E205)."
+        }
+      }
+    },
+    "conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Environmental/treatment conditions (assess/analyze).",
+      "properties": {
+        "temperature": {"type": "number", "description": "Celsius."},
+        "salinity": {"type": "number", "description": "g/L NaCl-equivalent."},
+        "ph": {"type": "number", "description": "Environment pH."},
+        "nutrient_limitation": {"type": "array", "items": {"type": "string"}},
+        "storage": {"type": "string", "description": "Storage conditions (cryopreservation, temperature, protectant)."},
+        "measured_at_salinity": {"type": "boolean", "default": false,
+          "description": "Whether growth/urease activity were directly measured at the stated salinity (upgrades evidence to OBSERVED)."}
+      }
+    },
+    "attachments": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Attachment / retention / filtration context (analyze/assess).",
+      "properties": {
+        "injection_volume_l": {"type": "number", "minimum": 0},
+        "pore_volume_injected": {"type": "number", "minimum": 0},
+        "retention": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "time_points_h": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2},
+            "retained_fraction": {"type": "array", "items": {"type": "number", "minimum": 0, "maximum": 1}, "minItems": 2},
+            "retention_rate_per_h": {"type": "number", "description": "First-order retention rate constant (1/h), if known."},
+            "filtration_retention": {"type": "boolean", "description": "Whether physical filtration/straining retention is considered."}
+          }
+        },
+        "inactivation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "time_points_h": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 2},
+            "viable_fraction": {"type": "array", "items": {"type": "number", "minimum": 0, "maximum": 1}, "minItems": 2},
+            "inactivation_rate_per_h": {"type": "number", "description": "First-order inactivation rate constant (1/h), if known."}
+          }
+        }
+      }
+    },
+    "treatment": {
+      "type": "string",
+      "enum": ["bioaugmentation", "biostimulation", "indigenous", "mixed_community", "other", "none"],
+      "description": "Treatment/injection strategy (spec §四.4). 'indigenous' + 'biostimulation' are distinct."
+    },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Reference/comparison data for compare actions.",
+      "properties": {
+        "id": {"type": "string"},
+        "name": {"type": "string"},
+        "culture": {"$ref": "#/properties/culture"}
+      }
+    },
+    "metric_query": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "convert/evaluate action parameters.",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["specific_urease_activity", "activity_normalization", "cell_concentration", "retention_rate", "inactivation_rate", "sensitivity", "urease_mass_balance", "other"]
+        },
+        "from_value": {"type": "number"},
+        "from_unit": {"type": "string"},
+        "to_unit": {"type": "string"},
+        "denominator": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Biomass denominator for specific-activity normalization.",
+          "properties": {
+            "value": {"type": "number", "minimum": 0},
+            "kind": {"type": "string", "enum": ["od600", "cdw_g_per_l", "cfu_per_ml", "ml"]}
+          }
+        },
+        "calibration": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Explicit OD600->CFU/mL linear calibration (slope in CFU/mL per OD unit).",
+          "properties": {
+            "slope": {"type": "number"},
+            "intercept": {"type": "number"},
+            "note": {"type": "string"}
+          }
+        },
+        "urea_consumed_mM": {"type": "number", "minimum": 0},
+        "sensitivity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "parameter": {"type": "string"},
+            "base_value": {"type": "number"},
+            "range_pct": {"type": "number"},
+            "linear_scale": {"type": "number", "default": 1.0,
+              "description": "Scalar placeholder model output coefficient for local elasticity estimation."}
+          }
+        }
+      }
+    },
+    "suggest_skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill", "reason"],
+        "properties": {"skill": {"type": "string"}, "reason": {"type": "string"},
+                       "inputs_needed": {"type": "array", "items": {"type": "string"}}}
+      }
+    },
+    "records": {
+      "type": "array",
+      "minItems": 1,
+      "description": "analyze (contradictory-data) input: biological measurement records for metric-conflation detection.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["metric", "value"],
+        "properties": {
+          "metric": {"type": "string", "minLength": 1},
+          "value": {},
+          "unit": {"type": ["string", "null"]},
+          "claim": {"type": "string"}
+        }
+      }
+    }
+  }
+}

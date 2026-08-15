@@ -1,0 +1,1 @@
+{"ts": "2026-08-06T16:54:40.840684+00:00", "project_id": "test-proj", "task_id": "test-task", "action": "doi.verify", "repro_id": "fcef3fb0f2a0d749", "data": [{"doi": "10.9999/fake.biocement.2024.00001", "resolved": false, "status": "suspected_forged", "evidence": "offline_rule", "reason": "reserved/unallocated registrar prefix 10.9999"}]}

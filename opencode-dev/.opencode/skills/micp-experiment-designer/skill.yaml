@@ -1,0 +1,69 @@
+name: micp-experiment-designer
+title: "MICP Experiment Designer | 可复现、可证伪的实验设计与 SOP"
+version: 1.0.0
+contract_version: 1.0.0
+layer: panshi-governed-capability
+license: MIT
+compatibility:
+  opencode: ">=1.18"
+  python: ">=3.10"
+  node: ">=18"
+description: "Reproducible, falsifiable experiment design and SOP (可复现、可证伪的实验设计与 SOP). Load when a Hypothesis Card or a vague research goal — especially MICP / biocementation / mineral-intelligence work under the Panshi research core — must become an executable experiment plan with controls, replication, statistical power, stop conditions, and a Standard Operating Procedure; when a design must be checked for missing controls or units before field execution; when a randomization allocation or preregistration draft must be produced. Do NOT load for answering domain science questions directly, for mission locking (use obsidian-mission-lock), for running experiments, or for analyzing finished data."
+entrypoint: tools/cli.py
+entry:
+  cli: tools/cli.py
+  mode: stdin_stdout
+inputs:
+  schema: schemas/input.schema.json
+outputs:
+  - "schema: schemas/output.schema.json"
+  - "statuses: SUCCESS"
+  - "statuses: PARTIAL"
+  - "statuses: BLOCKED"
+  - "statuses: FAILED"
+  - "statuses: NEED_ADDITIONAL_SKILL"
+  - "statuses: HUMAN_APPROVAL_REQUIRED"
+discovery:
+  format: SKILL.md
+  locations:
+    - .opencode/skills/
+    - .claude/skills/
+    - .agents/skills/
+    - skills/
+tools:
+  doe_power: "tools/doe_power.py — DOE & sample-size/power analysis: two-group t-test, two-proportion, ANOVA, finite-budget trade-off"
+  randomizer: "tools/randomizer.py — Reproducible randomization & experiment-number generation (complete/blocked, seeded)"
+  quantity_calc: "tools/quantity_calc.py — Reagent/material quantity & unit calculator with dimensional checks"
+  sop_check: "tools/sop_check.py — SOP generation & step-consistency checking (controls, replicates, endpoints, stopping rules)"
+  preregister: "tools/preregister.py — Preregistration summary & raw-data template generation"
+  validate: tools/validate.py — Validate JSON against bundled input/output schemas (self-check + pre-flight)
+errors:
+  - OED-E1001
+  - OED-E1002
+  - OED-E1003
+  - OED-E1004
+  - OED-E1005
+  - OED-E1006
+  - OED-E1007
+  - OED-E1008
+  - OED-E1009
+  - OED-E1010
+permissions:
+  read: project files (read-only)
+  write: audit/ directory only
+  approvals_required:
+    - network access
+    - external writes
+    - experiment execution
+    - invoking other skills
+offline: true
+deterministic: true
+outputs_detail:
+  schema: schemas/output.schema.json
+  statuses:
+    - SUCCESS
+    - PARTIAL
+    - BLOCKED
+    - FAILED
+    - NEED_ADDITIONAL_SKILL
+    - HUMAN_APPROVAL_REQUIRED

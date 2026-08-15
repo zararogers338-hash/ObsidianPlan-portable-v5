@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "obsidian-prompt-amplifier/output.schema.json",
+  "title": "obsidian-prompt-amplifier output",
+  "type": "object",
+  "required": ["contract_version", "task_id", "project_id", "skill", "skill_version", "status", "summary", "findings"],
+  "properties": {
+    "contract_version": { "type": "string" },
+    "task_id": { "type": "string" },
+    "project_id": { "type": "string" },
+    "skill": { "const": "obsidian-prompt-amplifier" },
+    "skill_version": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "AMPLIFICATION_ROUND_LIMIT", "INPUT_SCHEMA_INVALID", "CONSTITUTIONAL_CONFLICT", "HUMAN_APPROVAL_REQUIRED"]
+    },
+    "summary": { "type": "string" },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["classification", "complexity_score", "tiered_plan", "amplified_prompt", "max_rounds", "rounds_used", "acceptance_pending"],
+        "properties": {
+          "classification": { "type": "array", "items": { "type": "string" } },
+          "complexity_score": {
+            "type": "object",
+            "required": ["total", "subscores", "level"],
+            "properties": {
+              "total": { "type": "integer" },
+              "subscores": { "type": "object" },
+              "level": { "type": "string", "enum": ["LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4"] }
+            }
+          },
+          "agent_count_estimate": { "type": "string", "description": "宪法附录B子智能体规模区间,如 '3-5' / '6-10' / '11-17' / '18-24'" },
+          "tiered_plan": {
+            "type": "object",
+            "required": ["general_tier", "review_tier", "special_tier"],
+            "properties": {
+              "general_tier": { "type": "array", "items": { "type": "string" } },
+              "review_tier": { "type": "array", "items": { "type": "string" } },
+              "special_tier": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "decision_path": {
+            "type": "object",
+            "required": ["mode", "main_path", "output_types", "review_gates", "upgrade_triggers", "stop_conditions", "deposition"],
+            "properties": {
+              "mode": { "type": "string", "enum": ["FOCUSED_RESEARCH", "DEEP_RESEARCH", "FULL_RESEARCH_CYCLE", "OBSIDIAN_TOTAL_MOBILIZATION"] },
+              "main_path": { "type": "array", "items": { "type": "string" } },
+              "output_types": { "type": "array", "items": { "type": "string" } },
+              "review_gates": { "type": "array", "items": { "type": "string" } },
+              "upgrade_triggers": { "type": "array", "items": { "type": "object" } },
+              "stop_conditions": { "type": "array", "items": { "type": "string" } },
+              "deposition": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "amplified_prompt": { "type": "string" },
+          "max_rounds": { "type": "integer" },
+          "rounds_used": { "type": "integer" },
+          "constitutional_conflicts": { "type": "array", "items": { "type": "string" } },
+          "required_user_inputs": { "type": "array", "items": { "type": "string" } },
+          "acceptance_pending": { "type": "boolean" }
+        }
+      }
+    },
+    "assumptions": { "type": "array" },
+    "evidence_used": { "type": "array" },
+    "uncertainty": { "type": "array" },
+    "risks": { "type": "array" },
+    "artifacts": { "type": "array" },
+    "requested_next_skills": { "type": "array", "items": { "type": "string" } },
+    "validation": { "type": "object" },
+    "provenance": { "type": "object" },
+    "errors": { "type": "array" }
+  },
+  "additionalProperties": true
+}

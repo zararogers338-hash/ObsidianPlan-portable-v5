@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-literature-scout/input.schema.json",
+  "title": "micp-literature-scout input contract",
+  "description": "Unified skill input envelope (Obsidian Plan spec §六) plus literature-scout actions. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version", "task_id", "project_id", "request", "action",
+    "skill_version", "timestamp"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "SemVer-ish contract version. Runtime checks the major: 1.x accepted, 2.x rejected with MLS-E801."
+    },
+    "task_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "project_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9._-]{1,64}$",
+      "description": "Project/experiment id. Filesystem-safe by construction; also names the trace log."
+    },
+    "request": {"type": "string", "minLength": 1, "description": "Natural-language task statement (spec §六)."},
+    "action": {
+      "type": "string",
+      "enum": [
+        "search.run", "search.repeat", "doi.verify", "dedup.merge",
+        "triage.screen", "cite.export", "sources.register", "validate.self"
+      ]
+    },
+    "context": {"type": "object", "description": "Controller-supplied working context (ephemeral tier)."},
+    "constraints": {"type": "array", "items": {"type": "string"},
+                    "description": "Plain-text constraint list, e.g. ['time_range:2015-2026','language:en']."},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "data_refs": {"type": "array", "items": {"type": "string"}},
+    "upstream_outputs": {"type": "array", "items": {"type": "object"}},
+    "requested_output_format": {
+      "type": "string",
+      "enum": ["json", "findings", "report"],
+      "default": "json",
+      "description": "json = envelope only; findings = envelope + triaged findings; report = envelope + findings + repro + coverage report."
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "default": "medium"
+    },
+    "human_approval_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["granted"],
+      "properties": {
+        "granted": {"type": "boolean"},
+        "approver": {"type": "string"},
+        "revision": {"type": "integer", "minimum": 0},
+        "scope": {"type": "string"}
+      },
+      "description": "Required before search.run with network enabled, and for sources.register."
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role"],
+      "properties": {
+        "role": {"type": "string", "description": "Runtime-enforced: controller|skill|human|auditor (MLS-E503)."},
+        "id": {"type": "string"}
+      },
+      "default": {"role": "skill"}
+    },
+    "skill_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "controller_version": {"type": "string"},
+    "timestamp": {"type": "string", "description": "ISO-8601 caller timestamp."},
+    "dry_run": {"type": "boolean", "default": false,
+                "description": "Validate + simulate only; no network calls, no trace files written."},
+
+    "query": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text"],
+      "properties": {
+        "text": {"type": "string", "maxLength": 500, "description": "Search text; <3 chars is handled by the handler as BLOCKED + MLS-E102."},
+        "lang": {"type": "string", "default": "en", "maxLength": 16},
+        "database": {
+          "type": "string",
+          "enum": ["auto", "openalex", "crossref", "pubmed"],
+          "default": "auto"
+        },
+        "n": {"type": "integer", "minimum": 1, "maximum": 50, "default": 10}
+      },
+      "description": "search.run / search.repeat payload."
+    },
+    "candidate_dois": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "doi.verify payload: list of DOI strings (may include forged ones for rejection testing). Empty array is handled by the handler as BLOCKED + MLS-E102."
+    },
+    "claimed_metadata": {
+      "type": "object",
+      "description": "doi.verify optional: map of DOI → {title, year, container} claimed by the citing source, for consistency checking."
+    },
+    "records": {
+      "type": "array",
+      "items": {"type": "object"},
+      "description": "dedup.merge / triage.screen / sources.register payload: candidate records with doi/title/year/journal/venue/kind/scale."
+    },
+    "format": {
+      "type": "string",
+      "enum": ["bibtex", "csv", "json", "ris"],
+      "default": "bibtex",
+      "description": "cite.export output format."
+    },
+    "out_file": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "cite.export: where to write the export (default: stdout only)."
+    },
+    "expected_revision": {"type": "integer", "minimum": 0},
+    "reason": {"type": "string"},
+    "reference": {"type": "object", "description": "sources.register single reference (see references/sources.md conventions)."},
+    "trace_dir": {
+      "type": "string",
+      "description": "Override for the reproduction/trace log directory (default: <skill>/traces/)."
+    }
+  }
+}

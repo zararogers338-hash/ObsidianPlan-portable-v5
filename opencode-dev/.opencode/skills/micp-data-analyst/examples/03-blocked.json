@@ -1,0 +1,11 @@
+{
+  "task_id": "ex-03",
+  "project_id": "panshi-demo",
+  "request": "Analyze the ammonium breakthrough curve statistics.",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T13:00:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json"
+}

@@ -1,0 +1,51 @@
+{
+  "contract_version": "1.0",
+  "task_id": "MMO-EX-01",
+  "project_id": "P-MICP-COLUMN-01",
+  "request": "建立尿素水解与CaCO3沉淀动力学模型，求解三天内各物种时间历程并检查质量守恒",
+  "action": "solve",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "model_specification": {
+    "purpose": "EXPLANATION",
+    "model_kind": "ode",
+    "state_variables": ["urea", "ca", "nh4", "carbonate", "biomass", "calcite"],
+    "parameters": [
+      {"name": "k_ure", "role": "literature_prior", "value": 1e-4, "unit": "1/s",
+       "source": "Lauchnor et al. 2015 (whole-cell, scaled)"},
+      {"name": "k_pre", "role": "literature_prior", "value": 1e-4, "unit": "1/s",
+       "source": "OPM sibling solver convention"},
+      {"name": "k_half", "role": "literature_prior", "value": 305.0, "unit": "mol/m3",
+       "source": "Lauchnor et al. 2015, K_m=305 mmol/L"},
+      {"name": "kd", "role": "literature_prior", "value": 1e-7, "unit": "1/s",
+       "source": "Hommel et al. 2015 first-order decay"}
+    ],
+    "parameter_sources": [
+      {"parameter": "k_ure", "source": "Lauchnor et al. 2015 (whole-cell ureolysis)"},
+      {"parameter": "k_pre", "source": "Palandri & Kharaka 2004 / simplified limiting-reactant"},
+      {"parameter": "k_half", "source": "Lauchnor et al. 2015 K_m=305 mmol/L"},
+      {"parameter": "kd", "source": "Hommel et al. 2015 first-order biomass decay"}
+    ],
+    "equations": {
+      "kind": "ode",
+      "ureolysis": "dU/dt = -k_ure*B*U/(K_half+U)",
+      "precipitation": "r_pre = k_pre*min(Ca, CO3); Ca+CO3 -> CaCO3(s)",
+      "decay": "dB/dt = -kd*B",
+      "porosity_permeability": "phi = phi0 - M/rho; K/K0 = (phi/phi0)^3*((1-phi0)/(1-phi))^2"
+    },
+    "initial_conditions": {"urea0": 500, "ca0": 500, "biomass0": 1.0, "phi0": 0.4, "t_end": 259200},
+    "observations": ["urea", "nh4", "caco3"],
+    "error_model": "additive_gaussian",
+    "space_scale": "lab_column",
+    "time_scale": "days",
+    "numerical_method": "implicit_euler_closed_form",
+    "assumptions": ["biomass constant except first-order decay", "well-mixed batch", "no transport"],
+    "applicability": "batch lab column; not valid for field-scale advection",
+    "validation_data": "none (explanatory model)",
+    "failure_conditions": ["urea<0 or Ca<0", "porosity below 0.001"]
+  },
+  "constraints": {"random_seed": 42},
+  "risk_level": "low",
+  "human_approval_state": "not_required"
+}

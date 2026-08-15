@@ -1,0 +1,47 @@
+{
+  "all_pass": true,
+  "tests": {
+    "01-sand-column": {
+      "ok": true,
+      "n_per_group": 29,
+      "sop_pass": true,
+      "notes": "设计同时含速率与均匀性双端点,并设阴性对照以判别竞争假设"
+    },
+    "02-remove-control": {
+      "ok": true,
+      "blocking_issues": [
+        "negative_control",
+        "data_exclusion",
+        "stop_condition",
+        "safety",
+        "ammonium_accounting"
+      ]
+    },
+    "03-budget": {
+      "ok": true,
+      "n_per_group": 8,
+      "power_at_n": 0.2983241746055919,
+      "tradeoffs": [
+        {
+          "loss": "power",
+          "achievable_power": 0.2983,
+          "needed_n_for_power80": 26,
+          "note": "sample budget is binding; keep the effect size or lower power explicitly"
+        },
+        {
+          "loss": "effect_size",
+          "minimal_detectable_effect": 1.5063,
+          "note": "with this budget you can only reliably detect effects >= MDE at power 0.80"
+        }
+      ],
+      "notes": "不伪造满足 0.80 功效的样本量;明确报告可达功效与取舍"
+    },
+    "04-paper-execute": {
+      "ok": true,
+      "step_count": 8,
+      "ambiguous_steps": [],
+      "revised_pass": true,
+      "notes": "所有步骤带 STEP-ID 与动作描述;过短的 detail 列为待修订项"
+    }
+  }
+}

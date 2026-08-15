@@ -1,0 +1,100 @@
+{
+  "task_id": "T-EX1",
+  "project_id": "PRJ-DEMO-UCS",
+  "request": "比较 MICP 处理砂与未处理砂的 UCS 强度提升,评估离散性、空间均匀性与工程显著性(目标强度 1000 kPa)。",
+  "skill_version": "1.0.0",
+  "controller_version": "1.0.0",
+  "timestamp": "2026-08-06T10:00:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "approved",
+  "constraints": {
+    "significance_level": 0.05,
+    "engineering_thresholds": { "target": 1000 }
+  },
+  "samples": [
+    {
+      "specimen_id": "T1",
+      "test_type": "ucs",
+      "test_standard": "ASTM D2166",
+      "group": "treated",
+      "dimensions": { "diameter": 38, "height": 76, "unit": "mm" },
+      "density": 1.78,
+      "density_unit": "g/cm3",
+      "saturation": 100,
+      "loading_rate": 1.0,
+      "loading_rate_unit": "mm/min",
+      "caCO3_content": 12.5,
+      "treatment": "MICP, Sporosarcina pasteurii, 0.5 M urea + 0.5 M CaCl2, 6 injections",
+      "data_points": [
+        { "strain": 0.0, "stress": 0, "stress_unit": "MPa" },
+        { "strain": 0.5, "stress": 0.4, "stress_unit": "MPa" },
+        { "strain": 1.0, "stress": 0.9, "stress_unit": "MPa" },
+        { "strain": 1.5, "stress": 1.5, "stress_unit": "MPa" },
+        { "strain": 2.0, "stress": 2.1, "stress_unit": "MPa" },
+        { "strain": 2.5, "stress": 2.6, "stress_unit": "MPa" },
+        { "strain": 3.0, "stress": 3.0, "stress_unit": "MPa" },
+        { "strain": 3.5, "stress": 3.1, "stress_unit": "MPa" },
+        { "strain": 4.0, "stress": 2.9, "stress_unit": "MPa" },
+        { "strain": 5.0, "stress": 2.4, "stress_unit": "MPa" }
+      ]
+    },
+    {
+      "specimen_id": "T2",
+      "test_type": "ucs",
+      "test_standard": "ASTM D2166",
+      "group": "treated",
+      "dimensions": { "diameter": 38, "height": 76, "unit": "mm" },
+      "density": 1.79,
+      "density_unit": "g/cm3",
+      "saturation": 100,
+      "caCO3_content": 13.0,
+      "data_points": [
+        { "strain": 0.0, "stress": 0, "stress_unit": "MPa" },
+        { "strain": 1.0, "stress": 0.5, "stress_unit": "MPa" },
+        { "strain": 2.0, "stress": 1.4, "stress_unit": "MPa" },
+        { "strain": 3.0, "stress": 2.2, "stress_unit": "MPa" },
+        { "strain": 3.5, "stress": 2.5, "stress_unit": "MPa" },
+        { "strain": 4.0, "stress": 2.4, "stress_unit": "MPa" }
+      ]
+    },
+    {
+      "specimen_id": "T3",
+      "test_type": "ucs",
+      "test_standard": "ASTM D2166",
+      "group": "treated",
+      "dimensions": { "diameter": 38, "height": 76, "unit": "mm" },
+      "density": 1.77,
+      "density_unit": "g/cm3",
+      "saturation": 100,
+      "caCO3_content": 11.8,
+      "data_points": [
+        { "strain": 0.0, "stress": 0, "stress_unit": "MPa" },
+        { "strain": 1.0, "stress": 0.45, "stress_unit": "MPa" },
+        { "strain": 2.0, "stress": 1.3, "stress_unit": "MPa" },
+        { "strain": 3.0, "stress": 2.0, "stress_unit": "MPa" },
+        { "strain": 3.5, "stress": 2.3, "stress_unit": "MPa" },
+        { "strain": 4.0, "stress": 2.2, "stress_unit": "MPa" }
+      ]
+    },
+    {
+      "specimen_id": "C1",
+      "test_type": "ucs",
+      "test_standard": "ASTM D2166",
+      "group": "control",
+      "dimensions": { "diameter": 38, "height": 76, "unit": "mm" },
+      "density": 1.74,
+      "density_unit": "g/cm3",
+      "saturation": 100,
+      "data_points": [
+        { "strain": 0.0, "stress": 0, "stress_unit": "MPa" },
+        { "strain": 1.0, "stress": 0.12, "stress_unit": "MPa" },
+        { "strain": 2.0, "stress": 0.22, "stress_unit": "MPa" },
+        { "strain": 3.0, "stress": 0.28, "stress_unit": "MPa" },
+        { "strain": 4.0, "stress": 0.26, "stress_unit": "MPa" }
+      ]
+    }
+  ],
+  "evidence_refs": [
+    { "ref_id": "ev:lab-2026-07", "uri": "lab://2026-07/micp-ucs", "media_type": "text/csv", "note": "本组 UCS 原始数据" }
+  ]
+}

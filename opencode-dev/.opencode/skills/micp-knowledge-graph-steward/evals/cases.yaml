@@ -1,0 +1,185 @@
+# Evaluation cases for micp-knowledge-graph-steward (spec §三, §十一)
+# Each case is a full skill invocation through the real CLI. Cases cover:
+#   normal / missing / conflict / adversarial / boundary. No case leaks the
+#   expected answer into the input. Reference expectations are derived by the
+#   knowledge-graph engine itself, never hardcoded "fixed answers".
+
+suite:
+  name: micp-knowledge-graph-steward-evals
+  contract_version: "1.0"
+
+base:
+  contract_version: "1.0"
+  task_id: "eval"
+  project_id: "evals-project"
+  request: "eval suite case"
+  action: null
+  skill_version: "1.0.0"
+  timestamp: "2026-08-06T00:00:00Z"
+
+cases:
+  - id: eval-01
+    description: "Normal: initialize a knowledge base and verify it lands at revision 1 with a valid envelope."
+    action: kb.init
+    extra:
+      title: "eval baseline"
+    expect:
+      status: SUCCESS
+      findings_min: 1
+      provenance_events: 1
+
+  - id: eval-02
+    description: "Normal: register an entity, attach evidence, and add a claim that resolves an evidence chain."
+    action: graph.add_claim
+    setup:
+      - ["kb.init"]
+      - ["graph.upsert_entity", {"entity": {"id": "e-samp", "entity_type": "ARTIFACT"}}]
+      - ["graph.evidence_register", {"evidence": {"ref": "doi:10.1000/e2", "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "tier": "EXTERNAL_REPORTED"}}]
+    extra:
+      claim:
+        id: c-e2
+        claim_kind: TYPE
+        subject: e-samp
+        predicate: mineral_phase
+        object: calcite
+        evidence_tier: EXTERNAL_REPORTED
+        epistemic_label: REPORTED
+        evidence_refs: ["doi:10.1000/e2"]
+    expect:
+      status: SUCCESS
+
+  - id: eval-03
+    description: "Missing: a claim referencing unregistered evidence must be blocked as EVIDENCE_UNVERIFIABLE, not fabricated."
+    action: graph.add_claim
+    setup:
+      - ["kb.init"]
+      - ["graph.upsert_entity", {"entity": {"id": "e-samp", "entity_type": "ARTIFACT"}}]
+    extra:
+      claim:
+        id: c-missing
+        claim_kind: TYPE
+        subject: e-samp
+        predicate: mineral_phase
+        object: calcite
+        evidence_tier: EXTERNAL_REPORTED
+        epistemic_label: REPORTED
+        evidence_refs: ["doi:10.1000/not-registered"]
+    expect:
+      status: BLOCKED
+      error_code: KGE-E201
+
+  - id: eval-04
+    description: "Conflict: a second mineral-phase conclusion must coexist as an OPEN conflict, never silently overwrite."
+    action: graph.add_claim
+    setup:
+      - ["kb.init"]
+      - ["graph.upsert_entity", {"entity": {"id": "e-samp", "entity_type": "ARTIFACT"}}]
+      - ["graph.add_claim", {"claim": {"id": "p1", "claim_kind": "TYPE", "subject": "e-samp", "predicate": "mineral_phase", "object": "calcite", "evidence_tier": "INTERNAL_OBSERVED", "epistemic_label": "OBSERVED"}}]
+    extra:
+      claim:
+        id: p2
+        claim_kind: TYPE
+        subject: e-samp
+        predicate: mineral_phase
+        object: vaterite
+        evidence_tier: EXTERNAL_REPORTED
+        epistemic_label: REPORTED
+    expect:
+      status: SUCCESS
+      conflict_opened: true
+
+  - id: eval-05
+    description: "Adversarial: an OBSERVED label on EXTERNAL_REPORTED evidence must be rejected as EPISTEMIC_MISLABEL."
+    action: graph.add_claim
+    setup:
+      - ["kb.init"]
+      - ["graph.upsert_entity", {"entity": {"id": "e-samp", "entity_type": "ARTIFACT"}}]
+    extra:
+      claim:
+        id: c-adv
+        claim_kind: TYPE
+        subject: e-samp
+        predicate: mineral_phase
+        object: calcite
+        evidence_tier: EXTERNAL_REPORTED
+        epistemic_label: OBSERVED
+    expect:
+      status: BLOCKED
+      error_code: KGE-E204
+
+  - id: eval-06
+    description: "Boundary: a VALIDATED claim without human approval must return HUMAN_APPROVAL_REQUIRED, not succeed."
+    action: graph.add_claim
+    setup:
+      - ["kb.init"]
+      - ["graph.upsert_entity", {"entity": {"id": "e-samp", "entity_type": "ARTIFACT"}}]
+      - ["graph.evidence_register", {"evidence": {"ref": "doi:10.1000/e6", "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "tier": "EXTERNAL_REPORTED"}}]
+    extra:
+      claim:
+        id: c-val
+        claim_kind: TYPE
+        subject: e-samp
+        predicate: mineral_phase
+        object: calcite
+        evidence_tier: VALIDATED
+        epistemic_label: OBSERVED
+        evidence_refs: ["doi:10.1000/e6"]
+    expect:
+      status: HUMAN_APPROVAL_REQUIRED
+      error_code: KGE-E502
+
+  - id: eval-07
+    description: "Missing: contract_version 2.0 must be rejected with KGE-E801 (compat policy)."
+    action: kb.get
+    setup: [["kb.init"]]
+    extra:
+      contract_version: "2.0"
+    expect:
+      status: FAILED
+      error_code: KGE-E801
+
+  - id: eval-08
+    description: "Boundary: dry_run on an ontology mutation must not append any event to the store."
+    action: graph.ontology_update
+    setup: [["kb.init"]]
+    extra:
+      add_entity_types: ["NANOPARTICLE"]
+      dry_run: true
+    expect:
+      status: SUCCESS
+      store_events_unchanged: true
+
+  - id: eval-09
+    description: "Normal: querying own HYPOTHESIS claim returns it labeled HYPOTHESIS, never OBSERVED."
+    action: graph.query
+    setup:
+      - ["kb.init"]
+      - ["graph.upsert_entity", {"entity": {"id": "e-samp", "entity_type": "ARTIFACT"}}]
+      - ["graph.add_claim", {"claim": {"id": "h1", "claim_kind": "TYPE", "subject": "e-samp", "predicate": "mineral_phase", "object": "aragonite", "evidence_tier": "HYPOTHESIS", "epistemic_label": "HYPOTHESIS"}}]
+    extra:
+      query:
+        kind: claim_by_subject
+        subject: e-samp
+    expect:
+      status: SUCCESS
+      query_label_preserved: HYPOTHESIS
+
+  - id: eval-10
+    description: "Boundary: unit-incompatible VALUE claims on the same predicate must be blocked as KGE-E203."
+    action: graph.add_claim
+    setup:
+      - ["kb.init"]
+      - ["graph.upsert_entity", {"entity": {"id": "e-samp", "entity_type": "ARTIFACT"}}]
+      - ["graph.add_claim", {"claim": {"id": "v1", "claim_kind": "VALUE", "subject": "e-samp", "predicate": "ucs", "quantity": {"value": 1.0, "unit": "MPa"}, "evidence_tier": "INTERNAL_OBSERVED", "epistemic_label": "OBSERVED"}}]
+    extra:
+      claim:
+        id: v2
+        claim_kind: VALUE
+        subject: e-samp
+        predicate: ucs
+        quantity: {"value": 1.0, "unit": "m/s"}
+        evidence_tier: INTERNAL_OBSERVED
+        epistemic_label: OBSERVED
+    expect:
+      status: BLOCKED
+      error_code: KGE-E203

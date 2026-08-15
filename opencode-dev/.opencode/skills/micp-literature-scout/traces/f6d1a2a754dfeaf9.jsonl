@@ -1,0 +1,1 @@
+{"ts": "2026-08-06T16:54:40.842968+00:00", "project_id": "test-proj", "task_id": "test-task", "action": "doi.verify", "repro_id": "f6d1a2a754dfeaf9", "data": [{"doi": "10.1016/j.bgtech.2023.100002", "resolved": false, "status": "offline_unverified", "evidence": "offline_rule", "reason": "结构合法但离线无法核验存在性；请联网或用 doi.verify 实时核验"}]}

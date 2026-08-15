@@ -1,0 +1,795 @@
+{
+  "contract_version": "1.0",
+  "skill": "micp-modeling-optimizer",
+  "skill_version": "1.0.0",
+  "status": "SUCCESS",
+  "summary": "action=multiobjective completed with status SUCCESS.",
+  "action": "multiobjective",
+  "project_id": "P-BOOT",
+  "task_id": "BOOT",
+  "findings": [
+    {
+      "statement": "action=multiobjective completed with status FAILED",
+      "epistemic_tag": "CALCULATED"
+    }
+  ],
+  "assumptions": [],
+  "evidence_used": [],
+  "uncertainty": [],
+  "risks": [],
+  "artifacts": [],
+  "requested_next_skills": [],
+  "validation": {
+    "input_schema": true,
+    "output_schema": true,
+    "self_check": true,
+    "checks": [
+      {
+        "name": "envelope_shape",
+        "ok": true
+      },
+      {
+        "name": "status_valid",
+        "ok": true
+      },
+      {
+        "name": "epistemic_labels",
+        "ok": true
+      }
+    ]
+  },
+  "provenance": {
+    "skill": "micp-modeling-optimizer",
+    "skill_version": "1.0.0",
+    "started_at": "2026-08-06T15:58:58Z",
+    "completed_at": "2026-08-06T15:58:59Z",
+    "generator": "micp-modeling-optimizer/cli.py",
+    "seed": 7
+  },
+  "errors": [],
+  "model_purpose": "OPTIMIZATION",
+  "model_specification": {
+    "purpose": "OPTIMIZATION",
+    "model_kind": "ode",
+    "state_variables": [
+      "urea",
+      "ca",
+      "nh4",
+      "biomass",
+      "calcite"
+    ],
+    "parameters": [
+      {
+        "name": "k_ure",
+        "role": "calibration",
+        "value": 0.0001,
+        "unit": "1/s",
+        "bounds": [
+          1e-06,
+          0.01
+        ]
+      },
+      {
+        "name": "k_pre",
+        "role": "calibration",
+        "value": 0.0001,
+        "unit": "1/s",
+        "bounds": [
+          1e-06,
+          0.01
+        ]
+      }
+    ],
+    "equations": {
+      "kind": "ode",
+      "ureolysis": "michaelis_menten",
+      "precipitation": "first_order_min"
+    },
+    "initial_conditions": {
+      "urea0": 500,
+      "ca0": 500,
+      "biomass0": 1.0,
+      "phi0": 0.4
+    },
+    "observations": [
+      "urea",
+      "nh4",
+      "caco3"
+    ],
+    "error_model": "additive_gaussian",
+    "space_scale": "lab_column",
+    "time_scale": "days"
+  },
+  "equations": [
+    {
+      "name": "kind",
+      "expression": "ode"
+    },
+    {
+      "name": "ureolysis",
+      "expression": "michaelis_menten"
+    },
+    {
+      "name": "precipitation",
+      "expression": "first_order_min"
+    }
+  ],
+  "optimization_results": {
+    "method": "nsga2",
+    "n_objectives": 2,
+    "objective_names": [
+      "max_caco3",
+      "min_ammonia"
+    ],
+    "pop_size": 20,
+    "n_generations": 15,
+    "n_front_solutions": 20,
+    "front": [
+      {
+        "x": [
+          0.00047267889695948583,
+          0.000330088244025046
+        ],
+        "objectives": [
+          -2.42666762,
+          50.23628349
+        ]
+      },
+      {
+        "x": [
+          0.0004416319596214215,
+          0.0002599884508648572
+        ],
+        "objectives": [
+          -2.24666489,
+          46.96739486
+        ]
+      },
+      {
+        "x": [
+          0.0004160824691306612,
+          0.0003310419673964371
+        ],
+        "objectives": [
+          -2.13879373,
+          44.27403748
+        ]
+      },
+      {
+        "x": [
+          0.00038618544955492247,
+          0.000330088244025046
+        ],
+        "objectives": [
+          -1.98611164,
+          41.11861661
+        ]
+      },
+      {
+        "x": [
+          0.0003743461999228412,
+          0.0003546319751647422
+        ],
+        "objectives": [
+          -1.9304939,
+          39.86794897
+        ]
+      },
+      {
+        "x": [
+          0.00036546316178324236,
+          0.00028929323508372005
+        ],
+        "objectives": [
+          -1.87075782,
+          38.92915147
+        ]
+      },
+      {
+        "x": [
+          0.00033073893948842343,
+          0.0004001880371852348
+        ],
+        "objectives": [
+          -1.7136346,
+          35.25593323
+        ]
+      },
+      {
+        "x": [
+          0.00030635216281121066,
+          0.00037104782333836726
+        ],
+        "objectives": [
+          -1.58437315,
+          32.67299245
+        ]
+      },
+      {
+        "x": [
+          0.0002721689277945457,
+          0.0003608980616377906
+        ],
+        "objectives": [
+          -1.40728883,
+          29.04796016
+        ]
+      },
+      {
+        "x": [
+          0.0002604501287468502,
+          0.00030481750045697066
+        ],
+        "objectives": [
+          -1.33884138,
+          27.80401085
+        ]
+      },
+      {
+        "x": [
+          0.0002339248844551639,
+          0.000279917718616148
+        ],
+        "objectives": [
+          -1.19892002,
+          24.98609288
+        ]
+      },
+      {
+        "x": [
+          0.00021684286831243248,
+          0.0003503735624774632
+        ],
+        "objectives": [
+          -1.12135183,
+          23.16971785
+        ]
+      },
+      {
+        "x": [
+          0.00020751110564422453,
+          0.00031170775987977677
+        ],
+        "objectives": [
+          -1.06876459,
+          22.17689823
+        ]
+      },
+      {
+        "x": [
+          0.0001861815044613034,
+          0.0003276243394344819
+        ],
+        "objectives": [
+          -0.96110719,
+          19.90615654
+        ]
+      },
+      {
+        "x": [
+          0.0001626986810221248,
+          0.00027285574908312237
+        ],
+        "objectives": [
+          -0.8341186,
+          17.40384845
+        ]
+      },
+      {
+        "x": [
+          0.00011875452014719484,
+          0.0003233116679356369
+        ],
+        "objectives": [
+          -0.61355835,
+          12.7146378
+        ]
+      },
+      {
+        "x": [
+          0.00011794198914039856,
+          0.0002670970724371729
+        ],
+        "objectives": [
+          -0.60461871,
+          12.62785298
+        ]
+      },
+      {
+        "x": [
+          9.7186519810857e-05,
+          0.0002750553622145255
+        ],
+        "objectives": [
+          -0.4990749,
+          10.41007
+        ]
+      },
+      {
+        "x": [
+          8.171492717980664e-05,
+          0.0002507595240880465
+        ],
+        "objectives": [
+          -0.41796974,
+          8.75564252
+        ]
+      },
+      {
+        "x": [
+          2.8372872636572593e-05,
+          0.00022248638499456906
+        ],
+        "objectives": [
+          -0.14438632,
+          3.04346161
+        ]
+      }
+    ],
+    "ideal_point": [
+      -2.42666762,
+      3.04346161
+    ],
+    "knee_index": 9,
+    "knee_point": {
+      "x": [
+        0.0002604501287468502,
+        0.00030481750045697066
+      ],
+      "objectives": [
+        -1.33884138,
+        27.80401085
+      ]
+    },
+    "seed": 7,
+    "robustness": {
+      "method": "monte_carlo_local_perturbation",
+      "n_samples_per_solution": 10,
+      "sigma_fraction_of_range": 0.05,
+      "solutions": [
+        {
+          "front_index": 0,
+          "base_objectives": [
+            -2.42666762,
+            50.23628349
+          ],
+          "mean_relative_degradation": [
+            -0.008054,
+            0.006406
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 1,
+          "base_objectives": [
+            -2.24666489,
+            46.96739486
+          ],
+          "mean_relative_degradation": [
+            -0.006431,
+            0.003735
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 2,
+          "base_objectives": [
+            -2.13879373,
+            44.27403748
+          ],
+          "mean_relative_degradation": [
+            -0.006683,
+            0.006788
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 3,
+          "base_objectives": [
+            -1.98611164,
+            41.11861661
+          ],
+          "mean_relative_degradation": [
+            0.017881,
+            -0.018359
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 4,
+          "base_objectives": [
+            -1.9304939,
+            39.86794897
+          ],
+          "mean_relative_degradation": [
+            0.012592,
+            -0.013253
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 5,
+          "base_objectives": [
+            -1.87075782,
+            38.92915147
+          ],
+          "mean_relative_degradation": [
+            -0.025967,
+            0.025702
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 6,
+          "base_objectives": [
+            -1.7136346,
+            35.25593323
+          ],
+          "mean_relative_degradation": [
+            0.03041,
+            -0.030305
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 7,
+          "base_objectives": [
+            -1.58437315,
+            32.67299245
+          ],
+          "mean_relative_degradation": [
+            -0.051651,
+            0.052247
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 8,
+          "base_objectives": [
+            -1.40728883,
+            29.04796016
+          ],
+          "mean_relative_degradation": [
+            0.05581,
+            -0.055578
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 9,
+          "base_objectives": [
+            -1.33884138,
+            27.80401085
+          ],
+          "mean_relative_degradation": [
+            -0.037638,
+            0.037613
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 10,
+          "base_objectives": [
+            -1.19892002,
+            24.98609288
+          ],
+          "mean_relative_degradation": [
+            -0.01496,
+            0.018238
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 11,
+          "base_objectives": [
+            -1.12135183,
+            23.16971785
+          ],
+          "mean_relative_degradation": [
+            -0.05937,
+            0.060305
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 12,
+          "base_objectives": [
+            -1.06876459,
+            22.17689823
+          ],
+          "mean_relative_degradation": [
+            0.013184,
+            -0.012678
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 13,
+          "base_objectives": [
+            -0.96110719,
+            19.90615654
+          ],
+          "mean_relative_degradation": [
+            0.010261,
+            -0.010341
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 14,
+          "base_objectives": [
+            -0.8341186,
+            17.40384845
+          ],
+          "mean_relative_degradation": [
+            -0.01063,
+            0.013654
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 15,
+          "base_objectives": [
+            -0.61355835,
+            12.7146378
+          ],
+          "mean_relative_degradation": [
+            0.009444,
+            -0.00899
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 16,
+          "base_objectives": [
+            -0.60461871,
+            12.62785298
+          ],
+          "mean_relative_degradation": [
+            -0.046127,
+            0.045309
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 17,
+          "base_objectives": [
+            -0.4990749,
+            10.41007
+          ],
+          "mean_relative_degradation": [
+            0.009646,
+            -0.009756
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 18,
+          "base_objectives": [
+            -0.41796974,
+            8.75564252
+          ],
+          "mean_relative_degradation": [
+            0.147479,
+            -0.145212
+          ],
+          "infeasibility_rate": 0.0
+        },
+        {
+          "front_index": 19,
+          "base_objectives": [
+            -0.14438632,
+            3.04346161
+          ],
+          "mean_relative_degradation": [
+            -0.145528,
+            0.145137
+          ],
+          "infeasibility_rate": 0.0
+        }
+      ]
+    }
+  },
+  "pareto_candidates": [
+    {
+      "x": [
+        0.00047267889695948583,
+        0.000330088244025046
+      ],
+      "objectives": [
+        -2.42666762,
+        50.23628349
+      ]
+    },
+    {
+      "x": [
+        0.0004416319596214215,
+        0.0002599884508648572
+      ],
+      "objectives": [
+        -2.24666489,
+        46.96739486
+      ]
+    },
+    {
+      "x": [
+        0.0004160824691306612,
+        0.0003310419673964371
+      ],
+      "objectives": [
+        -2.13879373,
+        44.27403748
+      ]
+    },
+    {
+      "x": [
+        0.00038618544955492247,
+        0.000330088244025046
+      ],
+      "objectives": [
+        -1.98611164,
+        41.11861661
+      ]
+    },
+    {
+      "x": [
+        0.0003743461999228412,
+        0.0003546319751647422
+      ],
+      "objectives": [
+        -1.9304939,
+        39.86794897
+      ]
+    },
+    {
+      "x": [
+        0.00036546316178324236,
+        0.00028929323508372005
+      ],
+      "objectives": [
+        -1.87075782,
+        38.92915147
+      ]
+    },
+    {
+      "x": [
+        0.00033073893948842343,
+        0.0004001880371852348
+      ],
+      "objectives": [
+        -1.7136346,
+        35.25593323
+      ]
+    },
+    {
+      "x": [
+        0.00030635216281121066,
+        0.00037104782333836726
+      ],
+      "objectives": [
+        -1.58437315,
+        32.67299245
+      ]
+    },
+    {
+      "x": [
+        0.0002721689277945457,
+        0.0003608980616377906
+      ],
+      "objectives": [
+        -1.40728883,
+        29.04796016
+      ]
+    },
+    {
+      "x": [
+        0.0002604501287468502,
+        0.00030481750045697066
+      ],
+      "objectives": [
+        -1.33884138,
+        27.80401085
+      ]
+    },
+    {
+      "x": [
+        0.0002339248844551639,
+        0.000279917718616148
+      ],
+      "objectives": [
+        -1.19892002,
+        24.98609288
+      ]
+    },
+    {
+      "x": [
+        0.00021684286831243248,
+        0.0003503735624774632
+      ],
+      "objectives": [
+        -1.12135183,
+        23.16971785
+      ]
+    },
+    {
+      "x": [
+        0.00020751110564422453,
+        0.00031170775987977677
+      ],
+      "objectives": [
+        -1.06876459,
+        22.17689823
+      ]
+    },
+    {
+      "x": [
+        0.0001861815044613034,
+        0.0003276243394344819
+      ],
+      "objectives": [
+        -0.96110719,
+        19.90615654
+      ]
+    },
+    {
+      "x": [
+        0.0001626986810221248,
+        0.00027285574908312237
+      ],
+      "objectives": [
+        -0.8341186,
+        17.40384845
+      ]
+    },
+    {
+      "x": [
+        0.00011875452014719484,
+        0.0003233116679356369
+      ],
+      "objectives": [
+        -0.61355835,
+        12.7146378
+      ]
+    },
+    {
+      "x": [
+        0.00011794198914039856,
+        0.0002670970724371729
+      ],
+      "objectives": [
+        -0.60461871,
+        12.62785298
+      ]
+    },
+    {
+      "x": [
+        9.7186519810857e-05,
+        0.0002750553622145255
+      ],
+      "objectives": [
+        -0.4990749,
+        10.41007
+      ]
+    },
+    {
+      "x": [
+        8.171492717980664e-05,
+        0.0002507595240880465
+      ],
+      "objectives": [
+        -0.41796974,
+        8.75564252
+      ]
+    },
+    {
+      "x": [
+        2.8372872636572593e-05,
+        0.00022248638499456906
+      ],
+      "objectives": [
+        -0.14438632,
+        3.04346161
+      ]
+    }
+  ]
+}

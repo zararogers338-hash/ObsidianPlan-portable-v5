@@ -1,0 +1,153 @@
+# micp-scaleup-injection-engineer skill manifest
+
+# OpenCode loader contract (native): the loader reads frontmatter from
+# SKILL.md (name + description). This YAML is the project-extension manifest
+# consumed by obsidian-skill-router's registry indexer (validateManifest in
+# tools/osr/registry.ts). CRITICAL: every list field below must be an array of
+# strings — an object or mixed type triggers "must be an array of strings"
+# and marks the skill usable:false.
+
+name: micp-scaleup-injection-engineer
+display_name: MICP Injection Design & Scale-Up Engineer｜MICP 注入设计与工程尺度放大器
+version: 1.0.1
+description: >
+  Converts laboratory beaker / specimen / sand-column MICP recipes into
+  pilot columns, metre-scale trials, site tests and field construction plans.
+  Builds lab–pilot–field similarity matrices, flags parameters that must NOT
+  scale linearly by volume, computes material balance, pressure/flow
+  constraints, injection layout & schedule, monitoring & alarm plans, clogging
+  risk, stop conditions and fallbacks. Field deployment always returns
+  HUMAN_APPROVAL_REQUIRED with the six approval items (geotechnical sign-off,
+  biosafety review, regulatory verification, construction risk, waste/ammonia
+  plan, emergency plan).
+
+contract_version: "1.0"        # input/output schema contract (semver; major 1)
+entry:
+  cli: tools/scaleup.py        # stdin=JSON, stdout=JSON, offline
+  mode: stdin_stdout
+
+# Router contract: matchSkill scores capability coverage + input coverage +
+# domain-keyword overlap. `capabilities` must include the bare token "scaleup"
+# (planner.ts DOMAIN_MAP/UPSTREAM_HINTS already map 放大|规模化|scale-up|
+# 现场注入|注入参数|injection design -> scaleup). `inputs_required` must only
+# list fields the router can actually supply (planner.ts availableInputs).
+capabilities:
+  - scaleup
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - context
+  - evidence_refs
+  - data_refs
+  - upstream_outputs
+outputs:
+  - status
+  - summary
+  - findings
+  - assumptions
+  - evidence_used
+  - uncertainty
+  - risks
+  - artifacts
+  - requested_next_skills
+  - validation
+  - provenance
+  - errors
+tool_permissions:
+  - read
+  - stdin_stdout
+  - write_artifact_dir
+writes:
+  - "{artifact_dir}/**"
+stop_conditions:
+  - "scale_level == field and not human_approval_state.granted -> HUMAN_APPROVAL_REQUIRED"
+  - "site.permeability missing at site/field scale -> BLOCKED (MSI-E102)"
+  - "ammonia_N exceeds site limit -> stop injection (monitoring stop rule)"
+  - "injection pressure exceeds 80% of formation limit -> stop + fallback"
+  - "self_check failed -> PARTIAL with failed checks"
+domain_keywords:
+  - 放大
+  - 规模化
+  - 尺度放大
+  - scale-up
+  - scale up
+  - 现场注入
+  - 注入设计
+  - injection design
+  - injection
+  - 米级试验
+  - metre-scale
+  - meter scale
+  - 场地试验
+  - site test
+  - 井网
+  - injection well
+  - extraction well
+  - 监测井
+  - monitoring well
+  - 注入压力
+  - injection pressure
+  - 恒流
+  - constant flux
+  - 恒压
+  - constant head
+  - 质量平衡
+  - material balance
+  - mass balance
+  - 氨氮
+  - ammonia
+  - ammonium
+  - 注浆
+  - grouting
+  - 相似性
+  - similarity
+  - 无量纲
+  - dimensionless
+  - Damkohler
+  - Peclet
+  - 停留时间
+  - residence time
+  - 冲洗
+  - flushing
+  - 堵塞
+  - clogging
+  - 优先流
+  - preferential flow
+  - 示踪
+  - tracer
+  - 阶段门
+  - stage gate
+  - 停工
+  - stop condition
+  - 回退
+  - fallback
+  - 注入体积
+  - injection volume
+  - pore volume
+  - 孔隙体积
+  - 尿素
+  - urea
+  - 钙
+  - calcium
+  - 菌液
+  - bacteria
+  - biostimulation
+  - bioaugmentation
+units:
+  concentration: mol/m3
+  volume: m3
+  flow_rate: m3/s
+  pressure: Pa
+  permeability: m2
+  length: m
+  time: s
+dependencies:
+  - micp-porous-media-transport
+  - micp-geotechnical-performance
+  - micp-ureolysis-chemistry
+compatible_controller: obsidian-ctl-0.1.0
+cost_estimate:
+  tokens: 3500
+  usd: 0.035
+risk_tier: high

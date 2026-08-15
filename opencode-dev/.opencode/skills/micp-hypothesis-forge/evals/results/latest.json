@@ -1,0 +1,191 @@
+{
+  "summary": {
+    "indicators": {
+      "structured_output_pass_rate": 1.0,
+      "tool_invocation_rate": 1.0,
+      "evidence_traceability_rate": 1.0,
+      "missing_input_detection_rate": 1.0,
+      "adversarial_interception_rate": 1.0,
+      "repeat_run_consistency": 1.0,
+      "mean_failure_recovery_time": 0.06391119999989314
+    },
+    "thresholds": {
+      "structured_output_pass_rate": 1.0,
+      "tool_invocation_rate": 1.0,
+      "evidence_traceability_rate": 1.0,
+      "missing_input_detection_rate": 1.0,
+      "adversarial_interception_rate": 1.0,
+      "repeat_run_consistency": 1.0,
+      "mean_failure_recovery_time": 60.0
+    },
+    "passed": {
+      "structured_output_pass_rate": true,
+      "tool_invocation_rate": true,
+      "evidence_traceability_rate": true,
+      "missing_input_detection_rate": true,
+      "adversarial_interception_rate": true,
+      "repeat_run_consistency": true,
+      "mean_failure_recovery_time": true
+    },
+    "all_passed": true,
+    "n_cases": 11,
+    "n_passed": 11
+  },
+  "cases": [
+    {
+      "id": "CASE-01",
+      "kind": "normal",
+      "expect_status": "SUCCESS",
+      "tools_invoked": [
+        "dag",
+        "scoring",
+        "competing-matrix",
+        "self-audit"
+      ],
+      "full_pipeline": true,
+      "wall_time_s": 0.05944880000015473,
+      "ok": true,
+      "schema_valid": true,
+      "traceability_ok": true
+    },
+    {
+      "id": "CASE-02",
+      "kind": "normal",
+      "expect_status": "SUCCESS",
+      "tools_invoked": [
+        "competing-matrix"
+      ],
+      "full_pipeline": false,
+      "wall_time_s": 0.05891769999993812,
+      "ok": true,
+      "schema_valid": true,
+      "traceability_ok": true
+    },
+    {
+      "id": "CASE-03",
+      "kind": "normal",
+      "expect_status": "SUCCESS",
+      "tools_invoked": [
+        "scoring",
+        "experiment-priority"
+      ],
+      "full_pipeline": false,
+      "wall_time_s": 0.05894140000009429,
+      "ok": true,
+      "schema_valid": true,
+      "traceability_ok": true
+    },
+    {
+      "id": "CASE-04",
+      "kind": "missing",
+      "expect_status": "BLOCKED",
+      "tools_invoked": [
+        "scoring"
+      ],
+      "full_pipeline": false,
+      "wall_time_s": 0.05504149999978836,
+      "ok": true,
+      "schema_valid": true,
+      "traceability_ok": true,
+      "returned_blocked": true,
+      "missing_inputs_listed": true
+    },
+    {
+      "id": "CASE-05",
+      "kind": "missing",
+      "expect_status": "BLOCKED",
+      "tools_invoked": [
+        "dag"
+      ],
+      "full_pipeline": false,
+      "wall_time_s": 0.05515820000005078,
+      "ok": true,
+      "schema_valid": true,
+      "traceability_ok": true,
+      "returned_blocked": true,
+      "missing_inputs_listed": true
+    },
+    {
+      "id": "CASE-06",
+      "kind": "conflicting",
+      "expect_status": "SUCCESS",
+      "tools_invoked": [
+        "competing-matrix"
+      ],
+      "full_pipeline": false,
+      "wall_time_s": 0.059064699999908044,
+      "ok": true,
+      "schema_valid": true,
+      "traceability_ok": true
+    },
+    {
+      "id": "CASE-07",
+      "kind": "boundary",
+      "expect_status": "BLOCKED",
+      "tools_invoked": [
+        "scoring"
+      ],
+      "full_pipeline": false,
+      "wall_time_s": 0.05647720000001755,
+      "ok": true,
+      "schema_valid": true,
+      "traceability_ok": true
+    },
+    {
+      "id": "CASE-08",
+      "kind": "adversarial",
+      "expect_status": "FAILED",
+      "tools_invoked": [
+        "dag"
+      ],
+      "full_pipeline": false,
+      "wall_time_s": 0.0587970999999925,
+      "ok": true,
+      "schema_valid": true,
+      "traceability_ok": true,
+      "intercepted": true
+    },
+    {
+      "id": "CASE-09",
+      "kind": "adversarial",
+      "expect_status": "SUCCESS",
+      "tools_invoked": [
+        "self-audit"
+      ],
+      "full_pipeline": false,
+      "wall_time_s": 0.06178660000000491,
+      "ok": true,
+      "schema_valid": true,
+      "traceability_ok": false,
+      "intercepted": true
+    },
+    {
+      "id": "CASE-10",
+      "kind": "adversarial",
+      "expect_status": "SUCCESS",
+      "tools_invoked": [
+        "self-audit"
+      ],
+      "full_pipeline": false,
+      "wall_time_s": 0.06391119999989314,
+      "ok": true,
+      "schema_valid": true,
+      "traceability_ok": true,
+      "intercepted": true
+    },
+    {
+      "id": "CASE-11",
+      "kind": "determinism",
+      "expect_status": "SUCCESS",
+      "tools_invoked": [
+        "dag"
+      ],
+      "full_pipeline": false,
+      "wall_time_s": 0.06315520000021024,
+      "ok": true,
+      "schema_valid": true,
+      "traceability_ok": true,
+      "deterministic": true
+    }
+  ]
+}

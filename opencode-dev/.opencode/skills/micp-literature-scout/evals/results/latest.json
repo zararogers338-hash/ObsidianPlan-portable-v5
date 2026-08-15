@@ -1,0 +1,403 @@
+{
+  "cases": [
+    {
+      "id": "normal-search",
+      "description": "正常检索: MICP 均匀性, 应分层且区分尺度",
+      "action": "search.run",
+      "status": "SUCCESS",
+      "error_code": null,
+      "elapsed_ms": 239.5,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "output_schema_pass": true
+    },
+    {
+      "id": "normal-doi-mixed",
+      "description": "正常核验: 合法 + 伪造 DOI 混合",
+      "action": "doi.verify",
+      "status": "PARTIAL",
+      "error_code": "MLS-E203",
+      "elapsed_ms": 234.76,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==PARTIAL",
+          "pass": true,
+          "detail": "got PARTIAL"
+        },
+        {
+          "name": "doi_statuses",
+          "pass": true,
+          "detail": "got ['offline_unverified', 'suspected_forged']"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "output_schema_pass": true
+    },
+    {
+      "id": "missing-request",
+      "description": "缺失 request → BLOCKED + MLS-E102 命名字段",
+      "action": "search.run",
+      "status": "BLOCKED",
+      "error_code": "MLS-E102",
+      "elapsed_ms": 244.92,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==BLOCKED",
+          "pass": true,
+          "detail": "got BLOCKED"
+        },
+        {
+          "name": "error==MLS-E102",
+          "pass": true,
+          "detail": "got MLS-E102"
+        },
+        {
+          "name": "field_named",
+          "pass": true,
+          "detail": "missing_fields=['request']"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "output_schema_pass": true
+    },
+    {
+      "id": "conflict-contract",
+      "description": "契约冲突: contract_version 2.0 → BLOCKED + E104",
+      "action": "search.run",
+      "status": "BLOCKED",
+      "error_code": "MLS-E104",
+      "elapsed_ms": 247.57,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==BLOCKED",
+          "pass": true,
+          "detail": "got BLOCKED"
+        },
+        {
+          "name": "error==MLS-E104",
+          "pass": true,
+          "detail": "got MLS-E104"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "output_schema_pass": true
+    },
+    {
+      "id": "adversarial-unknown-action",
+      "description": "对抗: 未知 action → FAILED + E103",
+      "action": "not.a.real.action",
+      "status": "FAILED",
+      "error_code": "MLS-E103",
+      "elapsed_ms": 236.38,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==FAILED",
+          "pass": true,
+          "detail": "got FAILED"
+        },
+        {
+          "name": "error==MLS-E103",
+          "pass": true,
+          "detail": "got MLS-E103"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "output_schema_pass": true
+    },
+    {
+      "id": "adversarial-forged-doi",
+      "description": "对抗: 伪造 DOI → suspected_forged, 不得 REPORTED",
+      "action": "doi.verify",
+      "status": "PARTIAL",
+      "error_code": "MLS-E203",
+      "elapsed_ms": 239.19,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==PARTIAL",
+          "pass": true,
+          "detail": "got PARTIAL"
+        },
+        {
+          "name": "all_forged",
+          "pass": true,
+          "detail": "got ['suspected_forged']"
+        },
+        {
+          "name": "no_reported_forged",
+          "pass": true,
+          "detail": ""
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "output_schema_pass": true
+    },
+    {
+      "id": "boundary-short-query",
+      "description": "边界: query.text 过短 → BLOCKED",
+      "action": "search.run",
+      "status": "BLOCKED",
+      "error_code": "MLS-E102",
+      "elapsed_ms": 235.47,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==BLOCKED",
+          "pass": true,
+          "detail": "got BLOCKED"
+        },
+        {
+          "name": "error==MLS-E102",
+          "pass": true,
+          "detail": "got MLS-E102"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "output_schema_pass": true
+    },
+    {
+      "id": "boundary-time-range",
+      "description": "边界: time_range 2022- 过滤; 且 repro_id 一致",
+      "action": "search.run",
+      "status": "SUCCESS",
+      "error_code": null,
+      "elapsed_ms": 244.96,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "years>=limit",
+          "pass": true,
+          "detail": "years=[2023, 2023]"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "output_schema_pass": true
+    },
+    {
+      "id": "normal-cite-export",
+      "description": "正常: 引用导出 BibTeX",
+      "action": "cite.export",
+      "status": "SUCCESS",
+      "error_code": null,
+      "elapsed_ms": 245.61,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "export_contains",
+          "pass": true,
+          "detail": "substring missing"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "output_schema_pass": true
+    },
+    {
+      "id": "boundary-empty-dois",
+      "description": "边界: candidate_dois 为空 → BLOCKED",
+      "action": "doi.verify",
+      "status": "BLOCKED",
+      "error_code": "MLS-E102",
+      "elapsed_ms": 243.17,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==BLOCKED",
+          "pass": true,
+          "detail": "got BLOCKED"
+        },
+        {
+          "name": "error==MLS-E102",
+          "pass": true,
+          "detail": "got MLS-E102"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "output_schema_pass": true
+    },
+    {
+      "id": "normal-dedup",
+      "description": "正常: DOI 去重",
+      "action": "dedup.merge",
+      "status": "SUCCESS",
+      "error_code": null,
+      "elapsed_ms": 241.52,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "dedup_input",
+          "pass": true,
+          "detail": "got 2"
+        },
+        {
+          "name": "dedup_output",
+          "pass": true,
+          "detail": "got 1"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "output_schema_pass": true
+    },
+    {
+      "id": "normal-selfcheck",
+      "description": "正常: validate.self 自检通过",
+      "action": "validate.self",
+      "status": "SUCCESS",
+      "error_code": null,
+      "elapsed_ms": 244.45,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "selfcheck",
+          "pass": true,
+          "detail": "got True"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "output_schema_pass": true
+    }
+  ],
+  "summary": {
+    "passed": 12,
+    "total": 12,
+    "all_pass": true
+  },
+  "metrics": {
+    "report": {
+      "M1_structured_output_pass_rate": {
+        "measured": 1.0,
+        "threshold": 0.95,
+        "method": "validate every CLI output against schemas/output.schema.json; pass_rate = passes / total outputs",
+        "pass": true
+      },
+      "M2_tool_real_call_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "search.* actions: rate = actions_that_returned_records / total; offline fixture counts as a real tool call, dry_run does not",
+        "pass": true
+      },
+      "M3_citation_traceability_rate": {
+        "measured": 1.0,
+        "threshold": 0.9,
+        "method": "records with doi_status verified|offline-unverified|structurally valid / total records returned",
+        "pass": true
+      },
+      "M4_missing_input_recognition_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "for each of K required fields dropped, require BLOCKED + E102 naming the field; rate = named_blocked / K",
+        "pass": true
+      },
+      "M5_adversarial_interception_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "adversarial cases (forged DOI, unknown action, contract conflict) that were BLOCKED/FAILED/PARTIAL-with-error / total",
+        "pass": true
+      },
+      "M6_repeated_run_consistency": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "same query twice in two service runs: repro_id equal and records byte-identical",
+        "pass": true
+      },
+      "M7_mean_failure_recovery_time_ms": {
+        "measured": 237.23527999991347,
+        "threshold": 5000.0,
+        "method": "wall-clock ms to produce a BLOCKED/FAILED envelope, 5 samples, mean",
+        "pass": true
+      }
+    }
+  },
+  "suite_counts": {
+    "outputs": 12,
+    "output_schema_passes": 12,
+    "tool_real_attempts": 2,
+    "tool_real_calls": 2,
+    "total_records": 10,
+    "traceable_records": 10,
+    "missing_input_total": 7,
+    "missing_input_named": 7,
+    "adversarial_total": 3,
+    "adversarial_blocked": 3,
+    "repeat_consistent": true,
+    "recovery_mean_ms": 237.23527999991347
+  }
+}

@@ -1,0 +1,824 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-reproducibility-versioning.output.json",
+  "title": "MICP Reproducibility & Versioning — Output Contract",
+  "description": "Machine-readable output for the micp-reproducibility-versioning skill (MRV). Every load-bearing claim carries one epistemic tag: OBSERVED | REPORTED | CALCULATED | INFERRED | HYPOTHESIS | RECOMMENDATION. INFERRED/HYPOTHESIS/RECOMMENDATION may never be presented as OBSERVED. Version 1.0.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "summary",
+    "findings",
+    "assumptions",
+    "evidence_used",
+    "uncertainty",
+    "risks",
+    "artifacts",
+    "requested_next_skills",
+    "validation",
+    "provenance",
+    "errors"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "SUCCESS",
+        "PARTIAL",
+        "BLOCKED",
+        "FAILED",
+        "NEED_ADDITIONAL_SKILL",
+        "HUMAN_APPROVAL_REQUIRED"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 6000
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "statement",
+          "epistemic_tag"
+        ],
+        "properties": {
+          "statement": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "epistemic_tag": {
+            "type": "string",
+            "enum": [
+              "OBSERVED",
+              "REPORTED",
+              "CALCULATED",
+              "INFERRED",
+              "HYPOTHESIS",
+              "RECOMMENDATION"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 2000,
+            "description": "Mandatory when epistemic_tag is OBSERVED or REPORTED."
+          }
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "statement"
+        ],
+        "properties": {
+          "statement": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "falsifiable_by": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "evidence_used": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ref_id"
+        ],
+        "properties": {
+          "ref_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "how_used": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "verifiable": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "uncertainty": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "topic",
+          "level"
+        ],
+        "properties": {
+          "topic": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "risk",
+          "severity"
+        ],
+        "properties": {
+          "risk": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "mitigation": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_id",
+          "kind",
+          "content_type"
+        ],
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "reproduction_manifest",
+              "data_manifest",
+              "dependency_lockfile",
+              "provenance_log",
+              "diff_report",
+              "environment_report",
+              "migration_plan",
+              "seed_record",
+              "governance_report"
+            ]
+          },
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "application/json",
+              "text/plain",
+              "text/csv",
+              "text/markdown"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "payload": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "requested_next_skills": {
+      "type": "array",
+      "maxItems": 50,
+      "description": "Capabilities this skill needs the Router to provide. This skill never invokes other skills directly.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "skill",
+          "reason"
+        ],
+        "properties": {
+          "skill": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "inputs_needed": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "maxItems": 20
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "self_audit_pass",
+        "gates"
+      ],
+      "properties": {
+        "self_audit_pass": {
+          "type": "boolean"
+        },
+        "gates": {
+          "type": "object"
+        },
+        "tool_runs": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tool",
+              "ok"
+            ],
+            "properties": {
+              "tool": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "ok": {
+                "type": "boolean"
+              },
+              "detail": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "skill",
+        "skill_version",
+        "generated_at",
+        "generator"
+      ],
+      "properties": {
+        "skill": {
+          "type": "string",
+          "const": "micp-reproducibility-versioning"
+        },
+        "skill_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "generated_at": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "generator": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "input_task_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "tool_versions": {
+          "type": "object"
+        }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "retryable"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "details": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "missing_inputs": {
+      "type": "array",
+      "maxItems": 50,
+      "description": "Required when status is BLOCKED: each missing field, why it is critical, and how to obtain it.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "why_critical",
+          "how_to_obtain"
+        ],
+        "properties": {
+          "field": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "why_critical": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "how_to_obtain": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        }
+      }
+    },
+    "reproduction_manifest": {
+      "$ref": "#/$defs/reproductionManifest"
+    },
+    "data_lineage": {
+      "type": "array",
+      "description": "Provenance chain from raw inputs to final artifacts: each hop records input hash, process, output hash.",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "hop",
+          "inputs",
+          "process",
+          "outputs"
+        ],
+        "properties": {
+          "hop": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "hash"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                },
+                "hash": {
+                  "type": "string",
+                  "minLength": 64,
+                  "maxLength": 64
+                }
+              }
+            }
+          },
+          "process": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "outputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "hash"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                },
+                "hash": {
+                  "type": "string",
+                  "minLength": 64,
+                  "maxLength": 64
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Environment snapshot: OS, runtime, tool versions, dependency-lock summaries, git/fingerprint."
+    },
+    "versions": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Declared versions gate: skill/controller/constitution/schema/model/prompt/data/seed/compatibility decisions."
+    },
+    "hashes": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Input and output hashes recorded by this run."
+    },
+    "reproducibility_checks": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "check",
+          "passed"
+        ],
+        "properties": {
+          "check": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "detail": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "differences": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "path"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "added",
+              "removed",
+              "modified",
+              "content_change",
+              "hash_mismatch",
+              "identical"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "old": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "new": {
+            "type": "string",
+            "maxLength": 4000
+          }
+        }
+      }
+    },
+    "migration_actions": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact",
+          "from",
+          "to"
+        ],
+        "properties": {
+          "artifact": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "from": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "to": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "applied": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "reproductionManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "manifest_id",
+        "created_at",
+        "project_id",
+        "task_id",
+        "versions",
+        "environment",
+        "inputs",
+        "outputs",
+        "parameters",
+        "seed",
+        "commands",
+        "checks"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "manifest_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "created_at": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "project_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "task_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "versions": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/hashItem"
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/hashItem"
+          }
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "seed": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value"
+          ],
+          "properties": {
+            "value": {
+              "type": "integer"
+            },
+            "policy": {
+              "type": "string",
+              "enum": [
+                "generate",
+                "reuse",
+                "require"
+              ]
+            }
+          }
+        },
+        "commands": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "cmd"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "cmd": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "cwd": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "exit_code": {
+                "type": "integer"
+              },
+              "stdout_digest": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "stderr_digest": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "output_hashes": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "check",
+              "passed"
+            ],
+            "properties": {
+              "check": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "passed": {
+                "type": "boolean"
+              },
+              "detail": {
+                "type": "string",
+                "maxLength": 2000
+              }
+            }
+          }
+        }
+      }
+    },
+    "hashItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "hash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "anyOf": [
+        {
+          "properties": {
+            "status": {
+              "const": "SUCCESS"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "PARTIAL"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "FAILED"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "NEED_ADDITIONAL_SKILL"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "HUMAN_APPROVAL_REQUIRED"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "BLOCKED"
+            }
+          },
+          "required": [
+            "missing_inputs"
+          ]
+        }
+      ]
+    }
+  ]
+}

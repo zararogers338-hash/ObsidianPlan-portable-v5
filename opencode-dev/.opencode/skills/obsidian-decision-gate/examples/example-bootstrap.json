@@ -1,0 +1,163 @@
+{
+  "contract_version": "1.0",
+  "task_id": "BOOTSTRAP-01",
+  "project_id": "P-MICP-ROAD-01",
+  "request": "综合评审 MICP 道路加固路线证据成熟度，决策是否放行部署",
+  "action": "gate.evaluate",
+  "skill_version": "1.0.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "current_state": "PILOT_READY",
+  "proposed_state": "DEPLOYABLE",
+  "context": {
+    "dry_run": true,
+    "call_chain": ["obsidian-mission-lock", "micp-evidence-synthesizer", "micp-hypothesis-forge", "micp-data-analyst", "micp-geotechnical-performance", "obsidian-red-team"]
+  },
+  "mission_lock": {
+    "task_id": "BOOTSTRAP-01",
+    "contract_version": "1.0.0",
+    "title": "MICP 道路加固现场部署",
+    "mission_type": "engineering",
+    "objectives": [
+      { "id": "o1", "statement": "在 1 km 试验路段实现 MICP 加固，强度达标且氨排放受控", "kind": "engineering", "depends_on": [] }
+    ],
+    "primary_objective_id": "o1",
+    "secondary_objective_ids": [],
+    "explicit_exclusions": ["湿陷性黄土路基"],
+    "metrics": [
+      { "name": "strength", "direction": "maximize", "unit": "MPa", "target": { "value": 5, "unit": "MPa" }, "threshold": { "value": 1, "unit": "MPa" } },
+      { "name": "ammonia_emission", "direction": "minimize", "unit": "mg/m3", "target": { "value": 500, "unit": "mg/m3" } }
+    ],
+    "success_criteria": ["强度≥5MPa", "氨排放≤500 mg/m3"],
+    "failure_thresholds": ["强度<1MPa", "氨排放>1500 mg/m3"],
+    "stop_conditions": ["氨排放超标即停", "地下水污染即停"],
+    "human_approval_gates": ["VALIDATED", "PILOT_READY", "DEPLOYABLE"],
+    "stakeholders": ["工程方", "环保部门"],
+    "decision_use": "部署门决策",
+    "statements": [
+      { "text": "MICP 在实验室砂柱中显著提升无侧限抗压强度", "label": "REPORTED", "source": "doi:10.1016/j.conbuildmat.2024.12345" }
+    ],
+    "assumptions": ["地层渗透性均匀"],
+    "unknowns": ["长期耐久性（>5 年）"],
+    "risks": ["氨排放邻避风险", "地下水 pH 波动"],
+    "evidence_gaps": [],
+    "domain_tags": ["biology", "chemistry", "geotechnical", "transport"],
+    "spatial_scale": "field: 1 km 试验路段",
+    "temporal_scale": "28 天养护后验收"
+  },
+  "evidence_cards": [
+    { "ref_id": "REF-C1", "source": "doi:10.1016/j.conbuildmat.2024.12345", "label": "REPORTED", "verifiable": true, "evidence_level": "high", "scale": "lab", "n": 12, "outcome": "砂柱 UCS 提升 3-8 MPa" },
+    { "ref_id": "REF-C2", "source": "doi:10.1016/j.enggeo.2024.67890", "label": "REPORTED", "verifiable": true, "evidence_level": "high", "scale": "lab", "n": 9, "outcome": "灌浆 5 循环后强度稳定" },
+    { "ref_id": "REF-C3", "source": "doi:10.1016/j.jclepro.2024.11223", "label": "REPORTED", "verifiable": true, "evidence_level": "moderate", "scale": "pilot", "n": 6, "outcome": "中试路段强度 5.4 MPa，氨峰值 480 mg/m3" }
+  ],
+  "synthesis": {
+    "conclusions": [
+      { "id": "c1", "statement": "MICP 在实验室与中试尺度均显著提升砂土强度", "label": "REPORTED", "evidence_level": "high", "scope": "lab+pilot" },
+      { "id": "c2", "statement": "氨排放可受控（中试峰值 480 mg/m3 < 500 目标）", "label": "REPORTED", "evidence_level": "moderate", "scope": "pilot" },
+      { "id": "c3", "statement": "机理链（尿素水解→碳酸钙沉积→颗粒胶结）一致", "label": "REPORTED", "evidence_level": "moderate", "scope": "lab" }
+    ],
+    "gaps": [{ "gap": ">5 年耐久性数据缺失", "impact": "low", "how_to_fill": "部署后长期监测" }],
+    "synthesis_method": "structured_narrative",
+    "grade": { "certainty": "high" }
+  },
+  "hypothesis_cards": [
+    {
+      "id": "H1", "kind": "hypothesis_card",
+      "statement": "MICP 通过碳酸钙沉淀胶结砂颗粒提升路基强度",
+      "premise": "尿素水解产碳酸根，钙源沉积",
+      "mechanism_chain": ["尿素水解", "碳酸钙沉积", "颗粒胶结"],
+      "prediction_direction": "increase",
+      "observables": ["UCS", "方解石含量", "氨浓度"],
+      "refutation": "无强度提升或沉积即推翻",
+      "time_scale": "28d",
+      "scope": "砂质路基，中等渗透性",
+      "epistemic_label": "HYPOTHESIS",
+      "status": "SUPPORTED",
+      "evidence_for": [{ "ref_id": "REF-C1", "strength": "strong" }],
+      "evidence_against": []
+    }
+  ],
+  "experiment_results": [
+    {
+      "id": "EXP-01", "kind": "strength_test", "status": "completed", "scale": "pilot", "has_control": true,
+      "controls": ["未处理砂土对照组"], "n": 12, "sampling_units": 6,
+      "qc_passed": true,
+      "mass_balance": { "closure_error_percent": 2.1, "tolerance_percent": 5, "closed": true },
+      "statistics": { "n": 12, "p_value": 0.001, "effect_size": 1.8, "ci95": [1.2, 2.4], "power": 0.97, "normality_checked": true, "independent_units": 6 },
+      "outcomes": [
+        { "name": "strength", "value": 5.4, "unit": "MPa", "threshold": 5, "direction": "maximize", "status": "met" }
+      ]
+    },
+    {
+      "id": "EXP-02", "kind": "ammonia_test", "status": "completed", "scale": "pilot", "has_control": true,
+      "controls": ["未处理段"], "n": 12, "sampling_units": 6, "qc_passed": true,
+      "outcomes": [
+        { "name": "ammonia_emission", "value": 480, "unit": "mg/m3", "threshold": 500, "direction": "minimize", "status": "met" }
+      ]
+    }
+  ],
+  "model_results": {
+    "name": "ucs-kinetic-model",
+    "fitted": true,
+    "external_validation": true,
+    "metrics": { "validation_r2": 0.82, "holdout_rmse": 0.6 },
+    "extrapolation_scale": "lab→pilot",
+    "known_limits": ["非均质地层外推风险"],
+    "validation_note": "在独立中试数据集上验证"
+  },
+  "scaleup_plan": {
+    "stages": [
+      { "scale": "lab", "objective": "机理与参数标定", "duration": "6mo", "capacity": "38mm 砂柱" },
+      { "scale": "pilot", "objective": "受控中试验证", "duration": "3mo", "capacity": "50 m 试验段" },
+      { "scale": "field", "objective": "1km 路段部署", "duration": "6mo", "capacity": "1 km", "success_criteria": ["强度≥5MPa", "氨≤500mg/m3"] }
+    ],
+    "monitoring_plan": "氨浓度(在线+便携);地下水pH与氨;强度抽芯;沉降观测",
+    "shutdown_conditions": ["氨浓度>500 mg/m3 持续 30min", "地下水氨>10 mg/L", "pH 超出 6-9", "沉降>10mm"],
+    "rollback_plan": "停止注入→抽排回用→生态修复基金垫付恢复",
+    "environmental_controls": ["氨气收集罩", "监测井", "密闭拌合站"]
+  },
+  "environment_audit": {
+    "status": "cleared",
+    "findings": [
+      { "id": "ENV-1", "severity": "high", "status": "closed", "description": "氨气邻避风险", "remediation": "在线监测+应急喷淋" },
+      { "id": "ENV-2", "severity": "medium", "status": "closed", "description": "地下水 pH 波动", "remediation": "监测井+缓冲带" }
+    ],
+    "note": "环评批复已取得，环保部门现场检查通过"
+  },
+  "lca": {
+    "status": "cleared",
+    "findings": [
+      { "id": "LCA-1", "severity": "low", "status": "closed", "description": "尿素成本占比高", "remediation": "分批采购+副产尿素替代" }
+    ],
+    "note": "全生命周期碳排低于水泥方案 40%，单位成本在预算内"
+  },
+  "reproducibility": {
+    "reproducible": true,
+    "evidence": "数据+代码归档于版本库，三批次重复中试结果一致（CV<8%）",
+    "data_archived": true,
+    "code_archived": true,
+    "versioned": true
+  },
+  "red_team_report": {
+    "status": "passed",
+    "findings": [
+      { "id": "RT-1", "severity": "MEDIUM", "title": "长期耐久性未验证", "description": ">5年性能外推风险", "resolution": "accepted_risk", "note": "以部署后监测计划覆盖" }
+    ]
+  },
+  "regulatory_status": {
+    "verified": true,
+    "current": true,
+    "jurisdiction": "中国",
+    "permit_required": true,
+    "permit_status": "granted",
+    "reviewed_at": "2026-07-01T00:00:00Z",
+    "expires_at": "2027-07-01T00:00:00Z"
+  },
+  "human_approval_state": {
+    "granted": true,
+    "scope": "DEPLOYABLE",
+    "revision": 42,
+    "granted_at": "2026-08-05T09:30:00Z",
+    "by": "工程总监（人类）"
+  },
+  "review_expiry": "2027-02-01T00:00:00Z"
+}

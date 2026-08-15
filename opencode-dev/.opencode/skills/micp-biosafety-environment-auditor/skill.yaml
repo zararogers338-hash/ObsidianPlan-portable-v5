@@ -1,0 +1,113 @@
+name: micp-biosafety-environment-auditor
+display_name: MICP 生物安全与环境风险审计器
+version: 1.0.0
+description: "Biosafety & environmental-risk audit for MICP sand-column and field plans: strain identity & biosafety class verification; urea→total-N→NH4+→NH3 nitrogen mass balance with conservation gating; hazard screening (release, aerosol, waterborne, salt load, ARG, soil ecology, odour, confined space); exposure pathways; 5x5 risk matrix; waste-treatment comparison; monitoring thresholds + alarm rules; sampling plans; stop conditions; emergency checklists; permit checks. Hard approval gates for unknown strains, live-cell release, groundwater injection, high-N discharge, missing waste capacity, unverifiable regulation, monitoring exceedance, personnel exposure, and sensitive ecology. Never fabricates regulation; lookup failure is marked REGULATORY_VERIFICATION_REQUIRED. Never defaults a commonly-used MICP strain to safe."
+contract_version: 1.0
+entry:
+  cli: tools/mbs_auditor.py
+  mode: stdin_stdout
+capabilities:
+  - biosafety
+  - biosafety_ammonia
+  - mass_balance
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - context
+  - evidence_refs
+  - data_refs
+  - upstream_outputs
+outputs:
+  - status
+  - summary
+  - findings
+  - assumptions
+  - evidence_used
+  - uncertainty
+  - risks
+  - artifacts
+  - requested_next_skills
+  - validation
+  - provenance
+  - errors
+  - hazards
+  - exposure_pathways
+  - nitrogen_balance
+  - waste_streams
+  - regulatory_context
+  - monitoring_requirements
+  - control_measures
+  - residual_risk
+  - approval_requirements
+  - stop_conditions
+  - emergency_actions
+domain_keywords:
+  - 生物安全
+  - biosafety
+  - 环境影响
+  - 氨气泄漏
+  - ammonia
+  - 氨
+  - 铵
+  - 尿素
+  - urea
+  - 质量守恒
+  - 质量平衡
+  - mass balance
+  - 废液
+  - wastewater
+  - 地下水
+  - groundwater
+  - 土壤生态
+  - 菌株安全
+  - strain safety
+  - 安全评估
+  - 审批
+  - approval
+  - 风险矩阵
+  - risk
+  - 暴露
+  - exposure
+  - 应急
+  - emergency
+  - 采样计划
+  - sampling
+  - 许可
+  - permit
+dependencies:
+  - "python3 >= 3.10"
+dependencies_detail:
+  runtime: "python3 (>= 3.10)"
+  libs:
+    - "jsonschema>=4.0"
+    - pyyaml
+    - pytest
+  network: none
+risk_tier: high
+network: false
+writes: []
+permissions:
+  filesystem: []
+  approvals_required:
+    - field.deployment
+    - knowledge.write
+    - environmental_release
+    - groundwater_injection
+    - wastewater_discharge
+    - confined_space_entry
+  dry_run: true
+compatibility:
+  opencode_loader: "discovery pattern {skill,skills}/**/SKILL.md; frontmatter name+description (verified in packages/opencode/src/skill/index.ts)"
+  contract_major: 1
+  schema_breaking_bump: major
+  optional_field_bump: minor
+  implementation_fix_bump: patch
+  migrate_or_reject: Outputs written under an older major contract are either migrated by an explicit migration step or rejected with MBS-E802; never silently reinterpreted.
+stop_conditions:
+  - approval gate not passed
+  - nitrogen mass balance does not close
+  - monitoring threshold exceeded
+  - regulation unverifiable
+maintainer: Panshi / Obsidian Plan
+license: MIT (project convention; repo root LICENSE)

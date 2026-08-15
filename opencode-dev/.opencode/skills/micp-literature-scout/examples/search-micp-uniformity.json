@@ -1,0 +1,24 @@
+{
+  "contract_version": "1.0",
+  "task_id": "task-micp-uniformity-01",
+  "project_id": "micp-sand-column-study",
+  "request": "检索提高 MICP 均匀性的证据, 区分实验室柱试与现场/米级试验",
+  "action": "search.run",
+  "query": {
+    "text": "improve MICP uniformity calcium carbonate distribution",
+    "database": "auto",
+    "n": 10
+  },
+  "constraints": ["time_range:2012-2026", "language:en"],
+  "requested_output_format": "findings",
+  "risk_level": "medium",
+  "human_approval_state": {
+    "granted": true,
+    "approver": "obsidian-controller",
+    "scope": "eval: micp-literature-scout demo"
+  },
+  "actor": {"role": "controller", "id": "obsidian-router"},
+  "skill_version": "1.0.0",
+  "controller_version": "1.0",
+  "timestamp": "2026-08-06T12:00:00Z"
+}

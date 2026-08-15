@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-scaleup-injection-engineer.injection-plan.json",
+  "title": "micp-scaleup-injection-engineer — Injection Plan",
+  "description": "The injection plan artifact: layout, schedule, material balance, pressure constraints, stage gates, stop conditions and fallback.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scale_level",
+    "site_assumptions",
+    "similarity_matrix",
+    "non_scalable_factors",
+    "injection_layout",
+    "injection_schedule",
+    "material_balance",
+    "pressure_constraints",
+    "stop_conditions",
+    "fallback_plan"
+  ],
+  "properties": {
+    "scale_level": {
+      "type": "string",
+      "enum": ["pilot_column", "metre", "site", "field"]
+    },
+    "site_assumptions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "similarity_matrix": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["parameter", "scaling_rule", "lab_value", "pilot_value", "field_value", "scalable"],
+        "properties": {
+          "parameter": { "type": "string" },
+          "scaling_rule": { "type": "string" },
+          "lab_value": { "type": ["number", "string", "null"] },
+          "pilot_value": { "type": ["number", "string", "null"] },
+          "field_value": { "type": ["number", "string", "null"] },
+          "scalable": { "type": "boolean" },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "non_scalable_factors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["factor", "reason", "action"],
+        "properties": {
+          "factor": { "type": "string" },
+          "reason": { "type": "string" },
+          "action": { "type": "string" }
+        }
+      }
+    },
+    "injection_layout": {
+      "type": "object",
+      "required": ["pattern", "wells"],
+      "properties": {
+        "pattern": { "type": "string" },
+        "wells": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "type", "x", "y"],
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "type": "string", "enum": ["injection", "extraction", "monitoring"] },
+              "x": { "type": "number" },
+              "y": { "type": "number" },
+              "depth": { "type": ["number", "null"] },
+              "radius": { "type": ["number", "null"] }
+            }
+          }
+        },
+        "zones": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["zone_id", "layer", "injection_points", "volumes"],
+            "properties": {
+              "zone_id": { "type": "string" },
+              "layer": { "type": "string" },
+              "injection_points": { "type": "array", "items": { "type": "string" } },
+              "volumes": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
+    "injection_schedule": {
+      "type": "object",
+      "required": ["phases", "sequence"],
+      "properties": {
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["phase", "order", "duration_days", "volumes"],
+            "properties": {
+              "phase": { "type": "string", "enum": ["bacteria", "fixation", "cementation", "flushing", "monitoring"] },
+              "order": { "type": "integer" },
+              "duration_days": { "type": "number" },
+              "volumes": { "type": "object" },
+              "flow_mode": { "type": "string", "enum": ["constant_flux", "constant_head"] },
+              "flow_rate": { "type": "number" },
+              "retention_time": { "type": "number" }
+            }
+          }
+        },
+        "sequence": { "type": "array", "items": { "type": "string" } },
+        "pulse_strategy": { "type": "string" },
+        "total_duration_days": { "type": "number" },
+        "rounds": { "type": "integer" }
+      }
+    },
+    "material_balance": {
+      "type": "object",
+      "required": ["pore_volume", "total_volume", "urea_mol", "ca_mol", "caco3_kg", "nh4_n_mol", "caco3_content_kg_m3"],
+      "properties": {
+        "pore_volume": { "type": "number" },
+        "total_volume": { "type": "number" },
+        "urea_mol": { "type": "number" },
+        "ca_mol": { "type": "number" },
+        "caco3_kg": { "type": "number" },
+        "nh4_n_mol": { "type": "number" },
+        "caco3_content_kg_m3": { "type": "number" },
+        "conversion_efficiency": { "type": "number" },
+        "flow_rates": { "type": "object" }
+      }
+    },
+    "pressure_constraints": {
+      "type": "object",
+      "required": ["allowed_injection_pressure", "formation_limit", "clogging_pressure_warning"],
+      "properties": {
+        "allowed_injection_pressure": { "type": "number" },
+        "formation_limit": { "type": ["number", "null"] },
+        "clogging_pressure_warning": { "type": "boolean" },
+        "flow_mode": { "type": "string" },
+        "head_loss_m": { "type": "number" },
+        "overburden_pressure_pa": { "type": ["number", "null"] }
+      }
+    },
+    "stop_conditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "condition", "action"],
+        "properties": {
+          "id": { "type": "string" },
+          "condition": { "type": "string" },
+          "action": { "type": "string" }
+        }
+      }
+    },
+    "fallback_plan": {
+      "type": "object",
+      "required": ["trigger", "actions"],
+      "properties": {
+        "trigger": { "type": "string" },
+        "actions": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "task_id": "ex-02-replan-after-failure",
+  "project_id": "panshi-demo",
+  "request": "The ureolysis kinetics experiment (node 'ureolysis_kinetics') failed due to culture contamination. Replan only the affected path; do not reopen confirmed literature findings or completed instrument calibration.",
+  "context": "Prior plan artifact: artifacts/dag-1 from ex-01. Node 'ureolysis_kinetics' depends on 'lit_review' (completed) and feeds 'mechanism_model' (pending) and 'ammonium_balance' (pending). Instrument calibration node 'calibration' (completed) is upstream of nothing affected.",
+  "constraints": {"max_nodes": 12},
+  "evidence_refs": [
+    {"ref_id": "whiffin2007", "kind": "paper", "locator": "https://doi.org/10.1080/01490450701436505"}
+  ],
+  "requested_output_format": "json",
+  "risk_level": "high",
+  "human_approval_state": {"required": false, "granted": false},
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T10:15:00Z",
+  "replan_of": {
+    "prior_plan_artifact_ref": "artifacts/dag-1",
+    "trigger": {
+      "reason": "ureolysis kinetics experiment failed: culture contamination detected on plate",
+      "failed_node_ids": ["ureolysis_kinetics"]
+    }
+  }
+}

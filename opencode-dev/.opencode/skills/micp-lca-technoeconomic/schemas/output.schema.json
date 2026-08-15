@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-lca-technoeconomic/output.schema.json",
+  "title": "micp-lca-technoeconomic output contract",
+  "description": "Unified skill output envelope (Obsidian Plan spec §六). Every invocation returns this shape, success or failure. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version", "skill", "skill_version", "status", "summary", "action",
+    "functional_unit", "system_boundary", "baseline",
+    "inventory", "environmental_results", "cost_results", "hotspots",
+    "scenario_comparison", "sensitivity", "uncertainty", "limitations",
+    "recommendations", "artifacts", "validation", "provenance", "errors",
+    "requested_next_skills"
+  ],
+  "properties": {
+    "contract_version": {"type": "string", "pattern": "^1\\.\\d+$"},
+    "skill": {"type": "string", "const": "micp-lca-technoeconomic"},
+    "skill_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+    },
+    "summary": {"type": "string"},
+    "action": {"type": ["string", "null"]},
+    "project_id": {"type": ["string", "null"]},
+    "task_id": {"type": ["string", "null"]},
+    "functional_unit": {"type": ["object", "null"]},
+    "system_boundary": {"type": ["object", "null"]},
+    "baseline": {"type": ["object", "null"]},
+    "inventory": {"type": "object"},
+    "environmental_results": {"type": "object"},
+    "cost_results": {"type": "object"},
+    "hotspots": {"type": "object"},
+    "scenario_comparison": {"type": ["object", "array"]},
+    "sensitivity": {"type": "object"},
+    "uncertainty": {"type": "object"},
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "statement"],
+        "properties": {
+          "label": {"type": "string"},
+          "statement": {"type": "string"}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind"],
+        "properties": {
+          "kind": {"type": "string"},
+          "path": {"type": ["string", "null"]},
+          "note": {}
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "required": ["input_schema", "output_schema", "self_check"],
+      "properties": {
+        "input_schema": {"type": "string", "enum": ["passed", "failed", "pending"]},
+        "output_schema": {"type": "string", "enum": ["passed", "failed", "pending"]},
+        "self_check": {"type": "string", "enum": ["passed", "failed", "not_run", "skipped_dry_run"]}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["started_at", "completed_at", "host"],
+      "properties": {
+        "started_at": {"type": ["string", "null"]},
+        "completed_at": {"type": ["string", "null"]},
+        "host": {"type": ["string", "null"]},
+        "factors": {"type": "array"}
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {"type": "string", "pattern": "^LCA-E[0-9]{3}$"},
+          "message": {"type": "string"},
+          "detail": {"type": "object"},
+          "retryable": {"type": "boolean"}
+        }
+      }
+    },
+    "requested_next_skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill", "reason"],
+        "properties": {
+          "skill": {"type": "string"},
+          "reason": {"type": "string"},
+          "inputs_needed": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

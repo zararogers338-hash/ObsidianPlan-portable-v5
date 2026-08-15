@@ -1,0 +1,100 @@
+# Machine-readable metadata for micp-evidence-extractor.
+# Consumed by the OSR registry indexer (tools/osr/registry.ts) and by Obsidian
+# Controller tooling. Fields mirror the effective contract; see schemas/.
+# Layout of error codes: MEE-E<category><ordinal> — see tools/mee/errors.py.
+
+name: micp-evidence-extractor
+version: 1.0.0
+entry: tools/mee/cli.py
+description: >-
+  MICP structured evidence extraction: converts MICP papers, supplementary
+  materials, lab reports, CSV and tables into comparable, traceable,
+  verifiable Evidence Cards. Extracts per experimental group, per time point,
+  per measurement method; never mixes groups, never presents figure readouts
+  as author-reported values, never conflates OD600 with CFU or urease activity.
+  Also verifies DOIs and normalizes units.
+
+# Router contract (see obsidian-skill-router planner.ts DOMAIN_MAP): the bare
+# capability token `evidence` is what routes evidence-extraction requests here.
+capabilities:
+  - evidence
+
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - context
+  - evidence_refs
+  - data_refs
+  - upstream_outputs
+
+outputs:
+  - status
+  - summary
+  - findings
+  - assumptions
+  - evidence_used
+  - uncertainty
+  - risks
+  - artifacts
+  - requested_next_skills
+  - validation
+  - provenance
+  - errors
+  - evidence_cards
+  - isolation_report
+  - doi_verifications
+  - duplicates_contradictions
+  - extractor_stats
+
+domain_keywords:
+  - 证据卡
+  - Evidence Card
+  - 提取
+  - 抽取
+  - 结构化提取
+  - MICP 论文
+  - 结构化数据
+  - DOI
+  - 单位规范化
+  - 证据溯源
+  - 混组
+  - 时间点
+  - evidence
+  - extract
+  - structured
+  - OD600
+  - 脲酶
+  - urease
+  - 页码
+
+units:
+  strength: kPa
+  permeability: m/s
+  conc_molar: mol/L
+  urease_rate: mmol_urea/min/OD
+  od600: OD600
+  percent: percent
+
+tool_permissions:
+  - read
+  - write_local_audit
+
+network: false
+writes:
+  - audit/**
+
+stop_conditions:
+  - 输出通过 output.schema.json 自检后停止
+  - 任一硬门控失败即返回 BLOCKED/FAILED 并停止
+  - 需要下游能力返回 NEED_ADDITIONAL_SKILL 并停止
+  - 高风险待批准返回 HUMAN_APPROVAL_REQUIRED 并停止
+
+compatible_controller: ">=1.0.0"
+dependencies: []
+
+cost_estimate:
+  tokens: 3000
+  usd: 0.03
+
+risk_tier: low

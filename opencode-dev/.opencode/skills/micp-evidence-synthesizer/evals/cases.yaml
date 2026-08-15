@@ -1,0 +1,371 @@
+# MES eval cases — 至少 8 个评测用例,覆盖正常/缺失/冲突/对抗/边界。
+# 每个用例: 描述、输入(可含占位 {ref_id} 以唯一化)、期望 status、断言。
+
+meta:
+  skill: micp-evidence-synthesizer
+  version: 1.0.0
+  generated: 2026-08-06
+
+cases:
+  - id: EVAL-001
+    name: "正常综合:两张可比卡片定量合并"
+    risk: normal
+    status: SUCCESS
+    input:
+      contract_version: "1.0"
+      task_id: "eval-001"
+      project_id: "panshi-eval"
+      request: "综合两张 MICP 砂柱 UCS 证据卡,给出条件化结论"
+      action: evidence.synthesize
+      skill_version: "1.0.0"
+      controller_version: "1.0.0"
+      timestamp: "2026-08-06T00:00:00Z"
+      pico:
+        population: "Ottawa sand, D50=0.4mm, Dr=60%"
+        intervention: "MICP, 1M cementation solution, 5 injections"
+        outcome: "UCS at 7 d, MPa"
+        unit: "MPa"
+      evidence_cards:
+        - ref_id: "doi:10.1000/a"
+          study_id: "chen2024"
+          study_type: lab_experiment
+          layer: engineering_performance
+          evidence_level: "L1_direct_observation"
+          strain: ["Sporosarcina pasteurii"]
+          material: {soil_type: "Ottawa sand", grain_size_d50_mm: 0.4}
+          treatment:
+            cementation_solution_concentration: {value: 1.0, unit: "mol/L"}
+            injection_protocol: "5 injections"
+          context: {scale: "column"}
+          measurement: {method: "unconfined compression", endpoint_timing: "7 d"}
+          outcome:
+            name: UCS
+            value: 3.2
+            unit: MPa
+            direction: higher_is_better
+          reported_effect:
+            arms:
+              - {name: "MICP", n: 6, mean: 3.2, sd: 0.4, unit: "MPa"}
+              - {name: "control", n: 6, mean: 0.4, sd: 0.1, unit: "MPa"}
+          risk_of_bias: {overall: low}
+        - ref_id: "doi:10.1000/b"
+          study_id: "li2023"
+          study_type: lab_experiment
+          layer: engineering_performance
+          evidence_level: "L1_direct_observation"
+          strain: ["Sporosarcina pasteurii"]
+          material: {soil_type: "Ottawa sand", grain_size_d50_mm: 0.4}
+          treatment:
+            cementation_solution_concentration: {value: 1.0, unit: "mol/L"}
+            injection_protocol: "5 injections"
+          context: {scale: "column"}
+          measurement: {method: "unconfined compression", endpoint_timing: "7 d"}
+          outcome:
+            name: UCS
+            value: 2.9
+            unit: MPa
+            direction: higher_is_better
+          reported_effect:
+            arms:
+              - {name: "MICP", n: 6, mean: 2.9, sd: 0.3, unit: "MPa"}
+              - {name: "control", n: 6, mean: 0.4, sd: 0.1, unit: "MPa"}
+          risk_of_bias: {overall: low}
+    assertions:
+      - "status == SUCCESS"
+      - "synthesis.comparability_check.status != 'incomparable'"
+      - "synthesis.meta_analysis is not None"
+
+  - id: EVAL-002
+    name: "单卡不能声称跨研究综合"
+    risk: boundary
+    status: PARTIAL
+    input:
+      contract_version: "1.0"
+      task_id: "eval-002"
+      project_id: "panshi-eval"
+      request: "综合一张卡片"
+      action: evidence.synthesize
+      skill_version: "1.0.0"
+      controller_version: "1.0.0"
+      timestamp: "2026-08-06T00:00:00Z"
+      pico:
+        population: "sand"
+        intervention: "MICP"
+        outcome: "UCS, MPa"
+        unit: "MPa"
+      evidence_cards:
+        - ref_id: "doi:10.1000/only"
+          study_id: "only"
+          study_type: lab_experiment
+          layer: engineering_performance
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 3.2, unit: MPa}
+          reported_effect: {}
+    assertions:
+      - "status in ('SUCCESS', 'PARTIAL')"
+      - "if len(synthesis.evidence_matrix) < 2: summary contains 'narrative' or comparability.status != 'comparable'"
+
+  - id: EVAL-003
+    name: "缺失 PICO 必须 BLOCKED 并给出获取指引"
+    risk: missing
+    status: BLOCKED
+    input:
+      contract_version: "1.0"
+      task_id: "eval-003"
+      project_id: "panshi-eval"
+      request: "综合证据"
+      action: evidence.synthesize
+      skill_version: "1.0.0"
+      controller_version: "1.0.0"
+      timestamp: "2026-08-06T00:00:00Z"
+      pico:
+        population: "sand"
+      evidence_cards:
+        - ref_id: "doi:10.1000/c"
+          study_id: "c"
+          study_type: lab_experiment
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 3.2, unit: MPa}
+          reported_effect: {}
+    assertions:
+      - "status == 'BLOCKED'"
+      - "errors[0].code == 'OES-E113'"
+      - "'intervention' in str(errors[0].detail.get('missing'))"
+
+  - id: EVAL-004
+    name: "单位不兼容禁止合并"
+    risk: conflict
+    status: PARTIAL
+    input:
+      contract_version: "1.0"
+      task_id: "eval-004"
+      project_id: "panshi-eval"
+      request: "综合两张 UCS 卡片,单位不同"
+      action: evidence.synthesize
+      skill_version: "1.0.0"
+      controller_version: "1.0.0"
+      timestamp: "2026-08-06T00:00:00Z"
+      pico:
+        population: "sand"
+        intervention: "MICP"
+        outcome: "UCS"
+        unit: "MPa"
+      evidence_cards:
+        - ref_id: "doi:10.1000/a"
+          study_id: "a"
+          study_type: lab_experiment
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 3.2, unit: MPa}
+          reported_effect: {}
+        - ref_id: "doi:10.1000/b"
+          study_id: "b"
+          study_type: lab_experiment
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 40, unit: "%"}
+          reported_effect: {}
+    assertions:
+      - "synthesis.comparability_check.status == 'incomparable'"
+      - "synthesis.meta_analysis is None"
+      - "synthesis.conflict_matrix has unit"
+
+  - id: EVAL-005
+    name: "卡片编造结论不得升级为 OBSERVED"
+    risk: adversarial
+    status: PARTIAL
+    input:
+      contract_version: "1.0"
+      task_id: "eval-005"
+      project_id: "panshi-eval"
+      request: "综合"
+      action: evidence.synthesize
+      skill_version: "1.0.0"
+      controller_version: "1.0.0"
+      timestamp: "2026-08-06T00:00:00Z"
+      pico:
+        population: "sand"
+        intervention: "MICP"
+        outcome: "UCS"
+        unit: "MPa"
+      evidence_cards:
+        - ref_id: "doi:10.1000/a"
+          study_id: "a"
+          study_type: lab_experiment
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 3.2, unit: MPa}
+          reported_effect: {}
+          claims:
+            - statement: "MICP 的效果被证实是决定性的"
+              label: OBSERVED
+        - ref_id: "doi:10.1000/b"
+          study_id: "b"
+          study_type: lab_experiment
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 2.9, unit: MPa}
+          reported_effect: {}
+    assertions:
+      - "no synthesis.conclusions[i].label == 'OBSERVED'"
+      - "status in ('SUCCESS', 'PARTIAL')"
+
+  - id: EVAL-006
+    name: "重复 ref_id 阻断(BLOCKED)"
+    risk: adversarial
+    status: BLOCKED
+    input:
+      contract_version: "1.0"
+      task_id: "eval-006"
+      project_id: "panshi-eval"
+      request: "综合"
+      action: evidence.synthesize
+      skill_version: "1.0.0"
+      controller_version: "1.0.0"
+      timestamp: "2026-08-06T00:00:00Z"
+      pico:
+        population: "sand"
+        intervention: "MICP"
+        outcome: "UCS"
+        unit: "MPa"
+      evidence_cards:
+        - ref_id: "doi:10.1000/dup"
+          study_id: "a"
+          study_type: lab_experiment
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 3.2, unit: MPa}
+          reported_effect: {}
+        - ref_id: "doi:10.1000/dup"
+          study_id: "b"
+          study_type: lab_experiment
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 2.9, unit: MPa}
+          reported_effect: {}
+    assertions:
+      - "status == 'BLOCKED'"
+      - "errors[0].code == 'OES-E102'"
+
+  - id: EVAL-007
+    name: "高风险强制审计链"
+    risk: normal
+    status: PARTIAL
+    input:
+      contract_version: "1.0"
+      task_id: "eval-007"
+      project_id: "panshi-eval"
+      request: "综合"
+      action: evidence.synthesize
+      skill_version: "1.0.0"
+      controller_version: "1.0.0"
+      timestamp: "2026-08-06T00:00:00Z"
+      risk_level: high
+      pico:
+        population: "sand"
+        intervention: "MICP"
+        outcome: "UCS"
+        unit: "MPa"
+      evidence_cards:
+        - ref_id: "doi:10.1000/a"
+          study_id: "a"
+          study_type: lab_experiment
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 3.2, unit: MPa}
+          reported_effect: {}
+        - ref_id: "doi:10.1000/b"
+          study_id: "b"
+          study_type: lab_experiment
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 2.9, unit: MPa}
+          reported_effect: {}
+    assertions:
+      - "requested_next_skills contains 'obsidian-red-team'"
+      - "requested_next_skills contains 'obsidian-decision-gate'"
+
+  - id: EVAL-008
+    name: "现场部署触发人工批准门"
+    risk: approval
+    status: HUMAN_APPROVAL_REQUIRED
+    input:
+      contract_version: "1.0"
+      task_id: "eval-008"
+      project_id: "panshi-eval"
+      request: "综合"
+      action: evidence.synthesize
+      skill_version: "1.0.0"
+      controller_version: "1.0.0"
+      timestamp: "2026-08-06T00:00:00Z"
+      constraints:
+        field_deployment: true
+      pico:
+        population: "sand"
+        intervention: "MICP"
+        outcome: "UCS"
+        unit: "MPa"
+      evidence_cards:
+        - ref_id: "doi:10.1000/a"
+          study_id: "a"
+          study_type: lab_experiment
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 3.2, unit: MPa}
+          reported_effect: {}
+    assertions:
+      - "status == 'HUMAN_APPROVAL_REQUIRED'"
+      - "errors[0].code == 'OES-E107'"
+
+  - id: EVAL-009
+    name: "确定性:同输入两次运行输出一致"
+    risk: boundary
+    status: PARTIAL
+    determinism: true
+    input:
+      contract_version: "1.0"
+      task_id: "eval-009"
+      project_id: "panshi-eval"
+      request: "综合"
+      action: evidence.synthesize
+      skill_version: "1.0.0"
+      controller_version: "1.0.0"
+      timestamp: "2026-08-06T00:00:00Z"
+      pico:
+        population: "sand"
+        intervention: "MICP"
+        outcome: "UCS"
+        unit: "MPa"
+      evidence_cards:
+        - ref_id: "doi:10.1000/a"
+          study_id: "a"
+          study_type: lab_experiment
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 3.2, unit: MPa}
+          reported_effect: {}
+        - ref_id: "doi:10.1000/b"
+          study_id: "b"
+          study_type: lab_experiment
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 2.9, unit: MPa}
+          reported_effect: {}
+    assertions:
+      - "status in ('SUCCESS', 'PARTIAL')"
+      - "run twice; identical except provenance"
+
+  - id: EVAL-010
+    name: "缺失关键字段必须逐字段列出"
+    risk: missing
+    status: BLOCKED
+    input:
+      contract_version: "1.0"
+      task_id: "eval-010"
+      project_id: "panshi-eval"
+      request: "综合"
+      action: evidence.synthesize
+      skill_version: "1.0.0"
+      controller_version: "1.0.0"
+      timestamp: "2026-08-06T00:00:00Z"
+      # pico entirely missing -> schema-level OES-E101
+      evidence_cards:
+        - ref_id: "doi:10.1000/a"
+          study_id: "a"
+          study_type: lab_experiment
+          evidence_level: "L1_direct_observation"
+          outcome: {name: UCS, value: 3.2, unit: MPa}
+          reported_effect: {}
+    assertions:
+      - "status == 'BLOCKED'"
+      - "errors[0].code == 'OES-E101'"
+      - "'pico' in str(errors[0].detail.get('issues'))"

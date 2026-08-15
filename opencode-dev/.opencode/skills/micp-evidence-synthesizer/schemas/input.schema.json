@@ -1,0 +1,304 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-evidence-synthesizer/input.schema.json",
+  "title": "micp-evidence-synthesizer input contract",
+  "description": "Unified skill input envelope (Obsidian Plan spec §六) plus evidence-card payloads. contract_version 1.0. Every required field is mandatory; missing required fields MUST be reported with explicit field names and acquisition paths (never a generic '信息不足').",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "task_id", "project_id", "request", "action", "skill_version", "timestamp", "pico", "evidence_cards"],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "SemVer-ish contract version. Runtime checks the major: 1.x accepted, 2.x rejected with OES-E801."
+    },
+    "task_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "project_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9._-]{1,64}$",
+      "description": "Project/experiment identifier; also filesystem-safe by construction."
+    },
+    "request": {"type": "string", "minLength": 1, "maxLength": 20000, "description": "Natural-language synthesis request (spec §六)."},
+    "action": {
+      "type": "string",
+      "enum": ["evidence.synthesize"],
+      "description": "MES performs exactly one action: 'evidence.synthesize'. Other actions belong to other skills; route them elsewhere (OES-E115)."
+    },
+    "context": {"type": "object", "description": "Controller-supplied working context (ephemeral tier)."},
+    "constraints": {
+      "type": "object",
+      "description": "Synthesis constraints. Missing values fall back to skill defaults.",
+      "properties": {
+        "max_evidence_cards": {"type": "integer", "minimum": 1, "maximum": 1000},
+        "max_meta_studies": {"type": "integer", "minimum": 2, "maximum": 200},
+        "significance_level": {"type": "number", "minimum": 0.001, "maximum": 0.1, "default": 0.05},
+        "effect_size_thresholds": {
+          "type": "object",
+          "properties": {
+            "small": {"type": "number", "default": 0.2},
+            "medium": {"type": "number", "default": 0.5},
+            "large": {"type": "number", "default": 0.8}
+          }
+        },
+        "min_poolable_studies": {"type": "integer", "minimum": 2, "maximum": 100, "default": 2},
+        "max_heterogeneity_allowable": {"type": "number", "minimum": 0, "maximum": 100, "default": 75},
+        "output_units": {"type": "string", "default": "as_reported"},
+        "allowed_modes": {
+          "type": "array",
+          "items": {"type": "string", "enum": ["quantitative", "narrative", "mixed"]},
+          "default": ["quantitative", "narrative", "mixed"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "evidence_refs": {"type": "array", "items": {"$ref": "#/$defs/ref"}},
+    "data_refs": {"type": "array", "items": {"$ref": "#/$defs/ref"}},
+    "upstream_outputs": {"type": "array", "items": {"type": "object"}, "description": "Upstream skill outputs (chemistry, mineral phase, transport, geotechnical) used as cross-layer evidence context."},
+    "requested_output_format": {
+      "type": "string",
+      "enum": ["synthesis_report", "evidence_matrix", "conflict_matrix", "meta_analysis_report", "heterogeneity_report", "sensitivity_report", "audit_report", "summary"],
+      "default": "synthesis_report"
+    },
+    "risk_level": {"type": "string", "enum": ["low", "medium", "high", "critical"], "default": "medium"},
+    "human_approval_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["granted"],
+      "properties": {
+        "granted": {"type": "boolean"},
+        "approver": {"type": "string"},
+        "scope": {"type": "string"},
+        "revision": {"type": "string"}
+      }
+    },
+    "evidence_cards": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "items": {"$ref": "#/$defs/evidenceCard"},
+      "description": "The evidence to synthesize. Every card carries a required ref_id for traceability. Cards MUST NOT carry final conclusions — the skill derives them; a pre-drawn conclusion in a card is treated as REPORTED claim material, never as OBSERVED fact."
+    },
+    "pico": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "population": {"type": "string", "minLength": 1, "description": "P: population / context (e.g. 'Ottawa sand, D50=0.4mm, Dr=60%')."},
+        "intervention": {"type": "string", "minLength": 1, "description": "I/E: intervention or exposure (e.g. 'MICP, cementation solution 1M, 5 injections')."},
+        "comparison": {"type": "string", "description": "C: comparison arm, optional (e.g. 'untreated control', 'cement-based grouting')."},
+        "outcome": {"type": "string", "minLength": 1, "description": "O: outcome of interest (e.g. 'UCS at 7 d, MPa')."},
+        "unit": {"type": "string", "description": "PECO-level nominal unit expectation for the outcome, if known."},
+        "setting": {"type": "string", "description": "Temporal/spatial setting (e.g. 'lab column, 7 d', 'field pilot, 30 d')."}
+      },
+      "description": "PICO/PECO framework alignment. population/intervention/outcome are REQUIRED at runtime to run a synthesis; a pico object that is structurally invalid (missing those fields) is rejected with OES-E113 and explicit acquisition guidance — never with a generic schema error."
+    },
+    "skill_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "controller_version": {"type": "string"},
+    "timestamp": {"type": "string", "description": "ISO-8601 caller timestamp."},
+    "dry_run": {"type": "boolean", "default": false, "description": "Validate + compute only; no artifacts written."}
+  },
+  "$defs": {
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref_id"],
+      "properties": {
+        "ref_id": {"type": "string", "minLength": 1},
+        "uri": {"type": "string"},
+        "media_type": {"type": "string"},
+        "note": {"type": "string"}
+      }
+    },
+    "evidenceCard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref_id", "study_id", "study_type", "evidence_level"],
+      "description": "ref_id/study_id/study_type/evidence_level are schema-required. outcome and reported_effect are checked at runtime by tools/evidence_validate.py (OES-E102) so the error can name the exact missing card field with acquisition guidance.",
+      "properties": {
+        "ref_id": {"type": "string", "minLength": 1, "description": "Traceable reference id; must be referenced from the output's evidence_used."},
+        "study_id": {"type": "string", "minLength": 1, "description": "Study identifier (e.g. 'chen2024')."},
+        "study_type": {
+          "type": "string",
+          "enum": ["randomized_trial", "quasi_experiment", "cohort", "case_series", "lab_experiment", "field_experiment", "review", "modeling", "other"],
+          "description": "Study design; drives the evidence-level baseline."
+        },
+        "design_notes": {"type": "string"},
+        "material": {
+          "type": "object",
+          "description": "Material/soil description for comparability checks.",
+          "properties": {
+            "soil_type": {"type": "string"},
+            "grain_size_d50_mm": {"type": "number", "minimum": 0},
+            "grain_size_range": {"type": "string"},
+            "relative_density_pct": {"type": "number", "minimum": 0, "maximum": 100},
+            "porosity": {"type": "number", "minimum": 0, "maximum": 1},
+            "mineralogy": {"type": "string"},
+            "grading": {"type": "string"}
+          },
+          "additionalProperties": true
+        },
+        "strain": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Biological strain(s) used (e.g. Sporosarcina pasteurii). Comparability check: strain must match across cards for direct comparison."
+        },
+        "treatment": {
+          "type": "object",
+          "properties": {
+            "cementation_solution_concentration": {"$ref": "#/$defs/quantity"},
+            "injection_protocol": {"type": "string"},
+            "injection_volume_ml_per_sample": {"type": "number", "minimum": 0},
+            "injections": {"type": "integer", "minimum": 0},
+            "retention_time_h": {"type": "number", "minimum": 0},
+            "temperature_c": {"type": "number"},
+            "ph": {"type": "number"},
+            "medium": {"type": "string"},
+            "bacterial_concentration_od600": {"type": "number", "minimum": 0}
+          },
+          "additionalProperties": true
+        },
+        "sample": {
+          "type": "object",
+          "description": "Specimen geometry and testing context — comparability gate for mechanical outcomes.",
+          "properties": {
+            "diameter_mm": {"type": "number", "minimum": 0},
+            "height_mm": {"type": "number", "minimum": 0},
+            "volume_ml": {"type": "number", "minimum": 0},
+            "curing_days": {"type": "number", "minimum": 0},
+            "test_standard": {"type": "string"},
+            "loading_rate_mm_min": {"type": "number", "minimum": 0}
+          },
+          "additionalProperties": true
+        },
+        "measurement": {
+          "type": "object",
+          "properties": {
+            "method": {"type": "string"},
+            "endpoint_timing": {"type": "string"},
+            "instrument": {"type": "string"},
+            "sample_size_n": {"type": "integer", "minimum": 1}
+          },
+          "additionalProperties": true
+        },
+        "outcome": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "value", "unit"],
+          "properties": {
+            "name": {"type": "string", "minLength": 1},
+            "value": {"type": "number"},
+            "unit": {"type": "string", "minLength": 1},
+            "spread": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sd": {"type": "number", "minimum": 0},
+                "se": {"type": "number", "minimum": 0},
+                "ci95_low": {"type": "number"},
+                "ci95_high": {"type": "number"},
+                "sem": {"type": "number", "minimum": 0}
+              }
+            },
+            "direction": {"type": "string", "enum": ["higher_is_better", "lower_is_better", "neutral"], "default": "higher_is_better"}
+          }
+        },
+        "reported_effect": {
+          "type": "object",
+          "description": "The effect the study reported. For two-arm studies, group effect sizes or raw arms may be given.",
+          "properties": {
+            "effect_type": {"type": "string", "enum": ["raw_value", "mean_difference", "standardized_mean_difference", "odds_ratio", "risk_ratio", "correlation", "percent_change", "other"]},
+            "effect_size": {"type": "number"},
+            "ci95_low": {"type": "number"},
+            "ci95_high": {"type": "number"},
+            "p_value": {"type": "number", "minimum": 0, "maximum": 1},
+            "arms": {
+              "type": "array",
+              "items": {"$ref": "#/$defs/arm"}
+            },
+            "unit": {"type": "string"},
+            "direction": {"type": "string", "enum": ["higher_is_better", "lower_is_better", "neutral"]},
+            "note": {"type": "string"}
+          },
+          "description": "For pooling, arms (treatment/control with n, mean, sd, unit) are the preferred input; effect_size without arms cannot be pooled and is treated as a reported stand-alone effect."
+        },
+        "risk_of_bias": {
+          "type": "object",
+          "properties": {
+            "overall": {"type": "string", "enum": ["low", "moderate", "high", "critical", "unclear"], "default": "unclear"},
+            "confounding": {"type": "string"},
+            "blinding": {"type": "string"},
+            "incomplete_outcome": {"type": "string"},
+            "selective_reporting": {"type": "string"},
+            "other_concerns": {"type": "string"},
+            "notes": {"type": "string"}
+          }
+        },
+        "evidence_level": {
+          "type": "string",
+          "enum": ["L1_direct_observation", "L2_strong_indirect", "L3_weak_indirect", "L4_no_evidence", "expert_opinion"],
+          "description": "Panshi/MICP causal evidence tier (L1..L4). Cards with L4/expert_opinion are never pooled as if they were direct measurements."
+        },
+        "context": {
+          "type": "object",
+          "description": "Study context used by comparability and scale-heterogeneity checks.",
+          "properties": {
+            "scale": {"type": "string"},
+            "saturation": {"type": "string"},
+            "site": {"type": "string"},
+            "environment": {"type": "string"}
+          },
+          "additionalProperties": true
+        },
+        "layer": {
+          "type": "string",
+          "enum": ["biological", "chemical", "mineral_phase", "porous_media", "engineering_performance", "environmental_impact", "other"],
+          "default": "engineering_performance",
+          "description": "MICP discipline layer (Panshi discipline rule). Mixing layers in one pool is a heterogeneity red flag."
+        },
+        "conflicts_with": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "ref_ids of other cards this card is known to conflict with (direction or magnitude)."
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["statement", "label"],
+            "properties": {
+              "statement": {"type": "string"},
+              "label": {
+                "type": "string",
+                "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+              }
+            }
+          },
+          "description": "Author-supplied claims. Treated as REPORTED/CALCULATED material; never automatically upgraded to OBSERVED."
+        },
+        "note": {"type": "string"}
+      }
+    },
+    "arm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "n", "mean", "unit"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "n": {"type": "integer", "minimum": 1},
+        "mean": {"type": "number"},
+        "sd": {"type": "number", "minimum": 0, "description": "Standard deviation of the arm. Required to compute a pooled effect for this card."},
+        "se": {"type": "number", "minimum": 0},
+        "unit": {"type": "string", "minLength": 1}
+      }
+    },
+    "quantity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": {"type": "number"},
+        "unit": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "contract_version": "1.0",
+  "task_id": "ex3",
+  "project_id": "demo-kg-03",
+  "request": "对知识库做完整性校验（hash 链 + 快照一致性）",
+  "action": "kb.integrity",
+  "skill_version": "1.0.0",
+  "timestamp": "2026-08-06T00:00:00Z"
+}

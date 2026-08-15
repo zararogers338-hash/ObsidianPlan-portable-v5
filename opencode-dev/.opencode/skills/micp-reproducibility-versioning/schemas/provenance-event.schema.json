@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-reproducibility-versioning.provenance-event.json",
+  "title": "Provenance Event",
+  "description": "One append-only provenance log event for a single skill/tool invocation. The log is hash-chained: each event's `prev_hash` equals the previous event's `hash`, and each `hash` covers the event body plus `prev_hash`. Tampering breaks the chain (detected by check-pollution). Version 1.0.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "ts",
+    "task_id",
+    "project_id",
+    "caller",
+    "skill_id",
+    "skill_version",
+    "controller_version",
+    "action",
+    "input_summary",
+    "input_refs",
+    "input_hashes",
+    "tool_calls",
+    "output_hashes",
+    "git_commit",
+    "environment",
+    "errors",
+    "human_approval",
+    "prev_hash",
+    "hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "ts": {
+      "type": "string",
+      "maxLength": 40
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "caller": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "skill_id": {
+      "type": "string",
+      "const": "micp-reproducibility-versioning"
+    },
+    "skill_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "controller_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "action": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "input_summary": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "input_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "input_hashes": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Computed file hashes for the input fileset, keyed by relative path."
+    },
+    "tool_calls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tool",
+          "ok"
+        ],
+        "properties": {
+          "tool": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "detail": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        }
+      }
+    },
+    "output_hashes": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Computed output hashes, keyed by relative path."
+    },
+    "git_commit": {
+      "type": "string",
+      "maxLength": 128,
+      "description": "Git commit id when available; otherwise a deterministic directory fingerprint (prefix fp_)."
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "human_approval": {
+      "type": "string",
+      "enum": [
+        "not_required",
+        "pending",
+        "approved",
+        "rejected"
+      ]
+    },
+    "prev_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Hash of the previous event (all zeros for the first event in a log)."
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "sha256 over the canonical JSON of the event body + prev_hash. Tamper-evident."
+    }
+  }
+}

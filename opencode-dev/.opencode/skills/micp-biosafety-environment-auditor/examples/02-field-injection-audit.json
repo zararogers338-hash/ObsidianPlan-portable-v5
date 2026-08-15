@@ -1,0 +1,45 @@
+{
+  "contract_version": "1.0",
+  "task_id": "example-02",
+  "project_id": "field-pilot",
+  "request": "审查现场 MICP 注浆试验的环境影响与生物安全，涉及地下水接触风险",
+  "action": "audit",
+  "skill_version": "1.0.0",
+  "controller_version": "1.4.2",
+  "timestamp": "2026-08-07T10:00:00Z",
+  "risk_level": "critical",
+  "site": {
+    "name": "近河砂质地层试验场",
+    "location": "中国（河漫滩砂质地层，地下水位浅）",
+    "release_type": "injection",
+    "groundwater_injection": true,
+    "waste_treatment_capacity": false,
+    "site_sensitive_ecology": true,
+    "aerosol_potential": true,
+    "confined_space": true,
+    "personnel_exposure": true,
+    "strain": {
+      "name": "未鉴定产脲酶菌株 NBS-7",
+      "source": "现场土著富集，无保藏号"
+    },
+    "pathogen_list_ref": null
+  },
+  "plan": {
+    "name": "场地-01 现场注浆",
+    "nitrogen": {
+      "urea_input_g": 5000.0,
+      "pH": 9.5,
+      "temperature_c": 35.0,
+      "liquid_residual_g": 2300.0,
+      "sorbed_retained_g": 0.0,
+      "discharged_treated_g": 0.0
+    },
+    "waste": {
+      "volume_l": 500.0,
+      "nh4_n_conc_mgL": 5000.0,
+      "total_n_load_g": 2332.0,
+      "discharge_to_environment": true
+    }
+  },
+  "evidence_refs": ["FIELD-2026/site-geology.json", "FIELD-2026/strain-enrichment.log"]
+}

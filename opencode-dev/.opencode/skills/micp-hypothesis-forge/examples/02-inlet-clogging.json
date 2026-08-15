@@ -1,0 +1,18 @@
+{
+  "task_id": "EX-02",
+  "project_id": "P-REACTOR",
+  "request": "Forge competing hypotheses for the inlet clogging observed in the ureolytic packed-bed reactor.",
+  "risk_level": "medium",
+  "human_approval_state": "pending",
+  "requested_output_format": "hypothesis_card_set",
+  "skill_version": "1.0.0",
+  "controller_version": "0.1.0",
+  "timestamp": "2026-08-06T00:00:00Z",
+  "statement_to_forge": "Inlet of the packed-bed reactor clogs over time",
+  "context": "Packed-bed reactor, continuous urea + Ca2+ feed, observed pressure rise at inlet zone over 21 days.",
+  "constraints": {
+    "min_hypotheses": 3,
+    "domain_focus": ["chemical precipitation", "cell entrapment", "flow-field effects"]
+  },
+  "data_refs": ["pressure-log-21d", "effluent-calcium"]
+}

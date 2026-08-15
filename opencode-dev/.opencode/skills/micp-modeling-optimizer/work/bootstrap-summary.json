@@ -1,0 +1,59 @@
+{
+  "suite": "micp-modeling-optimizer-bootstrap",
+  "all_pass": true,
+  "cases": [
+    {
+      "name": "model_definition_solve",
+      "status": "SUCCESS",
+      "conservation_ok": true,
+      "numerical_ok": true,
+      "caco3_kg": 0.017645883599650688
+    },
+    {
+      "name": "inversion_identifiability",
+      "status": "SUCCESS",
+      "theta": [
+        0.0001999946967525797,
+        9.982601042778833e-05
+      ],
+      "holdout_ratio": 0.2050249310278009,
+      "verdict": "identifiable",
+      "classes": [
+        "identifiable",
+        "weakly_identifiable"
+      ]
+    },
+    {
+      "name": "sensitivity_sobol",
+      "status": "SUCCESS",
+      "s1": [
+        1.0,
+        0.011423606980488422
+      ]
+    },
+    {
+      "name": "multiobjective_pareto",
+      "status": "SUCCESS",
+      "n_front": 20,
+      "knee": {
+        "x": [
+          0.0002604501287468502,
+          0.00030481750045697066
+        ],
+        "objectives": [
+          -1.33884138,
+          27.80401085
+        ]
+      },
+      "robustness_n": 20
+    },
+    {
+      "name": "full_pipeline_analyze",
+      "status": "SUCCESS",
+      "n_front": 16,
+      "has_identifiability": true,
+      "has_sensitivity": true,
+      "has_uq": true
+    }
+  ]
+}

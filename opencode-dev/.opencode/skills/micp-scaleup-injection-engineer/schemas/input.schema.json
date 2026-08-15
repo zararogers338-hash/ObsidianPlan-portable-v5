@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-scaleup-injection-engineer.input.json",
+  "title": "micp-scaleup-injection-engineer — Input Contract",
+  "description": "Strict input contract for the MICP scale-up injection-engineer skill. Required fields are mandatory; missing required fields MUST be reported with explicit field names and acquisition paths.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "project_id",
+    "request",
+    "action",
+    "skill_version",
+    "controller_version",
+    "timestamp"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "pattern": "^1\\.\\d+$",
+      "description": "Contract version. Major 1 is supported; other majors are rejected with MSI-E801."
+    },
+    "task_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "project_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "request": { "type": "string", "minLength": 1, "maxLength": 20000 },
+    "action": {
+      "type": "string",
+      "enum": [
+        "scaleup",
+        "similarity",
+        "material_balance",
+        "boundary_check",
+        "pressure_risk",
+        "injection_layout",
+        "injection_schedule",
+        "monitoring_plan",
+        "clogging_risk",
+        "tracer",
+        "stage_gate",
+        "validate",
+        "generate_tables"
+      ]
+    },
+    "lab": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Laboratory baseline recipe (source of the scale-up).",
+      "properties": {
+        "recipe": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["urea_conc", "ca_conc"],
+          "properties": {
+            "urea_conc": { "$ref": "#/$defs/quantity" },
+            "ca_conc": { "$ref": "#/$defs/quantity" },
+            "biomass": { "$ref": "#/$defs/quantity", "description": "inoculum concentration, e.g. OD600 or CFU" },
+            "pore_volumes_per_treatment": { "type": "number", "minimum": 0, "description": "PV of cementation solution per treatment round" },
+            "rounds": { "type": "integer", "minimum": 1, "description": "number of treatment rounds in lab" },
+            "flow_mode": { "type": "string", "enum": ["constant_flux", "constant_head"] },
+            "flow_rate": { "$ref": "#/$defs/quantity", "description": "lab injection flow rate" },
+            "pressure_drop": { "$ref": "#/$defs/quantity", "description": "lab observed pressure drop across specimen" },
+            "treatment_length": { "$ref": "#/$defs/quantity", "description": "lab treatment distance (specimen length)" },
+            "injection_strategy": { "type": "string", "description": "e.g. sequential, single-phase, bioaugmentation/biostimulation" }
+          }
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scale_level"],
+      "properties": {
+        "scale_level": {
+          "type": "string",
+          "enum": ["pilot_column", "metre", "site", "field"]
+        },
+        "geometry": {
+          "type": "object",
+          "properties": {
+            "volume": { "$ref": "#/$defs/quantity", "description": "target treatment volume" },
+            "depth": { "$ref": "#/$defs/quantity", "description": "target treatment depth (vertical extent)" },
+            "radius": { "$ref": "#/$defs/quantity", "description": "target treatment radius (lateral extent)" },
+            "length": { "$ref": "#/$defs/quantity", "description": "target treatment length (horizontal/column)" }
+          }
+        },
+        "objective": { "type": "string", "description": "e.g. uniform_strength, surface_stabilization, foundation_improvement" },
+        "duration_days": { "type": "number", "minimum": 0 }
+      }
+    },
+    "site": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Site/field conditions. Required in full for scale_level=site/field.",
+      "properties": {
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "thickness"],
+            "properties": {
+              "name": { "type": "string" },
+              "thickness": { "$ref": "#/$defs/quantity" },
+              "d50": { "$ref": "#/$defs/quantity" },
+              "fines_content": { "type": "number", "minimum": 0, "maximum": 1, "description": "fraction passing #200 sieve" },
+              "porosity": { "type": "number", "minimum": 0.001, "maximum": 0.999 },
+              "permeability": { "$ref": "#/$defs/quantity" },
+              "saturation": { "type": "number", "minimum": 0, "maximum": 1 },
+              "initial_urea_mol_m3": { "type": "number", "minimum": 0 },
+              "initial_ammonium_mol_m3": { "type": "number", "minimum": 0 }
+            }
+          }
+        },
+        "groundwater_level": { "$ref": "#/$defs/quantity" },
+        "anisotropy": { "type": "number", "minimum": 0.01, "maximum": 100, "description": "horizontal/vertical permeability ratio" },
+        "preferential_flow_notes": { "type": "string" },
+        "geotechnical_approval": { "$ref": "#/$defs/approval" },
+        "biosafety_review": { "$ref": "#/$defs/approval" },
+        "regulatory_verification": { "$ref": "#/$defs/approval" },
+        "construction_risk_assessment": { "$ref": "#/$defs/approval" },
+        "waste_ammonia_plan": { "$ref": "#/$defs/approval" },
+        "emergency_plan": { "$ref": "#/$defs/approval" }
+      }
+    },
+    "wells": {
+      "type": "object",
+      "properties": {
+        "injection_radius": { "$ref": "#/$defs/quantity" },
+        "well_radius": { "$ref": "#/$defs/quantity" },
+        "spacing": { "$ref": "#/$defs/quantity" },
+        "pattern": { "type": "string", "enum": ["triangular", "square", "line_drive", "five_spot", "single_point"] },
+        "injection_points": { "type": "array", "items": { "type": "object", "properties": { "x": {"type":"number"}, "y": {"type":"number"}, "depth": {"$ref":"#/$defs/quantity"} } } },
+        "extraction_points": { "type": "array", "items": { "type": "object", "properties": { "x": {"type":"number"}, "y": {"type":"number"} } } },
+        "monitoring_points": { "type": "array", "items": { "type": "object", "properties": { "x": {"type":"number"}, "y": {"type":"number"}, "depth": {"$ref":"#/$defs/quantity"} } } }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allowed_injection_pressure": { "$ref": "#/$defs/quantity", "description": "max allowable injection pressure (Pa)" },
+        "target_caco3_content_kg_m3": { "type": "number", "minimum": 0 },
+        "ammonia_limit_mg_L": { "type": "number", "minimum": 0, "description": "NH4-N discharge limit (mg/L)" },
+        "waste_disposal": { "type": "string", "enum": ["struvite", "anaerobic_ammox", "zeolite", "landfill_treatment", "reuse"] },
+        "budget_usd": { "type": "number", "minimum": 0 },
+        "pulse_strategy": { "type": "string", "enum": ["continuous", "pulsed", "alternating", "sequential"] },
+        "retention_time": { "$ref": "#/$defs/quantity" },
+        "flushing_pv": { "type": "number", "minimum": 0, "description": "pore volumes of flushing at end of treatment" },
+        "conversion_efficiency": { "type": "number", "exclusiveMinimum": 0, "maximum": 1, "description": "fraction of injected reagent converted to CaCO3 (design default 0.5; VP2010 reports ~0.12 in a 1 m3 box)" }
+      }
+    },
+    "tracer": {
+      "type": "object",
+      "description": "Optional tracer breakthrough data for breakthrough analysis.",
+      "properties": {
+        "time_s": { "type": "array", "items": { "type": "number" } },
+        "conc": { "type": "array", "items": { "type": "number" } },
+        "injected_conc": { "type": "number" },
+        "distance_m": { "type": "number" }
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "description": "Real-time monitoring readings that trigger alerts / stop rules.",
+      "properties": {
+        "injection_pressure_pa": { "type": "number" },
+        "flow_rate_m3_s": { "type": "number" },
+        "cumulative_volume_m3": { "type": "number" },
+        "ph": { "type": "number" },
+        "ec_ms_cm": { "type": "number" },
+        "temperature_c": { "type": "number" },
+        "ca_conc_mol_m3": { "type": "number" },
+        "nh4_conc_mol_m3": { "type": "number" },
+        "urea_conc_mol_m3": { "type": "number" },
+        "tracer_conc": { "type": "number" },
+        "shear_wave_velocity_m_s": { "type": "number" }
+      }
+    },
+    "context": { "type": "object", "description": "Controller-supplied working context (ephemeral tier)." },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } },
+    "data_refs": { "type": "array", "items": { "type": "string" } },
+    "upstream_outputs": { "type": "array", "items": { "type": "object" } },
+    "requested_output_format": { "type": "string", "enum": ["json", "summary"], "default": "json" },
+    "risk_level": { "type": "string", "enum": ["low", "medium", "high", "critical"], "default": "medium" },
+    "human_approval_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "granted": { "type": "boolean" },
+        "approver": { "type": "string" },
+        "revision": { "type": "integer" },
+        "scope": { "type": "string" }
+      }
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role"],
+      "properties": {
+        "role": { "type": "string", "enum": ["controller", "skill", "human", "auditor"] },
+        "id": { "type": "string" }
+      }
+    },
+    "skill_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "controller_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "dry_run": { "type": "boolean", "default": false, "description": "validate + report only; no full plan" }
+  },
+  "$defs": {
+    "quantity": {
+      "oneOf": [
+        { "type": "number" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "unit"],
+          "properties": {
+            "value": { "type": "number" },
+            "unit": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "approval": {
+      "type": "object",
+      "properties": {
+        "approved": { "type": "boolean" },
+        "approver": { "type": "string" },
+        "date": { "type": "string" },
+        "ref": { "type": "string" }
+      }
+    }
+  }
+}

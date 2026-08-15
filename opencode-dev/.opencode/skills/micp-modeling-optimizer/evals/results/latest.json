@@ -1,0 +1,287 @@
+{
+  "suite": "micp-modeling-optimizer-evals",
+  "cases": [
+    {
+      "id": "eval-01",
+      "description": "Normal: solve a ureolysis/precipitation model; conservation must pass.",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status",
+          "ok": true,
+          "detail": "SUCCESS"
+        },
+        {
+          "name": "schema_ok",
+          "ok": true,
+          "detail": "{\"input_schema\": true, \"output_schema\": true, \"self_check\": true, \"checks\": [{\"name\": \"envelope_shape\", \"ok\": true}, {\"name\": \"status_valid\", \"ok\": true}, {\"name\": \"epistemic_labels\", \"ok\": true}]}"
+        },
+        {
+          "name": "conservation_ok",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "output_status": "SUCCESS",
+      "output_schema": true,
+      "artifacts_n": 0
+    },
+    {
+      "id": "eval-02",
+      "description": "Normal: synthetic-data parameter inversion recovers k_ure.",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status",
+          "ok": true,
+          "detail": "SUCCESS"
+        },
+        {
+          "name": "schema_ok",
+          "ok": true,
+          "detail": "{\"input_schema\": true, \"output_schema\": true, \"self_check\": true, \"checks\": [{\"name\": \"envelope_shape\", \"ok\": true}, {\"name\": \"status_valid\", \"ok\": true}, {\"name\": \"epistemic_labels\", \"ok\": true}]}"
+        },
+        {
+          "name": "theta_close",
+          "ok": true,
+          "detail": "[9.99672319600877e-05, 9.969159676723042e-05]"
+        }
+      ],
+      "output_status": "SUCCESS",
+      "output_schema": true,
+      "artifacts_n": 0
+    },
+    {
+      "id": "eval-03",
+      "description": "Normal: multi-objective NSGA-II returns a Pareto front with knee.",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status",
+          "ok": true,
+          "detail": "SUCCESS"
+        },
+        {
+          "name": "schema_ok",
+          "ok": true,
+          "detail": "{\"input_schema\": true, \"output_schema\": true, \"self_check\": true, \"checks\": [{\"name\": \"envelope_shape\", \"ok\": true}, {\"name\": \"status_valid\", \"ok\": true}, {\"name\": \"epistemic_labels\", \"ok\": true}]}"
+        },
+        {
+          "name": "front_min",
+          "ok": true,
+          "detail": "16"
+        },
+        {
+          "name": "knee_present",
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "output_status": "SUCCESS",
+      "output_schema": true,
+      "artifacts_n": 0
+    },
+    {
+      "id": "eval-04",
+      "description": "Missing: model_specification absent -> MODEL_BLOCKED with field guidance.",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status",
+          "ok": true,
+          "detail": "BLOCKED"
+        },
+        {
+          "name": "error_code",
+          "ok": true,
+          "detail": "MMO-E102"
+        },
+        {
+          "name": "missing_inputs",
+          "ok": true,
+          "detail": "[{'field': 'purpose', 'why_critical': 'purpose governs what the model may legitimately be used for; a model fitted to explain must not be sold as predictive', 'how_to_obtain': 'state the intended use "
+        }
+      ],
+      "output_status": "BLOCKED",
+      "output_schema": true,
+      "artifacts_n": 0
+    },
+    {
+      "id": "eval-05",
+      "description": "Missing: spatial model without boundary conditions -> MODEL_BLOCKED.",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status",
+          "ok": true,
+          "detail": "BLOCKED"
+        },
+        {
+          "name": "error_code",
+          "ok": true,
+          "detail": "MMO-E102"
+        },
+        {
+          "name": "missing_boundary",
+          "ok": true,
+          "detail": "[{'field': 'boundary_conditions', 'why_critical': 'reaction-transport problems are ill-posed without boundary conditions', 'how_to_obtain': 'provide inlet/outlet Dirichlet (concentration) or flux cond"
+        }
+      ],
+      "output_status": "BLOCKED",
+      "output_schema": true,
+      "artifacts_n": 0
+    },
+    {
+      "id": "eval-06",
+      "description": "Adversarial: unknown action must be blocked (MMO-E103).",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status",
+          "ok": true,
+          "detail": "BLOCKED"
+        },
+        {
+          "name": "error_code",
+          "ok": true,
+          "detail": "MMO-E103"
+        }
+      ],
+      "output_status": "BLOCKED",
+      "output_schema": true,
+      "artifacts_n": 0
+    },
+    {
+      "id": "eval-07",
+      "description": "Adversarial: same-data PREDICTION fit must not be presented as validated.",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status",
+          "ok": true,
+          "detail": "BLOCKED"
+        },
+        {
+          "name": "error_code",
+          "ok": true,
+          "detail": "MMO-E104"
+        }
+      ],
+      "output_status": "BLOCKED",
+      "output_schema": true,
+      "artifacts_n": 0
+    },
+    {
+      "id": "eval-08",
+      "description": "Adversarial: bad contract version must be blocked.",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status",
+          "ok": true,
+          "detail": "BLOCKED"
+        },
+        {
+          "name": "error_code",
+          "ok": true,
+          "detail": "MMO-E801"
+        }
+      ],
+      "output_status": "BLOCKED",
+      "output_schema": true,
+      "artifacts_n": 0
+    },
+    {
+      "id": "eval-09",
+      "description": "Boundary: DOE Box-Behnken for 3 factors has exactly 15 runs.",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status",
+          "ok": true,
+          "detail": "SUCCESS"
+        },
+        {
+          "name": "runs_eq",
+          "ok": true,
+          "detail": "15"
+        }
+      ],
+      "output_status": "SUCCESS",
+      "output_schema": true,
+      "artifacts_n": 0
+    },
+    {
+      "id": "eval-10",
+      "description": "Boundary: sensitivity Sobol' indices are in [0,1].",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status",
+          "ok": true,
+          "detail": "SUCCESS"
+        },
+        {
+          "name": "sobol_in_range",
+          "ok": true,
+          "detail": "S1=[0.9349457478266191, 0.09712767617782501] ST=[0.16690546394356864, 0.8999802940316426]"
+        }
+      ],
+      "output_status": "SUCCESS",
+      "output_schema": true,
+      "artifacts_n": 0
+    }
+  ],
+  "summary": {
+    "passed": 10,
+    "total": 10,
+    "all_pass": true
+  },
+  "metrics": {
+    "report": {
+      "M1": {
+        "measured": 1.0,
+        "threshold": 0.95,
+        "pass": true,
+        "method": "every CLI output validated against schemas/output.schema.json; pass_rate = passes / total"
+      },
+      "M2": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "pass": true,
+        "method": "the eval runner only ever invokes tools/modeling.py; invariant by construction"
+      },
+      "M3": {
+        "measured": 1.0,
+        "threshold": 0.9,
+        "pass": true,
+        "method": "evidence_refs/data_refs supplied in input appear in output evidence_used"
+      },
+      "M4": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "pass": true,
+        "method": "for each missing required scenario field, BLOCKED with MMO-E101/E102 and the field named"
+      },
+      "M5": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "pass": true,
+        "method": "adversarial cases (same-data fit, unknown action, bad version, unknown model) all blocked"
+      },
+      "M6": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "pass": true,
+        "method": "identical input run twice -> identical output (deterministic; timestamps stripped)"
+      },
+      "M7": {
+        "measured": 304.1434,
+        "threshold": 2000.0,
+        "pass": true,
+        "method": "mean wall-clock ms for a malformed-payload recovery"
+      },
+      "all_pass": true
+    }
+  }
+}

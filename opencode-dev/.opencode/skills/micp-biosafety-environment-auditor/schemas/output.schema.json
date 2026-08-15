@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-biosafety-environment-auditor/output.schema.json",
+  "title": "micp-biosafety-environment-auditor output contract",
+  "description": "Unified skill output envelope (Obsidian Plan spec §六) plus the full biosafety/environment audit sections (task brief §七). Every invocation returns this shape, success or failure. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version", "skill", "skill_version", "status", "summary",
+    "action", "project_id", "task_id",
+    "findings", "assumptions", "evidence_used", "uncertainty", "risks",
+    "artifacts", "requested_next_skills", "state", "validation", "provenance", "errors"
+  ],
+  "properties": {
+    "contract_version": {"type": "string", "pattern": "^1\\.\\d+$"},
+    "skill": {"type": "string", "const": "micp-biosafety-environment-auditor"},
+    "skill_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+    },
+    "summary": {"type": "string"},
+    "action": {"type": ["string", "null"]},
+    "project_id": {"type": ["string", "null"]},
+    "task_id": {"type": ["string", "null"]},
+
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "statement"],
+        "properties": {
+          "label": {
+            "type": "string",
+            "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+          },
+          "statement": {"type": "string"},
+          "source": {"type": "string"}
+        }
+      }
+    },
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "evidence_used": {"type": "array", "items": {"type": "string"}},
+    "uncertainty": {"type": "array", "items": {"type": "string"}},
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "statement"],
+        "properties": {
+          "label": {"type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]},
+          "statement": {"type": "string"}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind"],
+        "properties": {
+          "kind": {"type": "string"},
+          "path": {"type": ["string", "null"]},
+          "note": {}
+        }
+      }
+    },
+    "requested_next_skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill", "reason"],
+        "properties": {
+          "skill": {"type": "string"},
+          "reason": {"type": "string"},
+          "inputs_needed": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "state": {"type": ["string", "null"]},
+    "validation": {
+      "type": "object",
+      "required": ["input_schema", "output_schema", "self_check"],
+      "properties": {
+        "input_schema": {"type": "string", "enum": ["passed", "failed", "pending"]},
+        "output_schema": {"type": "string", "enum": ["passed", "failed", "pending"]},
+        "self_check": {"type": "string", "enum": ["passed", "failed", "not_run", "skipped_dry_run"]}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["started_at", "completed_at", "host"],
+      "properties": {
+        "started_at": {"type": ["string", "null"]},
+        "completed_at": {"type": ["string", "null"]},
+        "host": {"type": ["string", "null"]}
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {"type": "string", "pattern": "^MBS-E[0-9]{3}$"},
+          "message": {"type": "string"},
+          "detail": {"type": "object"},
+          "retryable": {"type": "boolean"}
+        }
+      }
+    },
+
+    "hazards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "label": {"type": "string"},
+          "present": {"type": "boolean"},
+          "evidence": {"type": "string"},
+          "base_level": {"type": "string", "enum": ["LOW", "MODERATE", "HIGH", "CRITICAL"]}
+        }
+      }
+    },
+    "exposure_pathways": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "pathway": {"type": "string"},
+          "present": {"type": "boolean"},
+          "intensity": {"type": "string"}
+        }
+      }
+    },
+    "nitrogen_balance": {
+      "type": ["object", "null"],
+      "description": "See schemas/nitrogen-balance.schema.json."
+    },
+    "waste_streams": {"type": "array", "items": {"type": "object"}},
+    "regulatory_context": {
+      "type": ["object", "null"],
+      "description": "Regulation records + verification state. Records carry region/doc_id/issued_date/verified_now/source."
+    },
+    "monitoring_requirements": {"type": ["object", "null"]},
+    "control_measures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "measure": {"type": "string"},
+          "detail": {"type": "string"}
+        }
+      }
+    },
+    "residual_risk": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "hazard": {"type": "string"},
+          "hazard_level": {"type": "string"},
+          "control_effectiveness": {"type": "string"},
+          "residual": {"type": "string", "enum": ["LOW", "MODERATE", "HIGH", "CRITICAL"]}
+        }
+      }
+    },
+    "approval_requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {"type": "string"},
+          "detail": {"type": "string"},
+          "risk": {"type": "string"}
+        }
+      }
+    },
+    "stop_conditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "condition": {"type": "string"},
+          "action": {"type": "string"}
+        }
+      }
+    },
+    "emergency_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "scenario": {"type": "string"},
+          "actions": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

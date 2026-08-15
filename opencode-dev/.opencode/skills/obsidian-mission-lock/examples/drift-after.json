@@ -1,0 +1,31 @@
+{
+  "task_id": "t-oml-003",
+  "contract_version": "1.1.0",
+  "title": "MICP 中砂地基强度提升与铵态氮环境评估 (v2)",
+  "mission_type": "mixed",
+  "objectives": [
+    { "id": "O1", "statement": "测定尿素水解型 MICP 处理中砂的 28 天 UCS", "kind": "scientific", "depends_on": [] },
+    { "id": "O5", "statement": "优化胶结液采购成本", "kind": "engineering", "depends_on": ["O1"] }
+  ],
+  "primary_objective_id": "O5",
+  "secondary_objective_ids": [],
+  "explicit_exclusions": ["field deployment"],
+  "metrics": [
+    { "name": "UCS strength", "direction": "maximize", "target": { "value": 4, "unit": "MPa" }, "threshold": { "value": 2.5, "unit": "MPa" } },
+    { "name": "reagent cost", "direction": "minimize", "target": { "value": 30000, "unit": "CNY" } }
+  ],
+  "success_criteria": ["28 天 UCS ≥ 4 MPa(3 个平行样均值)"],
+  "failure_thresholds": ["10 轮处理后 UCS < 2.5 MPa"],
+  "stop_conditions": ["预算 50000 CNY 耗尽", "90 天期限"],
+  "human_approval_gates": [],
+  "stakeholders": ["课题组长"],
+  "spatial_scale": "lab 38 mm - 76 mm",
+  "temporal_scale": "28 day - 90 day",
+  "decision_use": "决定是否投入中试规模验证",
+  "statements": [],
+  "assumptions": [{ "text": "沙样级配均匀", "label": "INFERRED" }],
+  "unknowns": [],
+  "risks": [],
+  "evidence_gaps": [],
+  "domain_tags": ["micp", "ureolysis"]
+}

@@ -1,0 +1,90 @@
+# micp-hypothesis-forge — evaluation cases
+#
+# 8+ cases covering normal, missing, conflicting, adversarial and boundary
+# inputs. Each case is run by evals/run_evals.py against the real tool
+# pipeline. `expect` describes the minimum acceptable behavior.
+
+schema_version: "1.0"
+
+cases:
+  # ---- normal path ----
+  - id: CASE-01
+    label: "normal_ureolysis_strength"
+    description: "3 competing mechanisms for high-urease strength loss; full SUCCESS envelope."
+    expect:
+      status: SUCCESS
+      min_tools_invoked: 4
+      min_hypotheses: 3
+      gates_pass: true
+
+  - id: CASE-02
+    label: "normal_inlet_clogging_matrix"
+    description: "Competing matrix for inlet clogging, all pairs discriminated."
+    expect:
+      status: SUCCESS
+      all_pairs_discriminated: true
+      min_hypotheses: 3
+
+  - id: CASE-03
+    label: "normal_nonuniform_calcite"
+    description: "Three mechanisms for downstream-declining calcite; experiment priority ranks."
+    expect:
+      status: SUCCESS
+      min_tools_invoked: 3
+      ranked_experiments: true
+
+  # ---- missing input ----
+  - id: CASE-04
+    label: "missing_statement"
+    description: "request present but statement_to_forge absent -> BLOCKED with missing_inputs."
+    expect:
+      status: BLOCKED
+      missing_inputs: true
+
+  - id: CASE-05
+    label: "missing_required_field"
+    description: "task_id absent from invocation -> BLOCKED listing task_id."
+    expect:
+      status: BLOCKED
+      missing_inputs: true
+
+  # ---- conflicting / boundary ----
+  - id: CASE-06
+    label: "conflicting_min_max_hypotheses"
+    description: "max_hypotheses < min_hypotheses -> flag in assumptions/risks, stricter reading."
+    expect:
+      status: SUCCESS
+      assumptions_or_risks_flag: true
+
+  - id: CASE-07
+    label: "boundary_unfalsifiable_statement"
+    description: "statement_to_forge is unfalsifiable ('urea plays a role') -> rewritten or blocked."
+    expect:
+      status_in: ["PARTIAL", "BLOCKED"]
+      no_fabrication: true
+
+  # ---- adversarial ----
+  - id: CASE-08
+    label: "adversarial_cycle_chain"
+    description: "mechanism chain containing a cycle -> rejected with MHX-E105, no card emitted."
+    expect:
+      tool_error_code: MHX-E105
+
+  - id: CASE-09
+    label: "adversarial_fabricated_ref"
+    description: "evidence_used references a ref absent from evidence_refs -> G4 traceability fails."
+    expect:
+      gates_g4_fail: true
+
+  - id: CASE-10
+    label: "adversarial_epistemic_mislabel"
+    description: "a HYPOTHESIS presented as OBSERVED with no support -> intercepted."
+    expect:
+      intercepted: true
+
+  # ---- determinism ----
+  - id: CASE-11
+    label: "repeat_run_consistency"
+    description: "same input to dag.py twice -> byte-identical output."
+    expect:
+      deterministic: true

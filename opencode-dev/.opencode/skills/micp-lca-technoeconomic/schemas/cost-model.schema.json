@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-lca-technoeconomic/cost-model.schema.json",
+  "title": "micp-lca-technoeconomic cost-model contract",
+  "description": "CAPEX/OPEX cost model contract: per-FU + absolute cost, scale-up, tier warnings. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["cost_results", "cost_components", "per_fu", "scale_up"],
+  "properties": {
+    "cost_results": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capex_cny", "fixed_opex_cny", "variable_opex_cny", "risk_reserve_cny",
+                   "downtime_cost_cny", "failure_cost_cny", "total_cost_cny", "currency"],
+      "properties": {
+        "capex_cny": {"type": "number"},
+        "fixed_opex_cny": {"type": "number"},
+        "variable_opex_cny": {"type": "number"},
+        "risk_reserve_cny": {"type": "number"},
+        "downtime_cost_cny": {"type": "number"},
+        "failure_cost_cny": {"type": "number"},
+        "total_cost_cny": {"type": "number"},
+        "currency": {"type": "string"},
+        "breakdown": {"type": "array"}
+      }
+    },
+    "cost_components": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capex", "fixed_opex", "variable_opex"],
+      "properties": {
+        "capex": {"type": "object"},
+        "fixed_opex": {"type": "object"},
+        "variable_opex": {"type": "object"}
+      }
+    },
+    "per_fu": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capex_cny", "fixed_opex_cny", "variable_opex_cny", "total_cost_cny", "unit"],
+      "properties": {
+        "capex_cny": {"type": "number"},
+        "fixed_opex_cny": {"type": "number"},
+        "variable_opex_cny": {"type": "number"},
+        "risk_reserve_cny": {"type": "number"},
+        "total_cost_cny": {"type": "number"},
+        "unit": {"type": "string"},
+        "per_m3_cny": {"type": ["number", "null"]}
+      }
+    },
+    "scale_up": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applicable"],
+      "properties": {
+        "applicable": {"type": "boolean"},
+        "note": {"type": "string"},
+        "reference_capex_cny": {"type": "number"},
+        "reference_size": {"type": "number"},
+        "target_size": {"type": "number"},
+        "exponent": {"type": "number"},
+        "scaled_capex_cny": {"type": "number"}
+      }
+    },
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "provenance": {"type": "array"}
+  }
+}

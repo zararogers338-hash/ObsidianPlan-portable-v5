@@ -1,0 +1,27 @@
+{
+  "task_id": "ex-02",
+  "project_id": "panshi-demo",
+  "request": "Sensitivity analysis on permeability data with outliers: keep, winsorize, trim; report the estimate spread.",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T12:30:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "data_columns": [
+    {"name": "specimen", "role": "id", "data_type": "string", "sampling_unit": "column"},
+    {"name": "k", "role": "response", "data_type": "number", "unit": "m/s"}
+  ],
+  "samples": [
+    {"specimen": "C1", "k": 1.2e-6},
+    {"specimen": "C2", "k": 1.4e-6},
+    {"specimen": "C3", "k": 1.1e-6},
+    {"specimen": "C4", "k": 1.3e-6},
+    {"specimen": "C5", "k": 1.5e-6},
+    {"specimen": "C6", "k": 1.2e-6},
+    {"specimen": "C7", "k": 1.6e-6},
+    {"specimen": "C8", "k": 9.8e-5},
+    {"specimen": "C9", "k": 1.3e-6},
+    {"specimen": "C10", "k": 1.4e-6}
+  ]
+}

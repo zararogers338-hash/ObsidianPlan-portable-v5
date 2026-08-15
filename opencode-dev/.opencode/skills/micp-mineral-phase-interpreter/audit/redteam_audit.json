@@ -1,0 +1,13 @@
+{
+  "date": "2026-08-07",
+  "skill_version": "1.1.1",
+  "checks": {
+    "RT1_candidate_not_confirmed": true,
+    "RT2_no_extrapolation_warning": true,
+    "RT3_overlap_reported": true,
+    "RT4_db_unavailable_rejected": true,
+    "RT5_bridge_needs_mechanics": true,
+    "RT6_confirmed_only_with_multimodal": true
+  },
+  "all_pass": true
+}

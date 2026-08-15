@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/obsidian-red-team.finding.json",
+  "title": "Obsidian Red Team — Finding Contract",
+  "description": "One adversarial finding. Every load-bearing claim carries an epistemic tag. Version 1.0.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "finding_id",
+    "target_id",
+    "location",
+    "dimension",
+    "severity",
+    "summary",
+    "evidence",
+    "why",
+    "counterexample",
+    "required_fix",
+    "verification_method",
+    "blocks_state_upgrade",
+    "status"
+  ],
+  "properties": {
+    "finding_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "target_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "description": "File / field / figure / conclusion location of the defect."
+    },
+    "dimension": {
+      "type": "string",
+      "enum": [
+        "source_authenticity",
+        "epistemic_escalation",
+        "units_dimension",
+        "experimental_design",
+        "statistical_analysis",
+        "micp_mechanism",
+        "model_boundary",
+        "engineering_scaleup",
+        "environment_safety",
+        "decision_gate",
+        "permission_boundary"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["INFO", "MINOR", "MAJOR", "CRITICAL", "BLOCKING"]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "evidence": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "description": "The concrete evidence for the problem (quote / number / reference)."
+    },
+    "evidence_epistemic_tag": {
+      "type": "string",
+      "enum": [
+        "OBSERVED",
+        "REPORTED",
+        "CALCULATED",
+        "INFERRED",
+        "HYPOTHESIS",
+        "RECOMMENDATION"
+      ],
+      "default": "REPORTED"
+    },
+    "why": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "description": "Why this constitutes a problem."
+    },
+    "counterexample": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "description": "The strongest counterexample / minimal scenario that breaks the claim."
+    },
+    "required_fix": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "description": "Executable fix (actionable, not advisory-only)."
+    },
+    "verification_method": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "description": "How the fix will be verified (the acceptance check)."
+    },
+    "blocks_state_upgrade": {
+      "type": "boolean",
+      "description": "True when severity == BLOCKING."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["OPEN", "FIXED", "ACCEPTED_RISK", "VERIFIED"],
+      "default": "OPEN"
+    },
+    "rule_id": {
+      "type": "string",
+      "maxLength": 64,
+      "description": "The BLOCKING rule (e.g. BLOCK-1) that fired, when severity == BLOCKING."
+    }
+  }
+}

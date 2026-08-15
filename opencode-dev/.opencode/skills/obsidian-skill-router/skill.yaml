@@ -1,0 +1,60 @@
+# Machine-readable metadata for obsidian-skill-router (OSR).
+# Consumed by the registry indexer (tools/osr/registry.ts) and by Obsidian
+# Controller tooling. Fields mirror the effective contract; see schemas/.
+
+name: obsidian-skill-router
+version: 1.0.0
+entry: tools/bin/osr.ts
+description: >-
+  Skill routing, permission and invocation governance for the Obsidian Plan /
+  Panshi research project.
+
+capabilities:
+  - skill_selection
+  - capability_gap_detection
+  - budget_governance
+  - permission_gate
+  - callgraph_monitoring
+  - conflict_arbitration
+  - decision_audit
+
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - skill_version
+  - controller_version
+  - timestamp
+
+outputs:
+  - route_plan
+  - capability_gap_spec
+  - decision_log
+
+units:
+  budget_tokens: tokens
+  budget_usd: usd
+  wall_time: seconds
+
+tool_permissions:
+  - read
+  - write_local_plans
+
+network: false
+writes:
+  - state/plans/**
+  - logs/decisions/**
+
+stop_conditions:
+  - 输出通过 output.schema.json 自检后停止
+  - 任一硬门控失败即返回 BLOCKED/FAILED 并停止
+  - 无能力覆盖返回 NEED_ADDITIONAL_SKILL 并停止
+  - 高风险待批准返回 HUMAN_APPROVAL_REQUIRED 并停止
+
+compatible_controller: ">=1.0.0"
+dependencies: []
+cost_estimate:
+  tokens: 2000
+  usd: 0.02
+
+risk_tier: low

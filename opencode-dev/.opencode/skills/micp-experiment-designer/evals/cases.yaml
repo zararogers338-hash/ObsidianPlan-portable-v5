@@ -1,0 +1,157 @@
+# micp-experiment-designer evaluation cases
+# 10 cases covering normal, missing, conflict, adversarial, and boundary inputs.
+# Runner: evals/run_evals.py
+#
+# Each case:
+#   id        — unique
+#   name      — human label
+#   mode      — "tool" (run a single tool) or "check" (structural check against a design)
+#   tool      — tool to invoke (mode=tool)
+#   payload   — tool payload (mode=tool)
+#   design    — design object (mode=check)
+#   expected  — assertion block:
+#     tool_ok        — envelope ok:true (mode=tool)
+#     exit           — expected exit code (mode=tool)
+#     result_passes  — expected bool field values (subset, mode=tool)
+#     blocks         — expect blocking_issues non-empty (mode=check)
+#     blocks_contain — subset of expected blocking issue keys (mode=check)
+#     passes         — expect pass:true (mode=check)
+#   score     — weight used to compute indicator pass rates
+
+cases:
+  - id: eval-01
+    name: "正常双样本均值设计 → doe_power 计算 n"
+    mode: tool
+    tool: doe_power
+    payload:
+      design: { kind: two_group_means, delta: 1.5, sigma: 2.0, alpha: 0.05, two_sided: true }
+    expected:
+      tool_ok: true
+      exit: 0
+      result_passes: { n_per_group: 29 }
+    score: 2
+
+  - id: eval-02
+    name: "有限样本预算 → 明确功效与取舍"
+    mode: tool
+    tool: doe_power
+    payload:
+      design: { kind: two_group_means, delta: 1.5, sigma: 2.0, alpha: 0.05, two_sided: true }
+      sample_budget: 12
+    expected:
+      tool_ok: true
+      exit: 0
+      result_passes: { n_per_group: 12, tradeoffs: 1 }
+    score: 2
+
+  - id: eval-03
+    name: "对抗:缺失效应量(delta=0) → 拒绝"
+    mode: tool
+    tool: doe_power
+    payload:
+      design: { kind: two_group_means, delta: 0, sigma: 2.0 }
+    expected:
+      tool_ok: false
+      exit: 2
+    score: 2
+
+  - id: eval-04
+    name: "对抗:单位不一致(无效浓度单位) → E_UNIT_UNKNOWN"
+    mode: tool
+    tool: quantity_calc
+    payload:
+      reagents:
+        - { name: urea, concentration: 1.0, concentration_unit: "foobar/L", volume: 0.5, volume_unit: "L" }
+    expected:
+      tool_ok: false
+      exit: 2
+    score: 1
+
+  - id: eval-05
+    name: "正常随机化 → 可复现(同种子同分配)"
+    mode: tool
+    tool: randomizer
+    payload:
+      groups: [A, B]
+      units: [{ id: u1 }, { id: u2 }, { id: u3 }, { id: u4 }, { id: u5 }, { id: u6 }]
+      method: complete
+      seed: 42
+    expected:
+      tool_ok: true
+      exit: 0
+      result_passes: { n_units: 6, method: complete }
+    score: 2
+
+  - id: eval-06
+    name: "正常 SOP 生成 → 含阻断项与 MICP 检查"
+    mode: check
+    design:
+      objective: "比较高反应速率与高均匀性"
+      pathway: urea
+      replicates: 3
+      endpoints: [{ name: strength, unit: MPa }]
+    expected:
+      passes: false
+      blocks: true
+      blocks_contain: [negative_control]
+    score: 2
+
+  - id: eval-07
+    name: "对抗:移除对照组 → 阻断"
+    mode: check
+    design:
+      objective: "三组浓度梯度,无阴性对照"
+      pathway: urea
+      replicates: 2
+      endpoints: [{ name: strength, unit: MPa }]
+    expected:
+      passes: false
+      blocks: true
+      blocks_contain: [negative_control]
+    score: 2
+
+  - id: eval-08
+    name: "边界:重复 1(<2) → 阻断"
+    mode: check
+    design:
+      objective: "重复为 1 的设计"
+      pathway: non-urea
+      replicates: 1
+      endpoints: [{ name: strength, unit: MPa }]
+    expected:
+      passes: false
+      blocks: true
+      blocks_contain: [replicates]
+    score: 1
+
+  - id: eval-09
+    name: "对抗:预算不足要求 0.90 功效 → 取舍明确不伪造"
+    mode: tool
+    tool: doe_power
+    payload:
+      design: { kind: two_group_means, delta: 0.8, sigma: 1.0, alpha: 0.05 }
+      sample_budget: 8
+    expected:
+      tool_ok: true
+      exit: 0
+      result_passes: { n_per_group: 8, tradeoffs: 1 }
+    score: 2
+
+  - id: eval-10
+    name: "非尿素路径带尿素假设 → 警告不误判"
+    mode: check
+    design:
+      objective: "酶促非尿素路径"
+      pathway: non-urea
+      replicates: 3
+      endpoints: [{ name: strength, unit: MPa }]
+      negative_control: true
+      positive_control: true
+      data_exclusion: "丢弃污染样品"
+      stop_condition: "强度低于阈值即停止"
+      safety: ["生物安全柜"]
+      ammonium_accounting: true
+    expected:
+      passes: true
+      blocks: false
+    score: 2

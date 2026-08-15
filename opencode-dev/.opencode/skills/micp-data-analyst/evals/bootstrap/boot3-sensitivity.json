@@ -1,0 +1,18 @@
+{
+  "task_id": "boot-03", "project_id": "panshi-demo",
+  "request": "这批 CaCO3 含量数据有异常值，请做敏感性分析，比较多种异常值处理策略下的均值差异。",
+  "skill_version": "1.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T15:20:00Z", "risk_level": "low",
+  "human_approval_state": "not_required", "requested_output_format": "json",
+  "data_columns": [
+    {"name": "specimen", "role": "id", "data_type": "string"},
+    {"name": "caco3", "role": "response", "data_type": "number", "unit": "%"}
+  ],
+  "samples": [
+    {"specimen": "S01", "caco3": 4.1},{"specimen": "S02", "caco3": 4.3},
+    {"specimen": "S03", "caco3": 4.2},{"specimen": "S04", "caco3": 4.4},
+    {"specimen": "S05", "caco3": 4.0},{"specimen": "S06", "caco3": 4.2},
+    {"specimen": "S07", "caco3": 4.5},{"specimen": "S08", "caco3": 9.8},
+    {"specimen": "S09", "caco3": 4.1},{"specimen": "S10", "caco3": 4.3}
+  ]
+}

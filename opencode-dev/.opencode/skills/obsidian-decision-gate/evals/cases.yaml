@@ -1,0 +1,481 @@
+# obsidian-decision-gate evaluation cases.
+# Each case is a full input envelope plus expected verdict. The runner drives
+# the real CLI (tools/odg/cli.py service) over each case and computes the
+# project-standard M1..M7 metrics.
+
+# M1 structured-output pass rate      — envelope conforms to output.schema.json
+# M2 tool real-invocation rate         — the service subcommand actually ran
+# M3 traceability rate                 — every blocking item cites its evidence
+# M4 missing-input identification      — schema-violating inputs are caught with ODG-E101
+# M5 adversarial interception rate     — illegal jumps / fudge attempts blocked
+# M6 repeatability                     — same input -> identical verdict
+# M7 failure-recovery time             — BLOCKED/FAILED envelopes return fast
+
+cases:
+  - id: "ev-01-science-ok-ammonia-fail"
+    title: "强度达标但氨排放不达标"
+    expect: { status: "BLOCKED", decision: "HOLD" }
+    payload:
+      contract_version: "1.0"
+      task_id: "EV-01"
+      project_id: "P-EV-01"
+      request: "评估是否放行中试"
+      action: "gate.evaluate"
+      skill_version: "1.0.0"
+      timestamp: "2026-08-07T00:00:00Z"
+      current_state: "VALIDATED"
+      proposed_state: "PILOT_READY"
+      mission_lock:
+        task_id: "EV-01"
+        contract_version: "1.0.0"
+        title: "MICP 中试放行"
+        mission_type: "engineering"
+        objectives: [{ id: "o1", statement: "验证中试条件", kind: "engineering", depends_on: [] }]
+        metrics: []
+        success_criteria: ["强度≥5MPa", "氨排放≤500 mg/m3"]
+        failure_thresholds: ["强度<1MPa"]
+        human_approval_gates: ["PILOT_READY"]
+        decision_use: "中试放行门"
+      experiment_results:
+        - id: "e1"
+          kind: "strength_test"
+          status: "completed"
+          scale: "lab"
+          has_control: true
+          n: 6
+          outcomes:
+            - { name: "strength", value: 6.2, unit: "MPa", threshold: 5, direction: "maximize", status: "met" }
+        - id: "e2"
+          kind: "ammonia_test"
+          status: "completed"
+          scale: "lab"
+          has_control: true
+          n: 6
+          outcomes:
+            - { name: "ammonia_emission", value: 900, unit: "mg/m3", threshold: 500, direction: "minimize", status: "not_met" }
+      reproducibility: { reproducible: true, evidence: "已归档", data_archived: true, code_archived: true, versioned: true }
+      scaleup_plan:
+        stages: [{ scale: "pilot", objective: "中试", duration: "3mo" }]
+        monitoring_plan: "氨浓度;强度"
+        shutdown_conditions: ["氨超标"]
+        rollback_plan: "停注"
+      environment_audit: { status: "cleared", findings: [] }
+      regulatory_status: { verified: true, current: true }
+      human_approval_state: { granted: true, scope: "PILOT_READY", revision: 3, granted_at: "2026-08-01T00:00:00Z" }
+
+  - id: "ev-02-tiny-sample"
+    title: "证据支持但样本量极小"
+    expect: { status: "BLOCKED", decision: "HOLD" }
+    payload:
+      contract_version: "1.0"
+      task_id: "EV-02"
+      project_id: "P-EV-02"
+      request: "评估升级"
+      action: "gate.evaluate"
+      skill_version: "1.0.0"
+      timestamp: "2026-08-07T00:00:00Z"
+      current_state: "EVIDENCE_GATHERING"
+      proposed_state: "SUPPORTED"
+      mission_lock:
+        task_id: "EV-02"
+        contract_version: "1.0.0"
+        title: "MICP 验证"
+        mission_type: "research"
+        objectives: []
+        metrics: []
+        success_criteria: ["强度≥5MPa"]
+        failure_thresholds: ["强度<1MPa"]
+        human_approval_gates: []
+        decision_use: "升级门"
+      evidence_cards:
+        - { ref_id: "REF-1", source: "doi:x", label: "REPORTED", verifiable: true, evidence_level: "low", scale: "lab", n: 3 }
+      synthesis:
+        conclusions: [{ id: "c1", statement: "初步提示有效", label: "REPORTED", evidence_level: "very_low", scope: "lab" }]
+        gaps: []
+      experiment_results:
+        - { id: "e1", kind: "strength_test", status: "completed", scale: "lab", has_control: true, n: 3,
+            outcomes: [{ name: "strength", value: 6.2, unit: "MPa", threshold: 5, direction: "maximize", status: "met" }] }
+      reproducibility: { reproducible: false, evidence: "样本量过小未复现", data_archived: false, code_archived: false, versioned: false }
+
+  - id: "ev-03-model-no-external-validation"
+    title: "模型通过拟合但没有独立验证"
+    expect: { status: "BLOCKED", decision: "HOLD" }
+    payload:
+      contract_version: "1.0"
+      task_id: "EV-03"
+      project_id: "P-EV-03"
+      request: "评估升级"
+      action: "gate.evaluate"
+      skill_version: "1.0.0"
+      timestamp: "2026-08-07T00:00:00Z"
+      current_state: "SUPPORTED"
+      proposed_state: "VALIDATED"
+      mission_lock:
+        task_id: "EV-03"
+        contract_version: "1.0.0"
+        title: "MICP 模型验证"
+        mission_type: "research"
+        objectives: []
+        metrics: []
+        success_criteria: ["强度≥5MPa"]
+        failure_thresholds: ["强度<1MPa"]
+        human_approval_gates: ["VALIDATED"]
+        decision_use: "验证门"
+      evidence_cards:
+        - { ref_id: "REF-1", source: "doi:x", label: "REPORTED", verifiable: true, evidence_level: "moderate", scale: "lab" }
+      synthesis:
+        conclusions: [{ id: "c1", statement: "证据支持方向", label: "REPORTED", evidence_level: "moderate", scope: "lab" }]
+        gaps: []
+      hypothesis_cards:
+        - { id: "H1", kind: "hypothesis_card", statement: "MICP 提升砂土强度", mechanism_chain: ["尿素水解", "沉积"], prediction_direction: "increase", observables: ["强度"], refutation: "r", time_scale: "28d", scope: "lab", epistemic_label: "HYPOTHESIS", status: "SUPPORTED" }
+      experiment_results:
+        - { id: "e1", kind: "strength_test", status: "completed", scale: "lab", has_control: true, n: 6,
+            outcomes: [{ name: "strength", value: 6.2, unit: "MPa", threshold: 5, direction: "maximize", status: "met" }] }
+      reproducibility: { reproducible: true, evidence: "已归档", data_archived: true, code_archived: true, versioned: true }
+      model_results: { name: "strength-model", fitted: true, external_validation: false, metrics: { r2: 0.95 } }
+      human_approval_state: { granted: true, scope: "VALIDATED", revision: 2, granted_at: "2026-08-01T00:00:00Z" }
+
+  - id: "ev-04-red-team-blocking"
+    title: "Red Team 存在 BLOCKING 问题"
+    expect: { status: "BLOCKED", decision: "HOLD" }
+    payload:
+      contract_version: "1.0"
+      task_id: "EV-04"
+      project_id: "P-EV-04"
+      request: "评估升级"
+      action: "gate.evaluate"
+      skill_version: "1.0.0"
+      timestamp: "2026-08-07T00:00:00Z"
+      current_state: "SUPPORTED"
+      proposed_state: "VALIDATED"
+      mission_lock:
+        task_id: "EV-04"
+        contract_version: "1.0.0"
+        title: "MICP 升级"
+        mission_type: "research"
+        objectives: []
+        metrics: []
+        success_criteria: ["强度≥5MPa"]
+        failure_thresholds: ["强度<1MPa"]
+        human_approval_gates: ["VALIDATED"]
+        decision_use: "升级门"
+      evidence_cards:
+        - { ref_id: "REF-1", source: "doi:x", label: "REPORTED", verifiable: true, evidence_level: "moderate", scale: "lab" }
+      synthesis:
+        conclusions: [{ id: "c1", statement: "证据支持", label: "REPORTED", evidence_level: "moderate", scope: "lab" }]
+        gaps: []
+      experiment_results:
+        - { id: "e1", kind: "strength_test", status: "completed", scale: "lab", has_control: true, n: 6,
+            outcomes: [{ name: "strength", value: 6.2, unit: "MPa", threshold: 5, direction: "maximize", status: "met" }] }
+      reproducibility: { reproducible: true, evidence: "已归档", data_archived: true, code_archived: true, versioned: true }
+      model_results: { name: "m", fitted: true, external_validation: true }
+      red_team_report:
+        status: "failed"
+        findings:
+          - { id: "rt-1", severity: "BLOCKING", title: "伪重复", description: "n 实为 2 独立样本", resolution: "unresolved" }
+      human_approval_state: { granted: true, scope: "VALIDATED", revision: 2, granted_at: "2026-08-01T00:00:00Z" }
+
+  - id: "ev-05-missing-approval"
+    title: "缺少人工批准"
+    expect: { status: "HUMAN_APPROVAL_REQUIRED", decision: "HOLD" }
+    payload:
+      contract_version: "1.0"
+      task_id: "EV-05"
+      project_id: "P-EV-05"
+      request: "评估升级到 VALIDATED"
+      action: "gate.evaluate"
+      skill_version: "1.0.0"
+      timestamp: "2026-08-07T00:00:00Z"
+      current_state: "SUPPORTED"
+      proposed_state: "VALIDATED"
+      mission_lock:
+        task_id: "EV-05"
+        contract_version: "1.0.0"
+        title: "MICP 升级"
+        mission_type: "research"
+        objectives: []
+        metrics: []
+        success_criteria: ["强度≥5MPa"]
+        failure_thresholds: ["强度<1MPa"]
+        human_approval_gates: ["VALIDATED"]
+        decision_use: "升级门"
+      evidence_cards:
+        - { ref_id: "REF-1", source: "doi:x", label: "REPORTED", verifiable: true, evidence_level: "moderate", scale: "lab" }
+      synthesis:
+        conclusions: [{ id: "c1", statement: "证据支持", label: "REPORTED", evidence_level: "moderate", scope: "lab" }]
+        gaps: []
+      experiment_results:
+        - { id: "e1", kind: "strength_test", status: "completed", scale: "lab", has_control: true, n: 6,
+            outcomes: [{ name: "strength", value: 6.2, unit: "MPa", threshold: 5, direction: "maximize", status: "met" }] }
+      reproducibility: { reproducible: true, evidence: "已归档", data_archived: true, code_archived: true, versioned: true }
+      model_results: { name: "m", fitted: true, external_validation: true }
+      human_approval_state: { granted: false, scope: "VALIDATED", revision: 2, granted_at: null }
+
+  - id: "ev-06-lab-cylinder-direct-deploy"
+    title: "小柱试验要求直接 DEPLOYABLE"
+    expect: { status: "BLOCKED", decision: "HOLD" }
+    payload:
+      contract_version: "1.0"
+      task_id: "EV-06"
+      project_id: "P-EV-06"
+      request: "小柱试验达标，直接放行部署"
+      action: "gate.evaluate"
+      skill_version: "1.0.0"
+      timestamp: "2026-08-07T00:00:00Z"
+      current_state: "VALIDATED"
+      proposed_state: "DEPLOYABLE"
+      mission_lock:
+        task_id: "EV-06"
+        contract_version: "1.0.0"
+        title: "MICP 部署"
+        mission_type: "engineering"
+        objectives: []
+        metrics: []
+        success_criteria: ["强度≥5MPa"]
+        failure_thresholds: ["强度<1MPa"]
+        human_approval_gates: ["DEPLOYABLE"]
+        decision_use: "部署门"
+      evidence_cards:
+        - { ref_id: "REF-1", source: "doi:x", label: "REPORTED", verifiable: true, evidence_level: "high", scale: "lab" }
+      synthesis:
+        conclusions: [{ id: "c1", statement: "实验室证据充分", label: "REPORTED", evidence_level: "high", scope: "lab" }]
+        gaps: []
+      experiment_results:
+        - { id: "e1", kind: "strength_test", status: "completed", scale: "lab", has_control: true, n: 6,
+            outcomes: [{ name: "strength", value: 6.2, unit: "MPa", threshold: 5, direction: "maximize", status: "met" }] }
+      reproducibility: { reproducible: true, evidence: "已归档", data_archived: true, code_archived: true, versioned: true }
+      environment_audit: { status: "cleared", findings: [] }
+      regulatory_status: { verified: true, current: true }
+      lca: { status: "cleared", findings: [] }
+      human_approval_state: { granted: true, scope: "DEPLOYABLE", revision: 5, granted_at: "2026-08-01T00:00:00Z" }
+
+  - id: "ev-07-pilot-full-monitoring"
+    title: "中试方案具有完整监测和回退"
+    expect: { status: "SUCCESS", decision: "PASS" }
+    payload:
+      contract_version: "1.0"
+      task_id: "EV-07"
+      project_id: "P-EV-07"
+      request: "中试条件齐备，评估放行中试"
+      action: "gate.evaluate"
+      skill_version: "1.0.0"
+      timestamp: "2026-08-07T00:00:00Z"
+      current_state: "VALIDATED"
+      proposed_state: "PILOT_READY"
+      mission_lock:
+        task_id: "EV-07"
+        contract_version: "1.0.0"
+        title: "MICP 中试"
+        mission_type: "engineering"
+        objectives: []
+        metrics: []
+        success_criteria: ["强度≥5MPa", "氨排放≤500 mg/m3"]
+        failure_thresholds: ["强度<1MPa"]
+        human_approval_gates: ["PILOT_READY"]
+        decision_use: "中试放行门"
+      evidence_cards:
+        - { ref_id: "REF-1", source: "doi:x", label: "REPORTED", verifiable: true, evidence_level: "high", scale: "lab" }
+        - { ref_id: "REF-2", source: "doi:y", label: "REPORTED", verifiable: true, evidence_level: "moderate", scale: "pilot" }
+      synthesis:
+        conclusions: [{ id: "c1", statement: "证据充分支持中试", label: "REPORTED", evidence_level: "high", scope: "lab+pilot" }]
+        gaps: []
+      hypothesis_cards:
+        - { id: "H1", kind: "hypothesis_card", statement: "MICP 提升砂土强度", mechanism_chain: ["尿素水解", "沉积"], prediction_direction: "increase", observables: ["强度"], refutation: "r", time_scale: "28d", scope: "lab", epistemic_label: "HYPOTHESIS", status: "SUPPORTED" }
+      experiment_results:
+        - { id: "e1", kind: "strength_test", status: "completed", scale: "pilot", has_control: true, n: 12,
+            outcomes: [{ name: "strength", value: 6.2, unit: "MPa", threshold: 5, direction: "maximize", status: "met" }] }
+        - { id: "e2", kind: "ammonia_test", status: "completed", scale: "pilot", has_control: true, n: 12,
+            outcomes: [{ name: "ammonia_emission", value: 400, unit: "mg/m3", threshold: 500, direction: "minimize", status: "met" }] }
+      reproducibility: { reproducible: true, evidence: "已归档", data_archived: true, code_archived: true, versioned: true }
+      scaleup_plan:
+        stages: [{ scale: "pilot", objective: "受控中试", duration: "3mo", capacity: "10m³" }]
+        monitoring_plan: "强度;氨浓度;地下水pH"
+        shutdown_conditions: ["氨浓度>500 mg/m3", "pH 超出 6-9"]
+        rollback_plan: "停注并抽排"
+      environment_audit: { status: "cleared", findings: [] }
+      regulatory_status: { verified: true, current: true }
+      human_approval_state: { granted: true, scope: "PILOT_READY", revision: 7, granted_at: "2026-08-01T00:00:00Z" }
+
+  - id: "ev-08-cost-unacceptable"
+    title: "成本不可接受但科学有效"
+    expect: { status: "BLOCKED", decision: "HOLD" }
+    payload:
+      contract_version: "1.0"
+      task_id: "EV-08"
+      project_id: "P-EV-08"
+      request: "科学上有效但成本超预算，评估部署"
+      action: "gate.evaluate"
+      skill_version: "1.0.0"
+      timestamp: "2026-08-07T00:00:00Z"
+      current_state: "VALIDATED"
+      proposed_state: "DEPLOYABLE"
+      mission_lock:
+        task_id: "EV-08"
+        contract_version: "1.0.0"
+        title: "MICP 部署"
+        mission_type: "engineering"
+        objectives: []
+        metrics: []
+        success_criteria: ["强度≥5MPa"]
+        failure_thresholds: ["强度<1MPa"]
+        human_approval_gates: ["DEPLOYABLE"]
+        decision_use: "部署门"
+      evidence_cards:
+        - { ref_id: "REF-1", source: "doi:x", label: "REPORTED", verifiable: true, evidence_level: "high", scale: "pilot" }
+      synthesis:
+        conclusions: [{ id: "c1", statement: "科学证据充分", label: "REPORTED", evidence_level: "high", scope: "pilot" }]
+        gaps: []
+      experiment_results:
+        - { id: "e1", kind: "strength_test", status: "completed", scale: "pilot", has_control: true, n: 12,
+            outcomes: [{ name: "strength", value: 6.2, unit: "MPa", threshold: 5, direction: "maximize", status: "met" }] }
+      reproducibility: { reproducible: true, evidence: "已归档", data_archived: true, code_archived: true, versioned: true }
+      scaleup_plan:
+        stages: [{ scale: "pilot", objective: "中试", duration: "3mo" }]
+        monitoring_plan: "强度"
+        shutdown_conditions: ["氨超标"]
+        rollback_plan: "停注"
+      environment_audit: { status: "cleared", findings: [] }
+      regulatory_status: { verified: true, current: true }
+      lca:
+        status: "open"
+        findings:
+          - { id: "lca-1", severity: "high", status: "open", description: "单位成本超出预算 3 倍，经济不可接受" }
+      human_approval_state: { granted: true, scope: "DEPLOYABLE", revision: 9, granted_at: "2026-08-01T00:00:00Z" }
+
+  - id: "ev-09-regulatory-expired"
+    title: "法规信息已经过期"
+    expect: { status: "BLOCKED", decision: "EXPIRE" }
+    payload:
+      contract_version: "1.0"
+      task_id: "EV-09"
+      project_id: "P-EV-09"
+      request: "法规已过期，评估升级"
+      action: "gate.evaluate"
+      skill_version: "1.0.0"
+      timestamp: "2026-08-07T00:00:00Z"
+      current_state: "SUPPORTED"
+      proposed_state: "VALIDATED"
+      mission_lock:
+        task_id: "EV-09"
+        contract_version: "1.0.0"
+        title: "MICP 升级"
+        mission_type: "research"
+        objectives: []
+        metrics: []
+        success_criteria: ["强度≥5MPa"]
+        failure_thresholds: ["强度<1MPa"]
+        human_approval_gates: ["VALIDATED"]
+        decision_use: "升级门"
+      evidence_cards:
+        - { ref_id: "REF-1", source: "doi:x", label: "REPORTED", verifiable: true, evidence_level: "moderate", scale: "lab" }
+      synthesis:
+        conclusions: [{ id: "c1", statement: "证据支持", label: "REPORTED", evidence_level: "moderate", scope: "lab" }]
+        gaps: []
+      experiment_results:
+        - { id: "e1", kind: "strength_test", status: "completed", scale: "lab", has_control: true, n: 6,
+            outcomes: [{ name: "strength", value: 6.2, unit: "MPa", threshold: 5, direction: "maximize", status: "met" }] }
+      reproducibility: { reproducible: true, evidence: "已归档", data_archived: true, code_archived: true, versioned: true }
+      model_results: { name: "m", fitted: true, external_validation: true }
+      regulatory_status: { verified: true, current: false, expires_at: "2026-01-01T00:00:00Z" }
+      human_approval_state: { granted: true, scope: "VALIDATED", revision: 2, granted_at: "2026-08-01T00:00:00Z" }
+
+  - id: "ev-10-downgrade-new-evidence"
+    title: "结论因新证据需要降级"
+    expect: { status: "SUCCESS", decision: "PASS" }
+    payload:
+      contract_version: "1.0"
+      task_id: "EV-10"
+      project_id: "P-EV-10"
+      request: "新对照实验显示强度提升不显著，需降级"
+      action: "gate.evaluate"
+      skill_version: "1.0.0"
+      timestamp: "2026-08-07T00:00:00Z"
+      current_state: "VALIDATED"
+      proposed_state: "SUPPORTED"
+      mission_lock:
+        task_id: "EV-10"
+        contract_version: "1.0.0"
+        title: "MICP 降级复审"
+        mission_type: "research"
+        objectives: []
+        metrics: []
+        success_criteria: ["强度≥5MPa"]
+        failure_thresholds: ["强度<1MPa"]
+        human_approval_gates: []
+        decision_use: "降级门"
+      evidence_cards:
+        - { ref_id: "REF-1", source: "doi:x", label: "OBSERVED", verifiable: true, evidence_level: "high", scale: "lab" }
+      synthesis:
+        conclusions: [{ id: "c1", statement: "新对照实验显示强度提升不显著", label: "OBSERVED", evidence_level: "high", scope: "lab" }]
+        gaps: []
+      hypothesis_cards:
+        - { id: "H1", kind: "hypothesis_card", statement: "MICP 提升砂土强度", mechanism_chain: ["尿素水解", "沉积"], prediction_direction: "increase", observables: ["强度"], refutation: "r", time_scale: "28d", scope: "lab", epistemic_label: "HYPOTHESIS", status: "REFUTED" }
+      experiment_results:
+        - { id: "e1", kind: "strength_test", status: "completed", scale: "lab", has_control: true, n: 12,
+            outcomes: [{ name: "strength", value: 3.1, unit: "MPa", threshold: 5, direction: "maximize", status: "not_met" }] }
+      reproducibility: { reproducible: true, evidence: "已归档", data_archived: true, code_archived: true, versioned: true }
+
+  - id: "ev-11-open-to-deployable"
+    title: "非法从 OPEN 跳到 DEPLOYABLE"
+    expect: { status: "BLOCKED", decision: "REJECT" }
+    payload:
+      contract_version: "1.0"
+      task_id: "EV-11"
+      project_id: "P-EV-11"
+      request: "直接从问题定义放行到部署"
+      action: "gate.evaluate"
+      skill_version: "1.0.0"
+      timestamp: "2026-08-07T00:00:00Z"
+      current_state: "OPEN"
+      proposed_state: "DEPLOYABLE"
+      mission_lock:
+        task_id: "EV-11"
+        contract_version: "1.0.0"
+        title: "MICP 部署"
+        mission_type: "engineering"
+        objectives: []
+        metrics: []
+        success_criteria: ["强度≥5MPa"]
+        failure_thresholds: ["强度<1MPa"]
+        human_approval_gates: ["DEPLOYABLE"]
+        decision_use: "部署门"
+      evidence_cards:
+        - { ref_id: "REF-1", source: "doi:x", label: "REPORTED", verifiable: true, evidence_level: "high", scale: "field" }
+      experiment_results:
+        - { id: "e1", kind: "strength_test", status: "completed", scale: "field", has_control: true, n: 20,
+            outcomes: [{ name: "strength", value: 6.2, unit: "MPa", threshold: 5, direction: "maximize", status: "met" }] }
+
+  - id: "ev-12-failure-threshold"
+    title: "失败阈值已触发但主模型要求继续"
+    expect: { status: "BLOCKED", decision: "SUSPEND" }
+    payload:
+      contract_version: "1.0"
+      task_id: "EV-12"
+      project_id: "P-EV-12"
+      request: "主模型建议继续但失败阈值已触发"
+      action: "gate.evaluate"
+      skill_version: "1.0.0"
+      timestamp: "2026-08-07T00:00:00Z"
+      current_state: "SUPPORTED"
+      proposed_state: "VALIDATED"
+      mission_lock:
+        task_id: "EV-12"
+        contract_version: "1.0.0"
+        title: "MICP 继续评估"
+        mission_type: "research"
+        objectives: []
+        metrics: []
+        success_criteria: ["强度≥5MPa"]
+        failure_thresholds: ["强度<1MPa"]
+        human_approval_gates: ["VALIDATED"]
+        decision_use: "升级门"
+      evidence_cards:
+        - { ref_id: "REF-1", source: "doi:x", label: "REPORTED", verifiable: true, evidence_level: "moderate", scale: "lab" }
+      synthesis:
+        conclusions: [{ id: "c1", statement: "模型建议继续", label: "INFERRED", evidence_level: "low", scope: "lab" }]
+        gaps: []
+      experiment_results:
+        - { id: "e1", kind: "strength_test", status: "completed", scale: "lab", has_control: true, n: 6,
+            outcomes: [{ name: "strength", value: 0.8, unit: "MPa", threshold: 5, direction: "maximize", status: "not_met" }] }
+      reproducibility: { reproducible: true, evidence: "已归档", data_archived: true, code_archived: true, versioned: true }
+      failure_thresholds_triggered: ["强度<1MPa"]

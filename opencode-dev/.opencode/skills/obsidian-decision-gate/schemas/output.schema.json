@@ -1,0 +1,268 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.dev/skills/obsidian-decision-gate/output.schema.json",
+  "title": "obsidian-decision-gate output contract",
+  "description": "Unified output envelope for the Obsidian Decision Gate. Every invocation returns this shape, success or failure. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version", "skill", "skill_version", "status", "summary",
+    "action", "project_id", "task_id",
+    "current_state", "proposed_state", "decision",
+    "gate_results", "criteria_met", "criteria_not_met", "blocking_items",
+    "supporting_evidence", "opposing_evidence", "residual_uncertainty",
+    "risk_benefit", "required_human_approvals", "conditional_release_terms",
+    "monitoring_requirements", "failure_conditions", "next_actions",
+    "review_expiry", "artifacts", "validation", "provenance", "errors"
+  ],
+  "properties": {
+    "contract_version": { "type": "string", "pattern": "^1\\.\\d+$" },
+    "skill": { "type": "string", "const": "obsidian-decision-gate" },
+    "skill_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+    },
+    "summary": { "type": "string", "minLength": 1 },
+    "action": { "type": ["string", "null"] },
+    "project_id": { "type": ["string", "null"] },
+    "task_id": { "type": ["string", "null"] },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "statement"],
+        "additionalProperties": false,
+        "properties": {
+          "label": { "type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"] },
+          "statement": { "type": "string", "minLength": 1 },
+          "source": { "type": "string" }
+        }
+      }
+    },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "evidence_used": { "type": "array", "items": { "type": "string" } },
+    "uncertainty": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["label", "statement"], "properties": { "label": { "type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"] }, "statement": { "type": "string" } } } },
+    "artifacts": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["kind"], "properties": { "kind": { "type": "string" }, "path": { "type": ["string", "null"] }, "note": { "type": ["object", "string", "null"] } } } },
+    "requested_next_skills": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["skill", "reason"], "properties": { "skill": { "type": "string" }, "reason": { "type": "string" }, "inputs_needed": { "type": "array", "items": { "type": "string" } } } } },
+
+    "current_state": { "type": "string", "enum": ["REJECTED", "OPEN", "EVIDENCE_GATHERING", "SUPPORTED", "VALIDATED", "PILOT_READY", "DEPLOYABLE", "SUSPENDED", "EXPIRED"] },
+    "proposed_state": { "type": ["string", "null"], "enum": ["REJECTED", "OPEN", "EVIDENCE_GATHERING", "SUPPORTED", "VALIDATED", "PILOT_READY", "DEPLOYABLE", "SUSPENDED", "EXPIRED", null] },
+    "decision": {
+      "type": "string",
+      "enum": ["PASS", "CONDITIONAL_PASS", "HOLD", "REJECT", "REQUEST_REVIEW", "SUSPEND", "EXPIRE"]
+    },
+    "gate_results": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state_gate", "blockers", "dimensions", "mission"],
+      "properties": {
+        "state_gate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["current_state", "proposed_state", "legal", "grade_gap", "notes"],
+          "properties": {
+            "current_state": { "type": "string" },
+            "proposed_state": { "type": ["string", "null"] },
+            "legal": { "type": "boolean" },
+            "grade_gap": { "type": "integer", "description": "State-level distance between current and proposed." },
+            "notes": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "blockers": { "type": "array", "items": { "$ref": "#/$defs/blocking_item" } },
+        "dimensions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scores", "floors", "passed", "below_floor"],
+          "properties": {
+            "scores": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "SCIENTIFIC_VALIDITY": { "type": "number", "minimum": 0, "maximum": 1 },
+                "EVIDENCE_QUALITY": { "type": "number", "minimum": 0, "maximum": 1 },
+                "REPRODUCIBILITY": { "type": "number", "minimum": 0, "maximum": 1 },
+                "ENGINEERING_FEASIBILITY": { "type": "number", "minimum": 0, "maximum": 1 },
+                "SCALE_READINESS": { "type": "number", "minimum": 0, "maximum": 1 },
+                "ENVIRONMENTAL_ACCEPTABILITY": { "type": "number", "minimum": 0, "maximum": 1 },
+                "BIOSAFETY": { "type": "number", "minimum": 0, "maximum": 1 },
+                "REGULATORY_STATUS": { "type": "number", "minimum": 0, "maximum": 1 },
+                "ECONOMIC_VIABILITY": { "type": "number", "minimum": 0, "maximum": 1 },
+                "MONITORABILITY": { "type": "number", "minimum": 0, "maximum": 1 },
+                "REVERSIBILITY": { "type": "number", "minimum": 0, "maximum": 1 },
+                "RESIDUAL_RISK": { "type": "number", "minimum": 0, "maximum": 1, "description": "Inverse dimension: 1 = negligible residual risk." }
+              }
+            },
+            "floors": { "type": "object", "additionalProperties": false, "properties": {
+              "SCIENTIFIC_VALIDITY": { "type": "number", "minimum": 0, "maximum": 1 },
+              "EVIDENCE_QUALITY": { "type": "number", "minimum": 0, "maximum": 1 },
+              "REPRODUCIBILITY": { "type": "number", "minimum": 0, "maximum": 1 },
+              "ENGINEERING_FEASIBILITY": { "type": "number", "minimum": 0, "maximum": 1 },
+              "SCALE_READINESS": { "type": "number", "minimum": 0, "maximum": 1 },
+              "ENVIRONMENTAL_ACCEPTABILITY": { "type": "number", "minimum": 0, "maximum": 1 },
+              "BIOSAFETY": { "type": "number", "minimum": 0, "maximum": 1 },
+              "REGULATORY_STATUS": { "type": "number", "minimum": 0, "maximum": 1 },
+              "ECONOMIC_VIABILITY": { "type": "number", "minimum": 0, "maximum": 1 },
+              "MONITORABILITY": { "type": "number", "minimum": 0, "maximum": 1 },
+              "REVERSIBILITY": { "type": "number", "minimum": 0, "maximum": 1 },
+              "RESIDUAL_RISK": { "type": "number", "minimum": 0, "maximum": 1 }
+            } },
+            "passed": { "type": "boolean" },
+            "below_floor": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "mission": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["criteria_met", "criteria_not_met", "failure_thresholds_triggered", "metrics"],
+          "properties": {
+            "criteria_met": { "type": "array", "items": { "type": "string" } },
+            "criteria_not_met": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["criterion", "why"], "properties": { "criterion": { "type": "string" }, "why": { "type": "string" } } } },
+            "failure_thresholds_triggered": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["threshold", "why"], "properties": { "threshold": { "type": "string" }, "why": { "type": "string" } } } },
+            "metrics": { "type": "array", "items": { "$ref": "#/$defs/metric_check" } }
+          }
+        }
+      }
+    },
+    "criteria_met": { "type": "array", "items": { "type": "string" } },
+    "criteria_not_met": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["criterion", "why"], "properties": { "criterion": { "type": "string" }, "why": { "type": "string" } } } },
+    "blocking_items": { "type": "array", "items": { "$ref": "#/$defs/blocking_item" } },
+    "supporting_evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence_ref" } },
+    "opposing_evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence_ref" } },
+    "residual_uncertainty": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["statement", "impact"], "properties": { "statement": { "type": "string" }, "impact": { "type": "string", "enum": ["low", "medium", "high"] } } } },
+    "risk_benefit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["net_positive", "benefit", "risk", "residual_risk_score", "benefit_score", "assessment"],
+      "properties": {
+        "net_positive": { "type": "boolean" },
+        "benefit": { "type": "string" },
+        "risk": { "type": "string" },
+        "residual_risk_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "benefit_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "assessment": { "type": "string" }
+      }
+    },
+    "required_human_approvals": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["scope", "reason", "status"], "properties": { "scope": { "type": "string" }, "reason": { "type": "string" }, "status": { "type": "string", "enum": ["granted", "pending", "missing", "expired"] }, "revision": { "type": ["integer", "null"] } } } },
+    "conditional_release_terms": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["condition", "owner"], "properties": { "condition": { "type": "string" }, "owner": { "type": "string" } } } },
+    "monitoring_requirements": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["parameter", "frequency", "alert_condition"], "properties": { "parameter": { "type": "string" }, "frequency": { "type": "string" }, "alert_condition": { "type": "string" } } } },
+    "failure_conditions": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["condition", "action"], "properties": { "condition": { "type": "string" }, "action": { "type": "string" } } } },
+    "next_actions": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["action", "reason", "priority"], "properties": { "action": { "type": "string" }, "reason": { "type": "string" }, "priority": { "type": "string", "enum": ["high", "medium", "low"] }, "skill": { "type": ["string", "null"] } } } },
+    "review_expiry": { "type": ["string", "null"], "format": "date-time" },
+    "decision_memo": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/decision_memo" }] },
+    "state_transition_request": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/state_transition_request" }] },
+
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_schema", "output_schema", "self_check"],
+      "properties": {
+        "input_schema": { "type": "string", "enum": ["passed", "failed", "pending"] },
+        "output_schema": { "type": "string", "enum": ["passed", "failed", "pending"] },
+        "self_check": { "type": "string", "enum": ["passed", "failed", "not_run"] },
+        "checks": { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill", "skill_version", "contract_version", "timestamp", "tools_used"],
+      "properties": {
+        "skill": { "type": "string" },
+        "skill_version": { "type": "string" },
+        "contract_version": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "tools_used": { "type": "array", "items": { "type": "string" } },
+        "input_digest": { "type": ["string", "null"] },
+        "host": { "type": ["string", "null"] }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string", "pattern": "^ODG-E[0-9]{3}$" },
+          "message": { "type": "string" },
+          "detail": { "type": ["object", "null"] },
+          "retryable": { "type": "boolean" }
+        }
+      }
+    },
+    "comparison": { "type": ["object", "null"], "additionalProperties": true },
+    "expiry": { "type": ["object", "null"], "additionalProperties": true }
+  },
+  "$defs": {
+    "decision_memo": {
+      "type": "object",
+      "required": ["memo_id", "created_at", "task_id", "project_id", "title", "current_state", "proposed_state", "decision", "decision_summary"],
+      "additionalProperties": true,
+      "properties": {
+        "memo_id": { "type": "string", "minLength": 1 },
+        "created_at": { "type": "string", "format": "date-time" },
+        "task_id": { "type": "string", "minLength": 1 },
+        "project_id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "current_state": { "type": "string" },
+        "proposed_state": { "type": ["string", "null"] },
+        "decision": { "type": "string" },
+        "decision_summary": { "type": "string", "minLength": 1 }
+      }
+    },
+    "blocking_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule", "severity", "evidence", "how_to_resolve"],
+      "properties": {
+        "rule": { "type": "string", "pattern": "^B[0-9]+$" },
+        "severity": { "type": "string", "enum": ["BLOCKING", "HIGH", "MEDIUM"] },
+        "evidence": { "type": "string", "minLength": 1 },
+        "how_to_resolve": { "type": "string", "minLength": 1 }
+      }
+    },
+    "evidence_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref_id", "label", "statement"],
+      "properties": {
+        "ref_id": { "type": "string" },
+        "label": { "type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"] },
+        "statement": { "type": "string" },
+        "source": { "type": "string" }
+      }
+    },
+    "metric_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "direction", "status"],
+      "properties": {
+        "name": { "type": "string" },
+        "direction": { "type": "string", "enum": ["maximize", "minimize", "maintain", "report"] },
+        "current_value": { "type": ["number", "null"] },
+        "target_value": { "type": ["number", "null"] },
+        "threshold_value": { "type": ["number", "null"] },
+        "status": { "type": "string", "enum": ["met", "not_met", "triggered", "n/a", "unknown"] },
+        "note": { "type": "string" }
+      }
+    },
+    "state_transition_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requested_by", "from_state", "to_state", "rationale", "approval_required", "on_chain"],
+      "properties": {
+        "requested_by": { "type": "string" },
+        "from_state": { "type": "string" },
+        "to_state": { "type": "string" },
+        "rationale": { "type": "string" },
+        "approval_required": { "type": "boolean" },
+        "on_chain": { "type": "boolean", "description": "True when a matching APPROVAL_GRANTED record already exists; approval is carried, not re-requested." },
+        "approval_scope": { "type": ["string", "null"] },
+        "approval_revision": { "type": ["integer", "null"] },
+        "dry_run": { "type": "boolean" }
+      }
+    }
+  }
+}

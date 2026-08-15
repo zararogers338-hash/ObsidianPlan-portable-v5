@@ -1,0 +1,300 @@
+# Evaluation cases — micp-reproducibility-versioning
+
+Offline, deterministic evaluation of the tool pipeline and the skill contract.
+Each case defines a JSON input and the checks that must hold after running it
+through the service (or a sub-tool). The runner (`run_evals.py`) is pure
+stdlib, needs no network, and reports the minimum performance indicators
+declared in `skill.yaml`.
+
+Indicator → measurement mapping:
+
+| Indicator | Where measured |
+|---|---|
+| `structured_output_pass_rate` | every SUCCESS/PARTIAL case's output validates against `schemas/output.schema.json` |
+| `tool_invocation_rate` | per case, the tools actually invoked (runner calls the real CLI for each) |
+| `evidence_traceability_rate` | every `evidence_used.ref_id` in SUCCESS outputs exists in input refs |
+| `missing_input_detection_rate` | cases with missing required fields must yield `BLOCKED` with `missing_inputs` |
+| `adversarial_interception_rate` | adversarial cases (tampered raw, pollution, label inflation, path escape) must be caught |
+| `repeat_run_consistency` | each case run twice; byte-identical output required |
+| `mean_failure_recovery_time` | wall time per case (stdin→result); reported as max and mean |
+
+Cases are grouped:
+
+- `positive` — normal governance requests (manifest, env, lock, seed, reproduce, diff).
+- `adversarial` — inputs engineered to break the governance contract.
+- `boundary` — degenerate but valid input shapes (including missing).
+
+---
+
+## 1. positive/manifest-generation
+
+Generate a data manifest for a sandbox project with a raw CSV and a derived file.
+
+```json
+{
+  "task_id": "eval-01", "project_id": "panshi-demo",
+  "request": "为项目生成 data/raw 与 data/processed 的文件清单与哈希",
+  "action": "manifest",
+  "root": "SANDBOX_ROOT",
+  "skill_version": "1.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:00:00Z", "risk_level": "low",
+  "human_approval_state": "not_required"
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - `hashes` populated, `data_lineage` present (or manifest artifact present)
+  - `manifest.entry_count == 2` (raw csv + processed csv)
+  - raw file classified as layer `data/raw`; processed as `data/processed`
+  - `validation.self_audit_pass is true`
+
+## 2. positive/environment-collection
+
+Collect the environment snapshot; the report must record OS, runtime, tools,
+dependency-lock summaries and a git identity (or fingerprint fallback).
+
+```json
+{
+  "task_id": "eval-02", "project_id": "panshi-demo",
+  "request": "采集环境信息：操作系统、运行时、工具版本、依赖锁摘要",
+  "action": "env",
+  "root": "SANDBOX_ROOT",
+  "skill_version": "1.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:05:00Z", "risk_level": "low",
+  "human_approval_state": "not_required"
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - `environment.os.system` is a non-empty string
+  - `environment.runtime.python` matches `^\d+\.\d+`
+  - `environment.git.git_present` is a boolean
+  - `environment.git.git_commit` present when git_active, else fingerprint
+
+## 3. positive/dependency-lock
+
+Export & lock detected dependencies. Never executes a package manager.
+
+```json
+{
+  "task_id": "eval-03", "project_id": "panshi-demo",
+  "request": "导出并锁定依赖：生成锁文件清单与 Python 导入面",
+  "action": "lock",
+  "root": "SANDBOX_ROOT",
+  "skill_version": "1.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:10:00Z", "risk_level": "low",
+  "human_approval_state": "not_required"
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - `lock.spec.mode == "passive_detection"` (no package-manager execution)
+  - `lock.lock_id` is non-empty and deterministic
+
+## 4. positive/seed-management
+
+Resolve a seed under `reuse` policy; the RNG preview must be deterministic.
+
+```json
+{
+  "task_id": "eval-04", "project_id": "panshi-demo",
+  "request": "解析随机种子并给出确定性 RNG 预览",
+  "action": "seed", "seed_policy": "reuse", "random_seed": 7,
+  "root": "SANDBOX_ROOT",
+  "skill_version": "1.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:15:00Z", "risk_level": "low",
+  "human_approval_state": "not_required"
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - `seed.value == 7`
+  - `seed.algorithm == "pcg32+splitmix64"`
+  - `seed.preview` has exactly 4 floats in [0, 1)
+
+## 5. positive/reproduce-roundtrip
+
+Full one-shot reproduction: manifest → lock env → record inputs → execute →
+record outputs → persist → rerun → compare hashes.
+
+```json
+{
+  "task_id": "eval-05", "project_id": "panshi-demo",
+  "request": "完整复现：创建 manifest、锁定环境、记录输入、执行、保存产物、重跑比较哈希",
+  "action": "reproduce",
+  "root": "SANDBOX_ROOT",
+  "seed_policy": "reuse", "random_seed": 11,
+  "parameters": {"curing_temp_c": 25, "reagent_mm": 0.5},
+  "commands": [{"id": "write-summary", "cmd": "EVAL_SUMMARY_CMD", "cwd": ".",
+                "expected_outputs": ["data/processed/summary.csv"]}],
+  "constraints": {"timeout_sec": 60},
+  "skill_version": "1.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:20:00Z", "risk_level": "low",
+  "human_approval_state": "not_required"
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - `reproduction_manifest.schema_version == "1.0.0"`
+  - `reproduction_manifest.inputs` contains `data/raw/ucs.csv`
+  - `reproduction_manifest.outputs` contains `data/processed/summary.csv`
+  - `hashes.inputs["data/raw/ucs.csv"]` is a 64-hex sha256
+  - `data_lineage` has at least 3 hops
+  - `reproducibility_checks` all `passed == true`
+  - manifest persisted under `provenance/reproduction-manifest.json`
+  - a provenance event was appended to `provenance/provenance.log`
+
+## 6. positive/diff-identical
+
+Diff a baseline against the current manifest when nothing changed.
+
+```json
+{
+  "task_id": "eval-06", "project_id": "panshi-demo",
+  "request": "比较两次运行结果，确认输出一致",
+  "action": "diff",
+  "root": "SANDBOX_ROOT",
+  "previous_manifest": "EVAL_PREV_MANIFEST",
+  "skill_version": "1.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:25:00Z", "risk_level": "low",
+  "human_approval_state": "not_required"
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - `differences` is non-empty and contains an `identical` entry
+  - `differences.identical is true`
+
+## 7. boundary/missing-commands
+
+reproduce without a commands array must be BLOCKED with field guidance.
+
+```json
+{
+  "task_id": "eval-07", "project_id": "panshi-demo",
+  "request": "完整复现这个实验",
+  "action": "reproduce",
+  "root": "SANDBOX_ROOT",
+  "skill_version": "1.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:30:00Z", "risk_level": "low",
+  "human_approval_state": "not_required"
+}
+```
+
+checks:
+  - `status == BLOCKED`
+  - `missing_inputs` names `commands` with `why_critical` and `how_to_obtain`
+  - `errors[0].code in (MRV-E102, MRV-E105)`
+
+## 8. boundary/missing-baseline
+
+diff without a baseline must be BLOCKED.
+
+```json
+{
+  "task_id": "eval-08", "project_id": "panshi-demo",
+  "request": "比较两次运行结果",
+  "action": "diff",
+  "root": "SANDBOX_ROOT",
+  "skill_version": "1.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:35:00Z", "risk_level": "low",
+  "human_approval_state": "not_required"
+}
+```
+
+checks:
+  - `status == BLOCKED`
+  - `missing_inputs` names `previous_manifest`
+
+## 9. adversarial/writable-raw
+
+Writable data/raw must be intercepted (BLOCKED / MRV-E501).
+
+```json
+{
+  "task_id": "eval-09", "project_id": "panshi-demo",
+  "request": "复现并检查原始数据是否可写",
+  "action": "reproduce",
+  "root": "EVAL_WRITABLE_ROOT",
+  "commands": [{"id": "noop", "cmd": "python -c \"pass\"", "cwd": ".",
+                "expected_outputs": []}],
+  "constraints": {"timeout_sec": 30},
+  "skill_version": "1.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:40:00Z", "risk_level": "low",
+  "human_approval_state": "not_required"
+}
+```
+
+checks:
+  - `status == BLOCKED`
+  - `errors[0].code == MRV-E501` (raw write protection breach)
+
+## 10. adversarial/path-escape
+
+A target path escaping the governance root must be rejected.
+
+```json
+{
+  "task_id": "eval-10", "project_id": "panshi-demo",
+  "request": "生成清单，包含越界路径",
+  "action": "manifest",
+  "root": "SANDBOX_ROOT",
+  "targets": ["../escape"],
+  "skill_version": "1.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:45:00Z", "risk_level": "low",
+  "human_approval_state": "not_required"
+}
+```
+
+checks:
+  - tool returns a clean error envelope with code `MRV-E302` (never a traceback)
+  - status is BLOCKED/FAILED, not SUCCESS
+
+## 11. adversarial/fabricated-version
+
+Declaring an incompatible skill major must be rejected at the version gate.
+
+```json
+{
+  "task_id": "eval-11", "project_id": "panshi-demo",
+  "request": "采集环境信息",
+  "action": "env",
+  "root": "SANDBOX_ROOT",
+  "skill_version": "2.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:50:00Z", "risk_level": "low",
+  "human_approval_state": "not_required"
+}
+```
+
+checks:
+  - `status == BLOCKED`
+  - `errors[0].code == MRV-E801`
+  - no environment data fabricated (no `environment.os` on BLOCKED)
+
+## 12. adversarial/pollution-after-overwrite
+
+After a reproduction baseline, a manual overwrite of a hashed output must be
+detected by check-pollution.
+
+```json
+{
+  "task_id": "eval-12", "project_id": "panshi-demo",
+  "request": "检测产物污染：手工覆盖后应报警",
+  "action": "check-pollution",
+  "root": "EVAL_POLLUTED_ROOT",
+  "skill_version": "1.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:55:00Z", "risk_level": "low",
+  "human_approval_state": "not_required"
+}
+```
+
+checks:
+  - `status == SUCCESS` (the tool reports findings; it does not crash)
+  - `verdict == "pollution_detected"`
+  - a finding with `kind == "manifest_mismatch"` names `data/processed/summary.csv`

@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-mineral-phase-interpreter/input.schema.json",
+  "title": "micp-mineral-phase-interpreter input contract",
+  "description": "Unified skill input envelope (Obsidian Plan spec §六) plus characterization payloads. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "task_id", "project_id", "request", "action", "skill_version", "timestamp"],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "SemVer-ish contract version. The runtime checks the major: 1.x accepted, 2.x rejected with OMM-E501 (compat policy, spec §十一)."
+    },
+    "task_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "project_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9._-]{1,64}$",
+      "description": "Project/experiment id. Filesystem-safe by construction."
+    },
+    "request": {"type": "string", "minLength": 1, "description": "Natural-language characterization task statement (spec §六)."},
+    "action": {
+      "type": "string",
+      "enum": [
+        "interpret.phases",
+        "tools.xrd_match",
+        "tools.sem_stats",
+        "tools.spectra_parse",
+        "tools.fuse",
+        "tools.audit_image",
+        "tools.image_hash",
+        "tools.report",
+        "tools.validate",
+        "tools.self_check"
+      ]
+    },
+    "skill_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "controller_version": {"type": "string"},
+    "timestamp": {"type": "string", "description": "ISO-8601 caller timestamp."},
+    "context": {"type": "object", "description": "Controller-supplied working context (ephemeral tier)."},
+    "constraints": {"type": "array", "items": {"type": "string"}},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "data_refs": {"type": "array", "items": {"type": "string"}},
+    "upstream_outputs": {"type": "array", "items": {"type": "object"}},
+    "requested_output_format": {"type": "string", "enum": ["json", "summary"], "default": "json"},
+    "risk_level": {"type": "string", "enum": ["low", "medium", "high", "critical"], "default": "low"},
+    "human_approval_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["granted"],
+      "properties": {
+        "granted": {"type": "boolean"},
+        "approver": {"type": "string"},
+        "revision": {"type": "integer", "minimum": 0},
+        "scope": {"type": "string"}
+      }
+    },
+    "dry_run": {"type": "boolean", "default": false,
+                "description": "Validate + simulate only; no audit log written, no artifact persisted."},
+    "reference_phase": {"type": "string", "enum": ["calcite", "aragonite", "vaterite", "acc", "unknown"]},
+
+    "samples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "data_type"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "label": {"type": "string"},
+          "data_type": {
+            "type": "string",
+            "enum": [
+              "xrd_twotheta_intensity", "xrd_dspacing_intensity",
+              "sem_image", "sem_particle_list",
+              "eds_spectrum", "ftir_spectrum", "raman_spectrum", "tga_curve", "tabular"
+            ]
+          },
+          "source": {"type": "string"},
+          "unit_axis": {"type": "string",
+                        "description": "x-axis unit: deg2theta, d_A, um, keV, cm-1, degC, count"},
+          "unit_y": {"type": "string", "description": "y-axis unit: counts, intensity, wt%, none"},
+          "unit_scale": {"type": "number", "description": "pixel-to-micron scale for sem_image (um/px); 0/absent => uncalibrated."},
+          "wavelength_A": {"type": "number", "minimum": 1.4, "maximum": 1.6,
+                           "description": "XRD wavelength in Angstrom (default Cu Ka1 1.540598)."},
+          "values": {"type": "array", "items": {"type": "number"},
+                     "description": "Flat numeric series (e.g. [x0, y0, x1, y1, ...] or intensities)."},
+          "path": {"type": "string", "description": "File path when data lives on disk instead of inline."},
+          "baseline": {"type": "object"},
+          "particles": {
+            "type": "array", "items": {"type": "array", "items": {"type": "number"}},
+            "description": "SEM particle list rows: [x, y, area, ...] in the particle_units coordinate frame."
+          },
+          "particle_units": {"type": "string", "enum": ["um", "px"], "default": "um"},
+          "channels": {"type": "array", "items": {"type": "number"}},
+          "intensities": {"type": "array", "items": {"type": "number"}},
+          "ed_kev_ca": {"type": "number", "minimum": 3.0, "maximum": 4.5, "default": 3.690},
+          "ed_kev_tolerance": {"type": "number", "minimum": 0.0, "maximum": 0.5, "default": 0.15},
+          "expected_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$",
+                              "description": "tools.image_hash: 期望的原始图像 SHA-256;缺失则只计算不比对。"},
+          "px_width": {"type": "integer", "minimum": 1},
+          "px_height": {"type": "integer", "minimum": 1},
+          "scale_bar_um": {"type": "number", "minimum": 0},
+          "scale_bar_px": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "xrd_d_spacing_tol_A": {"type": "number", "minimum": 0.0, "maximum": 0.2, "default": 0.03},
+        "xrd_min_relative_intensity": {"type": "number", "minimum": 0.0, "maximum": 100.0, "default": 10.0},
+        "xrd_min_peaks": {"type": "integer", "minimum": 1, "maximum": 20, "default": 2},
+        "spectra_wavenumber_tol_cm1": {"type": "number", "minimum": 0.0, "maximum": 50.0, "default": 8.0},
+        "sem_min_particles": {"type": "integer", "minimum": 1, "maximum": 100000, "default": 30},
+        "sem_contact_threshold_um": {"type": "number", "minimum": 0.0, "maximum": 1000.0, "default": 1.0},
+        "eds_ca_kev_tol": {"type": "number", "minimum": 0.0, "maximum": 0.5, "default": 0.15},
+        "fuse_min_evidence": {"type": "integer", "minimum": 1, "maximum": 20, "default": 2}
+      }
+    },
+
+    "save_audit_to": {"type": "string",
+                      "description": "Directory to persist the image-processing audit log. Requires risk_level gate + human approval unless dry_run."},
+    "max_candidate_phases": {"type": "integer", "minimum": 1, "maximum": 8, "default": 4},
+    "verify_refs": {"type": "boolean", "default": true,
+                    "description": "When true, data_refs/evidence_refs must resolve to readable files or inline samples."},
+    "candidate_output": {
+      "type": "object",
+      "description": "tools.validate / tools.self_check: a candidate output envelope to validate against output.schema.json."
+    },
+    "output": {"type": "object",
+               "description": "Alias for candidate_output (tools.validate / tools.self_check)."},
+    "results": {"type": "object",
+                "description": "tools.fuse: pre-computed xrd/sem/spectra evidence to fuse."}
+  }
+}

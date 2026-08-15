@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.dev/skills/micp-hypothesis-forge/schemas/input.schema.json",
+  "title": "micp-hypothesis-forge input contract",
+  "description": "Minimum contract for invoking the MICP Hypothesis Forge skill. Missing any required field returns BLOCKED with missing_inputs, never a fabricated run.",
+  "type": "object",
+  "required": [
+    "task_id",
+    "project_id",
+    "request",
+    "risk_level",
+    "human_approval_state",
+    "requested_output_format",
+    "skill_version",
+    "controller_version",
+    "timestamp"
+  ],
+  "properties": {
+    "task_id": { "type": "string", "minLength": 1 },
+    "project_id": { "type": "string", "minLength": 1 },
+    "request": { "type": "string", "minLength": 1 },
+    "context": { "type": "string", "minLength": 0 },
+    "constraints": { "type": "object" },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "type": "string", "minLength": 1 },
+          {
+            "type": "object",
+            "required": ["ref_id"],
+            "properties": {
+              "ref_id": { "type": "string", "minLength": 1 },
+              "source": { "type": "string" },
+              "epistemic_label": {
+                "type": "string",
+                "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "data_refs": { "type": "array", "items": { "type": "string" } },
+    "upstream_outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref_id", "skill", "skill_version"],
+        "properties": {
+          "ref_id": { "type": "string", "minLength": 1 },
+          "skill": { "type": "string" },
+          "skill_version": { "type": "string" },
+          "artifact": { "type": "object" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "requested_output_format": {
+      "type": "string",
+      "enum": ["hypothesis_card_set", "discriminating_matrix", "both"]
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "human_approval_state": {
+      "type": "string",
+      "enum": ["granted", "pending", "not_requested", "denied"]
+    },
+    "skill_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "controller_version": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "minLength": 1 },
+    "statement_to_forge": { "type": "string", "minLength": 1 },
+    "min_hypotheses": { "type": "integer", "minimum": 3 },
+    "max_hypotheses": { "type": "integer", "minimum": 3 },
+    "strict_mode": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

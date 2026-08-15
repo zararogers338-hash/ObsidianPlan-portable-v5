@@ -1,0 +1,154 @@
+# micp-literature-scout eval cases (spec §八 / §十: ≥8 cases covering normal,
+# missing, conflict, adversarial, boundary inputs).
+#
+# Each case: id, description, action, extra (merged over base), expect.
+# The runner never hardcodes expected answers into inputs — expectations come
+# from the skill's own rules (status/codes/schema).
+
+base:
+  contract_version: "1.0"
+  task_id: eval-task
+  project_id: eval-proj
+  request: "检索 MICP 均匀性证据"
+  skill_version: "1.0.0"
+  controller_version: "1.0"
+  timestamp: "2026-08-06T12:00:00Z"
+  human_approval_state:
+    granted: true
+
+cases:
+  # 1. Normal: offline search of MICP uniformity, lab vs field separation.
+  - id: normal-search
+    description: "正常检索: MICP 均匀性, 应分层且区分尺度"
+    action: search.run
+    extra:
+      request: "提高 MICP 均匀性的证据, 区分实验室与现场"
+    expect:
+      status: SUCCESS
+      result_count_gt: 0
+      triage_tier1_gt: 0
+
+  # 2. Normal: DOI verification, mixed valid/forged.
+  - id: normal-doi-mixed
+    description: "正常核验: 合法 + 伪造 DOI 混合"
+    action: doi.verify
+    extra:
+      candidate_dois: ["10.1016/j.bgtech.2023.100002", "10.9999/reserved.prefix"]
+    expect:
+      status: PARTIAL
+      doi_statuses_include: ["offline_unverified", "suspected_forged"]
+
+  # 3. Missing: request field absent → BLOCKED + E102 naming the field.
+  - id: missing-request
+    description: "缺失 request → BLOCKED + MLS-E102 命名字段"
+    action: search.run
+    drop_fields: ["request"]
+    expect:
+      status: BLOCKED
+      error_code: MLS-E102
+      named_field: request
+
+  # 4. Conflict: contract_version 2.x vs supported 1.x.
+  - id: conflict-contract
+    description: "契约冲突: contract_version 2.0 → BLOCKED + E104"
+    action: search.run
+    extra:
+      contract_version: "2.0"
+    expect:
+      status: BLOCKED
+      error_code: MLS-E104
+
+  # 5. Adversarial: unknown action.
+  - id: adversarial-unknown-action
+    description: "对抗: 未知 action → FAILED + E103"
+    action: not.a.real.action
+    expect:
+      status: FAILED
+      error_code: MLS-E103
+
+  # 6. Adversarial: forged DOI must be flagged, never REPORTED.
+  - id: adversarial-forged-doi
+    description: "对抗: 伪造 DOI → suspected_forged, 不得 REPORTED"
+    action: doi.verify
+    extra:
+      candidate_dois: ["10.9999/fake.biocement.2024.00001"]
+    expect:
+      status: PARTIAL
+      all_forged: true
+
+  # 7. Boundary: empty query text → BLOCKED (length < 3).
+  - id: boundary-short-query
+    description: "边界: query.text 过短 → BLOCKED"
+    action: search.run
+    extra:
+      query: {"text": "x", "n": 5}
+    expect:
+      status: BLOCKED
+      error_code: MLS-E102
+
+  # 8. Boundary: time-range constraint narrows results; reproducibility holds.
+  - id: boundary-time-range
+    description: "边界: time_range 2022- 过滤; 且 repro_id 一致"
+    action: search.run
+    extra:
+      constraints: ["time_range:2022-"]
+      query: {"text": "MICP 均匀性", "n": 20}
+    expect:
+      status: SUCCESS
+      all_years_ge: 2022
+
+  # 9. Normal: citation export produces a valid bibtex block.
+  - id: normal-cite-export
+    description: "正常: 引用导出 BibTeX"
+    action: cite.export
+    extra:
+      format: bibtex
+      records:
+        - ref_id: "a"
+          doi: "10.1000/x"
+          title: "Biocementation study"
+          year: 2020
+          container: "JGGE"
+          authors: ["Wang Y"]
+    expect:
+      status: SUCCESS
+      export_contains: "@article{a,"
+
+  # 10. Boundary: no candidate_dois → BLOCKED.
+  - id: boundary-empty-dois
+    description: "边界: candidate_dois 为空 → BLOCKED"
+    action: doi.verify
+    extra:
+      candidate_dois: []
+    expect:
+      status: BLOCKED
+      error_code: MLS-E102
+
+  # 11. Normal: dedup merges identical DOIs.
+  - id: normal-dedup
+    description: "正常: DOI 去重"
+    action: dedup.merge
+    extra:
+      records:
+        - ref_id: "a"
+          doi: "10.1000/x"
+          title: "T"
+          year: 2020
+          container: "J"
+        - ref_id: "b"
+          doi: "https://doi.org/10.1000/x"
+          title: "T"
+          year: 2020
+          container: "J"
+    expect:
+      status: SUCCESS
+      dedup_input: 2
+      dedup_output: 1
+
+  # 12. Normal: validate.self passes.
+  - id: normal-selfcheck
+    description: "正常: validate.self 自检通过"
+    action: validate.self
+    expect:
+      status: SUCCESS
+      selfcheck_passed: true

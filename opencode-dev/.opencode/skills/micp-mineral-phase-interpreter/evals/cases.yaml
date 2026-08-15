@@ -1,0 +1,149 @@
+# Evaluation cases for micp-mineral-phase-interpreter (spec §三, §十一)
+# Each case is a full skill invocation through the real CLI. Cases cover:
+#   normal / missing / conflict / adversarial / boundary.
+# No case leaks the expected answer into the input. Reference expectations are
+# derived by the skill's own deterministic logic, never hardcoded "fixed
+# answers". XRD profiles are generated from reference d-spacings via Bragg's
+# law (interleaved [x0,y0,...] format).
+
+suite:
+  name: micp-mineral-phase-interpreter-evals
+  contract_version: "1.0"
+
+base:
+  contract_version: "1.0"
+  task_id: "eval"
+  project_id: "evals-project"
+  request: "eval suite case"
+  action: null
+  skill_version: "1.0.0"
+  timestamp: "2026-08-06T00:00:00Z"
+
+cases:
+  - id: eval-01
+    description: "Normal: vaterite-dominant XRD + FTIR + EDS + TGA identifies vaterite with confidence."
+    action: interpret.phases
+    extra:
+      samples:
+        - id: "x1"
+          data_type: "xrd_twotheta_intensity"
+          values: [27.0,18,27.1,25,27.2,18,32.7,22,32.8,30,32.9,22,24.9,14,25.0,20,25.1,14,25.3,100,25.4,85,25.5,70]
+        - id: "f1"
+          data_type: "ftir_spectrum"
+          channels: [700,705,710,715,720,740,745,750,770,820,860,870,875,880,1080,1085,1090,1400,1450,1490,1520]
+          intensities: [5,5,5,5,5,12,100,12,5,5,5,8,9,8,15,22,15,18,25,60,20]
+        - id: "e1"
+          data_type: "eds_spectrum"
+          channels: [1.0,2.0,3.0,3.4,3.5,3.69,3.8,4.0,5.0]
+          intensities: [0,0,0,20,50,100,50,10,0]
+        - id: "t1"
+          data_type: "tga_curve"
+          channels: [25,100,200,400,600,700,800,900]
+          intensities: [100,99,98,97,80,60,50,56]
+    expect:
+      status_in: [SUCCESS]
+      fusion_winner: "vaterite"
+
+  - id: eval-02
+    description: "Normal: calcite XRD alone is identified but capped at likely (no corroboration)."
+    action: tools.xrd_match
+    extra:
+      samples:
+        - id: "x1"
+          data_type: "xrd_twotheta_intensity"
+          values: [29.3,20,29.4,100,29.5,20,35.9,12,36.0,14,36.1,12,38.9,10,39.0,18,39.1,10]
+    expect:
+      status_in: [SUCCESS]
+      top_phase: "calcite"
+      top_verdict: "identified"
+
+  - id: eval-03
+    description: "Missing: required fields removed -> BLOCKED with named missing fields and guidance."
+    action: interpret.phases
+    remove_fields: ["project_id", "timestamp"]
+    expect:
+      status_in: [BLOCKED]
+      error_code_in: [OMM-E101]
+      missing_fields_named: ["project_id", "timestamp"]
+
+  - id: eval-04
+    description: "Conflict: vaterite 3.29A overlaps aragonite 3.273A -> candidates listed, no single-modality certainty."
+    action: tools.xrd_match
+    extra:
+      samples:
+        - id: "x1"
+          data_type: "xrd_twotheta_intensity"
+          values: [26.9,10,27.0,18,27.1,25,27.2,18,27.3,10,32.7,20,32.8,30,32.9,20]
+      thresholds:
+        xrd_d_spacing_tol_A: 0.03
+    expect:
+      status_in: [SUCCESS]
+      multiple_candidates: true
+
+  - id: eval-05
+    description: "Adversarial: non-object stdin -> BLOCKED envelope, not crash."
+    action: null
+    raw_stdin: "[1,2,3]"
+    expect:
+      status_in: [BLOCKED]
+      error_code_in: [OMM-E101]
+
+  - id: eval-06
+    description: "Adversarial: contract_version 2.0 -> FAILED OMM-E501 (compat policy)."
+    action: tools.xrd_match
+    extra:
+      contract_version: "2.0"
+    expect:
+      status_in: [FAILED]
+      error_code_in: [OMM-E501]
+
+  - id: eval-07
+    description: "Boundary: flat XRD profile -> no fabricated winner (PARTIAL/SUCCESS with winner=None)."
+    action: interpret.phases
+    extra:
+      samples:
+        - id: "x1"
+          data_type: "xrd_twotheta_intensity"
+          values: [10,5,12,5,14,5,16,5,18,5,20,5,22,5,24,5,26,5,28,5,30,5]
+    expect:
+      status_in: [SUCCESS, PARTIAL]
+      no_winner: true
+
+  - id: eval-08
+    description: "Boundary: single SEM image with 12 particles -> PARTIAL, uncertainty flags non-representative."
+    action: interpret.phases
+    extra:
+      samples:
+        - id: "s1"
+          data_type: "sem_particle_list"
+          particle_units: "um"
+          particles: [[10,20,4.5],[12,24,3.2],[15,22,5.1],[18,26,2.8],[20,18,6.0],[22,30,3.9],[25,25,4.1],[28,20,5.5],[30,28,3.0],[32,22,4.8],[35,30,2.5],[38,24,5.9]]
+      thresholds:
+        sem_min_particles: 30
+    expect:
+      status_in: [SUCCESS, PARTIAL]
+      uncertainty_nonrepresentative: true
+
+  - id: eval-09
+    description: "Boundary: EDS with no Ca -> no CaCO3 claim fabricated."
+    action: interpret.phases
+    extra:
+      samples:
+        - id: "e1"
+          data_type: "eds_spectrum"
+          channels: [1.0,2.0,3.0,4.0,5.0]
+          intensities: [0.0,0.0,0.0,0.0,0.0]
+    expect:
+      no_caco3_claim_without_ca: true
+
+  - id: eval-10
+    description: "Missing: NaN in XRD values -> typed OMM-E104 failure, not crash."
+    action: tools.xrd_match
+    extra:
+      samples:
+        - id: "x1"
+          data_type: "xrd_twotheta_intensity"
+          values: [10.0, 5.0, 20.0]
+    expect:
+      status_in: [FAILED, BLOCKED]
+      error_code_in: [OMM-E104]

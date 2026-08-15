@@ -1,0 +1,64 @@
+{
+  "$schema": "https://obsidian.dev/manifest.schema.json",
+  "name": "obsidian-prompt-amplifier",
+  "title": "Obsidian Prompt Amplifier | 提示词扩充机制 + 调动决策树(任务入口首检)",
+  "version": "1.1.0",
+  "contract_version": "1.0.0",
+  "layer": "panshi-governed-capability",
+  "license": "MIT",
+  "priority": "highest",
+  "constitution": "panshi-constitution-v1.0",
+  "compatibility": {
+    "opencode": ">=1.18",
+    "python": ">=3.10"
+  },
+  "entrypoint": "tools/prompt_amplifier.py",
+  "discovery": {
+    "format": "SKILL.md",
+    "locations": [
+      ".opencode/skills/",
+      ".claude/skills/",
+      ".agents/skills/",
+      "skills/"
+    ]
+  },
+  "inputs": {
+    "schema": "schemas/input.schema.json"
+  },
+  "outputs": {
+    "schema": "schemas/output.schema.json",
+    "statuses": [
+      "SUCCESS",
+      "AMPLIFICATION_ROUND_LIMIT",
+      "INPUT_SCHEMA_INVALID",
+      "CONSTITUTIONAL_CONFLICT",
+      "HUMAN_APPROVAL_REQUIRED"
+    ]
+  },
+  "errors": [
+    "OPA-E1001",
+    "OPA-E1002",
+    "OPA-E1003",
+    "OPA-E1004",
+    "OPA-E1005"
+  ],
+  "tools": [
+    {
+      "name": "amplify",
+      "entrypoint": "tools/prompt_amplifier.py",
+      "purpose": "Task classification, complexity scoring, tiered grouping, amplified-prompt drafting, acceptance report"
+    }
+  ],
+  "permissions": {
+    "read": "request/context only (read-only)",
+    "write": "none (analysis + report only)",
+    "requires_approval": [
+      "real experiment",
+      "field deployment",
+      "long-term knowledge write",
+      "state upgrade"
+    ]
+  },
+  "offline": true,
+  "deterministic": true
+}

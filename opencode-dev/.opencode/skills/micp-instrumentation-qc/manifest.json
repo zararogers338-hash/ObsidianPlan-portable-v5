@@ -1,0 +1,44 @@
+{
+  "$schema": "https://obsidian.dev/manifest.schema.json",
+  "name": "micp-instrumentation-qc",
+  "title": "MICP Instrumentation QC | 仪器、标定、采样链与质量控制",
+  "version": "1.0.0",
+  "contract_version": "1.0.0",
+  "layer": "panshi-governed-capability",
+  "license": "MIT",
+  "compatibility": {
+    "opencode": ">=1.18",
+    "runtime": "bun >=1.3",
+    "python": ">=3.11",
+    "node": ">=18"
+  },
+  "entrypoint": "tools/cli.py",
+  "discovery": {
+    "format": "SKILL.md",
+    "locations": [".opencode/skills/", ".claude/skills/", ".agents/skills/"]
+  },
+  "inputs": {
+    "schema": "schemas/input.schema.json",
+    "reference": "https://obsidian.dev/skills/micp-instrumentation-qc/input.schema.json"
+  },
+  "outputs": {
+    "schema": "schemas/output.schema.json",
+    "statuses": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+  },
+  "errors": ["MICQ-E1001", "MICQ-E1002", "MICQ-E1003", "MICQ-E1004", "MICQ-E1005", "MICQ-E1006", "MICQ-E1007", "MICQ-E1008", "MICQ-E1009", "MICQ-E1010", "MICQ-E1011"],
+  "tools": [
+    { "name": "qc", "entrypoint": "tools/cli.py", "subcommand": "qc", "purpose": "Full QC pipeline: unit check -> calibration -> control chart -> sample chain -> integrity -> QC report" },
+    { "name": "calibration", "entrypoint": "tools/cli.py", "subcommand": "calibration", "purpose": "Calibration curve OLS, LOD/LOQ, expanded uncertainty (GUM)" },
+    { "name": "control", "entrypoint": "tools/cli.py", "subcommand": "control", "purpose": "Shewhart control chart, drift / over-range / saturation / baseline detection" },
+    { "name": "sample-chain", "entrypoint": "tools/cli.py", "subcommand": "sample-chain", "purpose": "Sample chain, barcode (checksum), duplicate-ID and timestamp-alignment detection" },
+    { "name": "integrity", "entrypoint": "tools/cli.py", "subcommand": "integrity", "purpose": "Raw/derived SHA-256 hashing, append-only hash-chained audit log, tamper detection" },
+    { "name": "adapters", "entrypoint": "tools/cli.py", "subcommand": "adapters", "purpose": "Instrument export format detection + unit normalization" }
+  ],
+  "permissions": {
+    "read": "project files (read-only)",
+    "write": "audit/ directory only",
+    "requires_approval": ["network access", "external writes", "experiment execution", "invoking other skills", "data writes (dry_run=false)"]
+  },
+  "offline": true,
+  "deterministic": true
+}

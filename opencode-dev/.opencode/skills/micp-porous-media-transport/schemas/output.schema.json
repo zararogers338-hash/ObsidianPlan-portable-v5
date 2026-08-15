@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-porous-media-transport.output.json",
+  "title": "micp-porous-media-transport — Output Contract",
+  "description": "Unified skill output envelope (Obsidian Plan spec §六). Every invocation returns this shape, success or failure.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version", "skill", "skill_version", "status", "summary",
+    "action", "project_id", "task_id",
+    "findings", "assumptions", "evidence_used", "uncertainty", "risks",
+    "artifacts", "requested_next_skills", "validation", "provenance", "errors"
+  ],
+  "properties": {
+    "contract_version": { "type": "string", "pattern": "^1\\.\\d+$" },
+    "skill": { "type": "string", "const": "micp-porous-media-transport" },
+    "skill_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+    },
+    "summary": { "type": "string" },
+    "action": { "type": ["string", "null"] },
+    "project_id": { "type": ["string", "null"] },
+    "task_id": { "type": ["string", "null"] },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "statement"],
+        "properties": {
+          "label": {
+            "type": "string",
+            "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+          },
+          "statement": { "type": "string" },
+          "source": { "type": "string" }
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "statement"],
+        "properties": {
+          "label": { "type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"] },
+          "statement": { "type": "string" },
+          "source": { "type": "string" }
+        }
+      }
+    },
+    "evidence_used": { "type": "array", "items": { "type": "string" } },
+    "uncertainty": { "type": "array", "items": { "type": "string" } },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "statement"],
+        "properties": {
+          "label": { "type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"] },
+          "statement": { "type": "string" }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind"],
+        "properties": {
+          "kind": { "type": "string" },
+          "path": { "type": ["string", "null"] },
+          "note": { "type": ["object", "array", "string", "null"] }
+        }
+      }
+    },
+    "requested_next_skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill", "reason"],
+        "properties": {
+          "skill": { "type": "string" },
+          "reason": { "type": "string" },
+          "inputs_needed": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "state": {
+      "type": ["object", "null"],
+      "properties": {
+        "clogged": { "type": "boolean" },
+        "t_final": { "type": "number" },
+        "permeability_reduction_factor": { "type": "number" }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "required": ["input_schema", "output_schema", "self_check", "checks"],
+      "properties": {
+        "input_schema": { "type": "string", "enum": ["passed", "failed", "pending"] },
+        "output_schema": { "type": "string", "enum": ["passed", "failed", "pending"] },
+        "self_check": { "type": "string", "enum": ["passed", "failed", "not_run"] },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "passed"],
+            "properties": {
+              "name": { "type": "string" },
+              "passed": { "type": "boolean" },
+              "detail": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["started_at", "completed_at"],
+      "properties": {
+        "started_at": { "type": ["string", "null"] },
+        "completed_at": { "type": ["string", "null"] },
+        "skill": { "type": "string" },
+        "skill_version": { "type": "string" },
+        "host": { "type": ["string", "null"] },
+        "log_tail": { "type": "array", "items": { "type": "object" } },
+        "artifacts_written": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string", "pattern": "^OPM-E[0-9]{3}$" },
+          "message": { "type": "string" },
+          "detail": { "type": "object" },
+          "retryable": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

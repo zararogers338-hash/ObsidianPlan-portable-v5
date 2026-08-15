@@ -1,0 +1,315 @@
+{
+  "cases": [
+    {
+      "id": "eval-01",
+      "description": "Normal: initialize a knowledge base and verify it lands at revision 1 with a valid envelope.",
+      "action": "kb.init",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "findings>=min",
+          "pass": true,
+          "detail": "got 1"
+        },
+        {
+          "name": "events==n",
+          "pass": true,
+          "detail": "got 1"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 1
+    },
+    {
+      "id": "eval-02",
+      "description": "Normal: register an entity, attach evidence, and add a claim that resolves an evidence chain.",
+      "action": "graph.add_claim",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 1
+    },
+    {
+      "id": "eval-03",
+      "description": "Missing: a claim referencing unregistered evidence must be blocked as EVIDENCE_UNVERIFIABLE, not fabricated.",
+      "action": "graph.add_claim",
+      "status": "BLOCKED",
+      "error_code": "KGE-E201",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==BLOCKED",
+          "pass": true,
+          "detail": "got BLOCKED"
+        },
+        {
+          "name": "error==KGE-E201",
+          "pass": true,
+          "detail": "got KGE-E201"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 0
+    },
+    {
+      "id": "eval-04",
+      "description": "Conflict: a second mineral-phase conclusion must coexist as an OPEN conflict, never silently overwrite.",
+      "action": "graph.add_claim",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "conflict_opened",
+          "pass": true,
+          "detail": "got none"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 2
+    },
+    {
+      "id": "eval-05",
+      "description": "Adversarial: an OBSERVED label on EXTERNAL_REPORTED evidence must be rejected as EPISTEMIC_MISLABEL.",
+      "action": "graph.add_claim",
+      "status": "BLOCKED",
+      "error_code": "KGE-E204",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==BLOCKED",
+          "pass": true,
+          "detail": "got BLOCKED"
+        },
+        {
+          "name": "error==KGE-E204",
+          "pass": true,
+          "detail": "got KGE-E204"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 0
+    },
+    {
+      "id": "eval-06",
+      "description": "Boundary: a VALIDATED claim without human approval must return HUMAN_APPROVAL_REQUIRED, not succeed.",
+      "action": "graph.add_claim",
+      "status": "HUMAN_APPROVAL_REQUIRED",
+      "error_code": "KGE-E502",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==HUMAN_APPROVAL_REQUIRED",
+          "pass": true,
+          "detail": "got HUMAN_APPROVAL_REQUIRED"
+        },
+        {
+          "name": "error==KGE-E502",
+          "pass": true,
+          "detail": "got KGE-E502"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 0
+    },
+    {
+      "id": "eval-07",
+      "description": "Missing: contract_version 2.0 must be rejected with KGE-E801 (compat policy).",
+      "action": "kb.get",
+      "status": "FAILED",
+      "error_code": "KGE-E801",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==FAILED",
+          "pass": true,
+          "detail": "got FAILED"
+        },
+        {
+          "name": "error==KGE-E801",
+          "pass": true,
+          "detail": "got KGE-E801"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 0
+    },
+    {
+      "id": "eval-08",
+      "description": "Boundary: dry_run on an ontology mutation must not append any event to the store.",
+      "action": "graph.ontology_update",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "dry_run_no_store_mutation",
+          "pass": true,
+          "detail": "real appends: 0"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 1
+    },
+    {
+      "id": "eval-09",
+      "description": "Normal: querying own HYPOTHESIS claim returns it labeled HYPOTHESIS, never OBSERVED.",
+      "action": "graph.query",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "query_label_preserved",
+          "pass": true,
+          "detail": "labels={'HYPOTHESIS'}"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 0
+    },
+    {
+      "id": "eval-10",
+      "description": "Boundary: unit-incompatible VALUE claims on the same predicate must be blocked as KGE-E203.",
+      "action": "graph.add_claim",
+      "status": "BLOCKED",
+      "error_code": "KGE-E203",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==BLOCKED",
+          "pass": true,
+          "detail": "got BLOCKED"
+        },
+        {
+          "name": "error==KGE-E203",
+          "pass": true,
+          "detail": "got KGE-E203"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 1
+    }
+  ],
+  "summary": {
+    "passed": 10,
+    "total": 10,
+    "all_pass": true
+  },
+  "metrics": {
+    "report": {
+      "M1_structured_output_pass_rate": {
+        "measured": 1.0,
+        "threshold": 0.95,
+        "method": "validate every CLI output against schemas/output.schema.json; pass_rate = passes / total outputs",
+        "pass": true
+      },
+      "M2_tool_real_call_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "for N mutating actions, count events appended to the on-disk events.jsonl; rate = actions_that_appended / actions_that_should",
+        "pass": true
+      },
+      "M3_traceability_rate": {
+        "measured": 1.0,
+        "threshold": 0.9,
+        "method": "evidence registered with sha256 over all registrations; claims whose evidence_refs resolve to registered records / total refs",
+        "pass": true
+      },
+      "M4_missing_input_recognition_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "for each of K required fields, submit a payload missing exactly it and require BLOCKED with the field named in the violation",
+        "pass": true
+      },
+      "M5_adversarial_interception_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "adversarial cases (epistemic mislabel, contract_version 2, unknown action, VALIDATED-without-approval) that were blocked / total",
+        "pass": true
+      },
+      "M6_repeated_run_consistency": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "run the same event sequence twice in two stores; projection snapshots must be byte-identical",
+        "pass": true
+      },
+      "M7_mean_integrity_check_ms": {
+        "measured": 283.92181999997774,
+        "threshold": 5000.0,
+        "method": "kb.integrity over a 50-event stream, 5 runs, mean wall-clock ms",
+        "pass": true
+      }
+    }
+  }
+}

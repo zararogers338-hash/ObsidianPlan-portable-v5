@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.dev/skills/obsidian-decision-gate/decision-memo.schema.json",
+  "title": "obsidian-decision-gate Decision Memo",
+  "description": "Formal Decision Memo produced by the Obsidian Decision Gate. A structured, human- and machine-readable record of a stage-gate decision. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "memo_id", "created_at", "task_id", "project_id",
+    "title", "current_state", "proposed_state", "decision",
+    "decision_summary", "gate_results", "blocking_items",
+    "criteria_met", "criteria_not_met",
+    "supporting_evidence", "opposing_evidence", "residual_uncertainty",
+    "risk_benefit", "required_human_approvals",
+    "conditional_release_terms", "monitoring_requirements", "failure_conditions",
+    "next_actions", "review_expiry",
+    "reviewer", "approved_by", "provenance"
+  ],
+  "properties": {
+    "memo_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "task_id": { "type": "string", "minLength": 1 },
+    "project_id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "current_state": { "type": "string", "enum": ["REJECTED", "OPEN", "EVIDENCE_GATHERING", "SUPPORTED", "VALIDATED", "PILOT_READY", "DEPLOYABLE", "SUSPENDED", "EXPIRED"] },
+    "proposed_state": { "type": ["string", "null"], "enum": ["REJECTED", "OPEN", "EVIDENCE_GATHERING", "SUPPORTED", "VALIDATED", "PILOT_READY", "DEPLOYABLE", "SUSPENDED", "EXPIRED", null] },
+    "decision": {
+      "type": "string",
+      "enum": ["PASS", "CONDITIONAL_PASS", "HOLD", "REJECT", "REQUEST_REVIEW", "SUSPEND", "EXPIRE"]
+    },
+    "decision_summary": { "type": "string", "minLength": 1 },
+    "gate_results": { "type": "object", "additionalProperties": true },
+    "blocking_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["rule", "severity", "evidence", "how_to_resolve"],
+        "properties": {
+          "rule": { "type": "string", "pattern": "^B[0-9]+$" },
+          "severity": { "type": "string", "enum": ["BLOCKING", "HIGH", "MEDIUM"] },
+          "evidence": { "type": "string", "minLength": 1 },
+          "how_to_resolve": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "criteria_met": { "type": "array", "items": { "type": "string" } },
+    "criteria_not_met": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["criterion", "why"],
+        "properties": { "criterion": { "type": "string" }, "why": { "type": "string" } }
+      }
+    },
+    "supporting_evidence": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+    "opposing_evidence": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+    "residual_uncertainty": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["statement", "impact"],
+        "properties": {
+          "statement": { "type": "string" },
+          "impact": { "type": "string", "enum": ["low", "medium", "high"] }
+        }
+      }
+    },
+    "risk_benefit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["net_positive", "benefit", "risk", "residual_risk_score", "benefit_score", "assessment"],
+      "properties": {
+        "net_positive": { "type": "boolean" },
+        "benefit": { "type": "string" },
+        "risk": { "type": "string" },
+        "residual_risk_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "benefit_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "assessment": { "type": "string" }
+      }
+    },
+    "required_human_approvals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["scope", "reason", "status"],
+        "properties": {
+          "scope": { "type": "string" },
+          "reason": { "type": "string" },
+          "status": { "type": "string", "enum": ["granted", "pending", "missing", "expired"] },
+          "revision": { "type": ["integer", "null"] }
+        }
+      }
+    },
+    "conditional_release_terms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["condition", "owner"],
+        "properties": { "condition": { "type": "string" }, "owner": { "type": "string" } }
+      }
+    },
+    "monitoring_requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["parameter", "frequency", "alert_condition"],
+        "properties": {
+          "parameter": { "type": "string" },
+          "frequency": { "type": "string" },
+          "alert_condition": { "type": "string" }
+        }
+      }
+    },
+    "failure_conditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["condition", "action"],
+        "properties": { "condition": { "type": "string" }, "action": { "type": "string" } }
+      }
+    },
+    "next_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action", "reason", "priority"],
+        "properties": {
+          "action": { "type": "string" },
+          "reason": { "type": "string" },
+          "priority": { "type": "string", "enum": ["high", "medium", "low"] },
+          "skill": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "review_expiry": { "type": ["string", "null"], "format": "date-time" },
+    "reviewer": { "type": "string", "description": "The reviewing role/agent that produced this memo (e.g. obsidian-decision-gate)." },
+    "approved_by": { "type": ["string", "null"], "description": "Set ONLY when a human approval record backs the decision; never self-assigned." },
+    "provenance": { "type": "object", "additionalProperties": true }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.plan/skills/micp-mineral-phase-interpreter/schemas/mineral-evidence.schema.json",
+  "title": "MineralEvidence",
+  "description": "单条矿物相证据的结构化契约。用于 multi-modal 证据融合时逐模态逐相位的证据记录,保证每条证据携带:来源模态、参考值、观测值、偏差、置信度、认识论标签与可追溯引用。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phase",
+    "modality",
+    "epistemic_label",
+    "confidence"
+  ],
+  "properties": {
+    "phase": {
+      "type": "string",
+      "description": "矿物相短名:calcite | aragonite | vaterite | acc | other:<name>",
+      "pattern": "^[a-z0-9_]+(:[a-z0-9_]+)?$"
+    },
+    "modality": {
+      "type": "string",
+      "enum": [
+        "xrd",
+        "sem_morphology",
+        "sem_particle_stats",
+        "sem_bridge_contact",
+        "eds",
+        "ftir",
+        "raman",
+        "tga",
+        "dsc",
+        "microct",
+        "caco3_mass",
+        "spatial_position",
+        "chemical",
+        "simulation",
+        "other"
+      ]
+    },
+    "reference_value": {
+      "description": "参考库中的期望值(如 d-间距 Å、波数 cm-1、分解温度 °C、理论质量损失 wt%)",
+      "oneOf": [
+        { "type": "number" },
+        { "type": "string" },
+        { "type": "array", "items": { "type": "number" } }
+      ]
+    },
+    "observed_value": {
+      "description": "本次观测到的值(单位与 reference_value 相同)",
+      "oneOf": [
+        { "type": "number" },
+        { "type": "string" },
+        { "type": "array", "items": { "type": "number" } }
+      ]
+    },
+    "deviation": {
+      "description": "观测值与参考值的偏差(数值型,单位随 reference_value;字符串说明性)",
+      "oneOf": [
+        { "type": "number" },
+        { "type": "string" }
+      ]
+    },
+    "tolerance": {
+      "description": "该模态当前采用的匹配容差(如 xrd_d_spacing_tol_A=0.03)",
+      "type": "number"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "diagnostic",
+        "supporting",
+        "necessary_not_sufficient",
+        "suggestive",
+        "negative",
+        "conflicting",
+        "unresolved"
+      ],
+      "description": "本条证据对相位判定的作用:diagnostic=单独可诊断;supporting=支持;necessary_not_sufficient=必要非充分(如 EDS 检出 Ca);suggestive=暗示;negative=不利证据;conflicting=与其它模态冲突;unresolved=无法解释"
+    },
+    "epistemic_label": {
+      "type": "string",
+      "enum": [
+        "OBSERVED",
+        "REPORTED",
+        "CALCULATED",
+        "INFERRED",
+        "HYPOTHESIS",
+        "RECOMMENDATION"
+      ]
+    },
+    "hkl": {
+      "description": "XRD 反射的米勒指数(如 [1,0,4])",
+      "type": "array",
+      "items": { "type": "integer" }
+    },
+    "sample_id": {
+      "type": "string",
+      "description": "该证据来自的样本 id(对应 input.samples[].id)"
+    },
+    "spatial_position": {
+      "description": "采样空间位置(入口/中部/出口、深度、坐标)",
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "description": "证据来源(文件、引用、模态名);OBSERVED 必须携带"
+    },
+    "ref_id": {
+      "type": "string",
+      "description": "evidence_refs 中的引用 id,用于可追溯"
+    },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

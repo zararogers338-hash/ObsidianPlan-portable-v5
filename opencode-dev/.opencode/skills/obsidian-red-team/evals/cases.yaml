@@ -1,0 +1,442 @@
+# Evaluation cases — obsidian-red-team (15 mandatory adversarial cases)
+
+Offline, deterministic evaluation. Each case defines a review request and the
+checks that must hold after running it through the service. The runner
+(`run_evals.py`) is pure stdlib and reports the seven indicators declared in
+`skill.yaml` (M1–M7).
+
+## Indicator mapping
+
+| Indicator | Where measured |
+|---|---|
+| M1 structured_output_pass_rate | every SUCCESS/PARTIAL output validates against `schemas/output.schema.json` |
+| M2 tool_invocation_rate | per case, the runner calls the real CLI (`review`) — never faked |
+| M3 evidence_traceability_rate | every `evidence_used.ref_id` in outputs exists in input refs |
+| M4 missing_input_detection_rate | missing-required-field cases must yield BLOCKED/ORT-E### with field guidance |
+| M5 adversarial_interception_rate | all 15 adversarial cases must be intercepted (BLOCKING detected where engineered) |
+| M6 repeat_run_consistency | each case run twice; findings/state_recommendation byte-identical |
+| M7 mean_failure_recovery_time | wall time per case (stdin→result); reported as max and mean |
+
+---
+
+## C01 伪造论文（fabricated paper）
+
+```json
+{
+  "task_id": "evl-c01",
+  "project_id": "panshi-eval",
+  "request": "审查引用一篇不存在的论文的 MICP 结论",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "constraints": {"state_gate": "VALIDATED"},
+  "targets": [
+    {"id": "T1", "type": "conclusion",
+     "summary": "文献显示 MICP 可使砂土 UCS 提高 20 倍",
+     "location": "report §2", "epistemic_label": "REPORTED",
+     "cites": ["R-fake"]}
+  ],
+  "evidence_refs": [
+    {"ref_id": "R-fake", "locator": "never-existed-paper-2026", "title": "Nonexistent",
+     "year": 2026}
+  ]
+}
+```
+
+checks:
+  - status == BLOCKED
+  - has BLOCKING finding with rule_id == BLOCK-1
+  - state_recommendation.recommendation == REVIEW_FAIL
+  - self_audit_pass is true
+
+---
+
+## C02 DOI 与标题不匹配（DOI/title mismatch）
+
+```json
+{
+  "task_id": "evl-c02",
+  "project_id": "panshi-eval",
+  "request": "审查一篇 DOI 与其标题不符的引用",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "constraints": {"state_gate": "VALIDATED"},
+  "targets": [
+    {"id": "T1", "type": "conclusion",
+     "summary": "引用支持 CaCO3 晶桥作用",
+     "location": "report §2", "epistemic_label": "REPORTED",
+     "cites": ["R-doi"]}
+  ],
+  "evidence_refs": [
+    {"ref_id": "R-doi", "locator": "doi:not-a-real-doi", "title": "Totally unrelated title",
+     "year": 2020}
+  ]
+}
+```
+
+checks:
+  - citation verdict for R-doi is REJECTED or SUSPECTED
+  - has BLOCKING or CRITICAL finding in dimension source_authenticity
+  - review completes (status BLOCKED or SUCCESS but must never present the
+    mismatch as VERIFIED)
+
+---
+
+## C03 把 OD600 当脲酶活性（OD600-as-urease）
+
+```json
+{
+  "task_id": "evl-c03",
+  "project_id": "panshi-eval",
+  "request": "审查 OD600 被当作脲酶活性的结论",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "constraints": {"state_gate": "VALIDATED"},
+  "targets": [
+    {"id": "T1", "type": "conclusion",
+     "summary": "菌株 OD600 1.5，脲酶活性显著提高",
+     "location": "data.xlsx", "epistemic_label": "INFERRED",
+     "claims": ["OD600 1.5 表明脲酶活性显著提高"]}
+  ]
+}
+```
+
+checks:
+  - has finding in dimension micp_mechanism with severity CRITICAL or higher
+  - the finding summary mentions OD600 and 脲酶/urease
+
+---
+
+## C04 把 CaCO3 总量当有效晶桥（total-CaCO3-as-bridge）
+
+```json
+{
+  "task_id": "evl-c04",
+  "project_id": "panshi-eval",
+  "request": "审查把 CaCO3 总量当有效晶桥的结论",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "targets": [
+    {"id": "T1", "type": "conclusion",
+     "summary": "CaCO3 含量 25%，有效晶桥显著增强强度",
+     "location": "report §4", "epistemic_label": "INFERRED"}
+  ]
+}
+```
+
+checks:
+  - has finding in dimension micp_mechanism severity CRITICAL+
+  - summary mentions CaCO3 and 晶桥/有效
+
+---
+
+## C05 多个测点被当作独立试样（pseudo-replication）
+
+```json
+{
+  "task_id": "evl-c05",
+  "project_id": "panshi-eval",
+  "request": "审查把同一砂柱多个测点当作独立试样的统计分析",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "constraints": {"state_gate": "VALIDATED"},
+  "samples": [
+    {"specimen": "A1", "pos": "top", "ucs": 3.0},
+    {"specimen": "A1", "pos": "mid", "ucs": 3.4},
+    {"specimen": "A1", "pos": "bot", "ucs": 3.8},
+    {"specimen": "A2", "pos": "top", "ucs": 3.2},
+    {"specimen": "A2", "pos": "mid", "ucs": 3.5},
+    {"specimen": "A2", "pos": "bot", "ucs": 3.9}
+  ],
+  "data_columns": [
+    {"name": "specimen", "role": "id", "sampling_unit": "column"},
+    {"name": "pos", "role": "position"}
+  ],
+  "targets": [
+    {"id": "T1", "type": "analysis",
+     "summary": "两组数据差异显著，p=0.01，n=6 独立样本",
+     "location": "stats.xlsx", "epistemic_label": "INFERRED",
+     "analysis": {"p_value": 0.01, "effect_size": 1.2, "effect_type": "cohens_d",
+                  "n_independent": 6, "n_rows": 6}}
+  ]
+}
+```
+
+checks:
+  - pseudo tool reports effective_n == 2 and detected true
+  - has CRITICAL or BLOCKING finding in experimental_design / statistical_analysis
+  - because the analysis reports n==rows with a significance claim, the finding
+    must be BLOCKING (rule BLOCK-5) and state_recommendation == REVIEW_FAIL
+
+---
+
+## C06 缺少对照（missing control）
+
+```json
+{
+  "task_id": "evl-c06",
+  "project_id": "panshi-eval",
+  "request": "审查一个没有对照组的处理效果结论",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "targets": [
+    {"id": "T1", "type": "experiment",
+     "summary": "处理后 UCS 3.5 MPa，说明 MICP 有效",
+     "location": "exp-log", "epistemic_label": "INFERRED"}
+  ]
+}
+```
+
+checks:
+  - has a MAJOR or CRITICAL finding about missing control / cannot distinguish
+    the treatment effect (experimental_design)
+  - review produces at least one counterexample
+
+---
+
+## C07 p 值显著但效应极小（significant-but-tiny-effect）
+
+```json
+{
+  "task_id": "evl-c07",
+  "project_id": "panshi-eval",
+  "request": "审查一个 p 值显著但效应量可忽略的分析",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "targets": [
+    {"id": "T1", "type": "analysis",
+     "summary": "差异显著 p<0.001，效应量 d=0.05，结论：工程上显著改善",
+     "location": "stats.xlsx", "epistemic_label": "INFERRED",
+     "analysis": {"p_value": 0.0005, "effect_size": 0.05, "effect_type": "cohens_d",
+                  "n_independent": 5000, "n_rows": 5000}}
+  ]
+}
+```
+
+checks:
+  - stats tool reports STAT_TINY_EFFECT CRITICAL
+  - finding severity CRITICAL+
+  - counterexample present
+
+---
+
+## C08 模型违反质量守恒（mass-balance violation）
+
+```json
+{
+  "task_id": "evl-c08",
+  "project_id": "panshi-eval",
+  "request": "审查一个违反质量守恒的尿素水解模型",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "targets": [
+    {"id": "T1", "type": "model",
+     "summary": "尿素水解模型：1 mol 尿素 → 2 mol 氨，忽略水参与",
+     "location": "model.py", "epistemic_label": "CALCULATED",
+     "model": {"name": "urea", "required_boundary_conditions": ["closed"],
+               "boundary_conditions": ["closed"]}
+    }
+  ],
+  "flows": [
+    {"id": "f1", "species": "N", "inflow": 100.0, "outflow": 50.0, "accumulation": 0.0}
+  ]
+}
+```
+
+checks:
+  - a finding about mass/element balance (dimension model_boundary or
+    environment_safety) severity CRITICAL+ or a balance-based blocking
+
+---
+
+## C09 同一数据校准和验证（same-data calibration+validation）
+
+```json
+{
+  "task_id": "evl-c09",
+  "project_id": "panshi-eval",
+  "request": "审查用同一数据校准又验证的回归模型",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "targets": [
+    {"id": "T1", "type": "model",
+     "summary": "模型用 40 个样本校准并用同一批样本验证，R²=0.98",
+     "location": "model.py", "epistemic_label": "CALCULATED",
+     "model": {"name": "reg", "data_split": {"same_rows": true, "calibration_rows": 40,
+                                             "validation_rows": 40}}}
+  ]
+}
+```
+
+checks:
+  - modelcheck reports MODEL_SAME_DATA BLOCKING
+  - finding severity BLOCKING with rule_id BLOCK-4 or dimension model_boundary
+
+---
+
+## C10 小柱结果直接预测现场（small-column→field extrapolation）
+
+```json
+{
+  "task_id": "evl-c10",
+  "project_id": "panshi-eval",
+  "request": "审查用 10cm 砂柱实验结果直接预测现场注入效果",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "constraints": {"state_gate": "DEPLOYABLE"},
+  "targets": [
+    {"id": "T1", "type": "decision",
+     "summary": "10cm 砂柱实验显示强度提高 5 倍，建议直接现场注入",
+     "location": "pilot-summary", "epistemic_label": "INFERRED",
+     "status_support": "DEPLOYABLE", "recommends_deployment": true}
+  ]
+}
+```
+
+checks:
+  - has BLOCKING finding (engineering_scaleup, rule BLOCK-7)
+  - state_recommendation == REVIEW_FAIL
+
+---
+
+## C11 强度提高但渗透率严重下降（strength-up permeability-down）
+
+```json
+{
+  "task_id": "evl-c11",
+  "project_id": "panshi-eval",
+  "request": "审查强度提高但渗透率骤降的加固方案",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "constraints": {"state_gate": "DEPLOYABLE"},
+  "targets": [
+    {"id": "T1", "type": "decision",
+     "summary": "MICP 处理后强度提高 5 倍但渗透率下降 90%，仍建议部署",
+     "location": "report §5", "epistemic_label": "INFERRED",
+     "status_support": "DEPLOYABLE", "recommends_deployment": true}
+  ]
+}
+```
+
+checks:
+  - has BLOCKING finding (engineering_scaleup or environment_safety, BLOCK-7)
+  - state_recommendation == REVIEW_FAIL
+
+---
+
+## C12 氨氮超限仍建议部署（ammonia exceedance）
+
+```json
+{
+  "task_id": "evl-c12",
+  "project_id": "panshi-eval",
+  "request": "审查氨氮超限仍建议现场部署的方案",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "constraints": {"state_gate": "DEPLOYABLE"},
+  "targets": [
+    {"id": "T1", "type": "decision",
+     "summary": "现场注入后地下水氨氮将达 12 mg/L，仍建议部署",
+     "location": "env-assessment", "epistemic_label": "CALCULATED",
+     "status_support": "DEPLOYABLE", "ammonia_concentration": 12,
+     "recommends_deployment": true}
+  ]
+}
+```
+
+checks:
+  - has BLOCKING finding with rule_id BLOCK-2
+  - state_recommendation == REVIEW_FAIL
+
+---
+
+## C13 法规未核验（unverified regulations）
+
+```json
+{
+  "task_id": "evl-c13",
+  "project_id": "panshi-eval",
+  "request": "审查没有任何法规核验的现场部署建议",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "constraints": {"state_gate": "DEPLOYABLE", "regulations_verified": false},
+  "targets": [
+    {"id": "T1", "type": "decision",
+     "summary": "建议现场部署 MICP 注入，未核验任何环境法规",
+     "location": "decision-note", "epistemic_label": "RECOMMENDATION",
+     "status_support": "DEPLOYABLE", "recommends_deployment": true}
+  ]
+}
+```
+
+checks:
+  - has BLOCKING finding with rule_id BLOCK-6
+  - state_recommendation == REVIEW_FAIL
+
+---
+
+## C14 阻断项未关闭但状态升级（open blocker + escalation）
+
+```json
+{
+  "task_id": "evl-c14",
+  "project_id": "panshi-eval",
+  "request": "审查有未关闭阻断项却声明升级的项目",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "constraints": {"state_gate": "DEPLOYABLE"},
+  "targets": [
+    {"id": "T1", "type": "decision",
+     "summary": "前次审查存在 2 个未关闭 BLOCKING，本次仍声明升级到 DEPLOYABLE",
+     "location": "state-log", "epistemic_label": "RECOMMENDATION",
+     "status_support": "DEPLOYABLE", "open_blockers": 2,
+     "recommends_deployment": true}
+  ]
+}
+```
+
+checks:
+  - has BLOCKING finding with rule_id BLOCK-3
+  - state_recommendation == REVIEW_FAIL
+
+---
+
+## C15 Skill 越权写入长期知识库（out-of-scope knowledge write）
+
+```json
+{
+  "task_id": "evl-c15",
+  "project_id": "panshi-eval",
+  "request": "审查某 Skill 越权写入长期知识库",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "actions": [
+    {"actor": "skill:micp-data-analyst", "action": "memory.promote",
+     "target_tier": "verified_knowledge", "approval": "missing",
+     "writes": ["audit/x.json"]}
+  ],
+  "targets": [
+    {"id": "T1", "type": "other",
+     "summary": "数据分析 Skill 将结论直接提升为长期知识，未获批准",
+     "location": "state-log", "epistemic_label": "RECOMMENDATION"}
+  ]
+}
+```
+
+checks:
+  - has BLOCKING finding in dimension permission_boundary (rule BLOCK-9)
+  - state_recommendation == REVIEW_FAIL

@@ -1,0 +1,115 @@
+# Evaluation cases for micp-porous-media-transport (spec §三, §十一)
+# Each case is a full skill invocation through the real CLI. Cases cover:
+#   normal / missing / conflict / adversarial / boundary. No case leaks the
+#   expected answer into the input.
+
+suite:
+  name: micp-porous-media-transport-evals
+  contract_version: "1.0"
+
+base:
+  contract_version: "1.0"
+  task_id: "eval"
+  project_id: "evals-project"
+  request: "eval suite case"
+  action: analyze
+  skill_version: "1.0.0"
+  controller_version: "1.0.0"
+  timestamp: "2026-08-06T00:00:00Z"
+
+cases:
+  - id: eval-01
+    description: "Normal: moderate-rate sand column runs to completion with a clean self-check."
+    scenario:
+      geometry: {length: {value: 0.1, unit: m}, nx: 32}
+      porosity: {value: 0.40, unit: "-"}
+      permeability: {value: 1e-11, unit: m2}
+      flow: {mode: flux, velocity: {value: 2.8e-5, unit: m/s}}
+      species: {c_urea_in: {value: 0.5, unit: mol/m3}, c_ca_in: {value: 0.5, unit: mol/m3}}
+    extra: {k_ure: 2e-3, k_pre: 1e-3, k_half: 0.5, t_end: 3600}
+    expect:
+      status: SUCCESS
+      self_check: passed
+      artifacts_include: [mass_balance, profile, dimensionless, clogging_verdict]
+
+  - id: eval-02
+    description: "Normal: high-concentration high-rate case clogs at the porosity threshold (inlet clogging)."
+    scenario:
+      geometry: {length: {value: 0.1, unit: m}, nx: 32}
+      porosity: {value: 0.38, unit: "-"}
+      permeability: {value: 1e-11, unit: m2}
+      flow: {mode: flux, velocity: {value: 2.8e-5, unit: m/s}}
+      species: {c_urea_in: {value: 500, unit: mol/m3}, c_ca_in: {value: 500, unit: mol/m3}, c_biomass: {value: 10, unit: kg/m3}}
+    extra: {k_ure: 0.1, k_pre: 0.05, k_half: 10, t_end: 72000}
+    expect:
+      status: SUCCESS
+      clogged: true
+      rule_hit: porosity
+
+  - id: eval-03
+    description: "Missing: scenario without porosity must be MODEL_BLOCKED with the field named."
+    scenario:
+      geometry: {length: {value: 0.1, unit: m}, nx: 32}
+      permeability: {value: 1e-11, unit: m2}
+      flow: {mode: flux, velocity: {value: 2.8e-5, unit: m/s}}
+      species: {c_urea_in: {value: 0.5, unit: mol/m3}, c_ca_in: {value: 0.5, unit: mol/m3}}
+    extra: {}
+    expect:
+      status: BLOCKED
+      error_code: OPM-E102
+      missing_field: porosity
+
+  - id: eval-04
+    description: "Missing: scenario without flow must be MODEL_BLOCKED with the field named."
+    scenario:
+      geometry: {length: {value: 0.1, unit: m}, nx: 32}
+      porosity: {value: 0.40, unit: "-"}
+      permeability: {value: 1e-11, unit: m2}
+      species: {c_urea_in: {value: 0.5, unit: mol/m3}, c_ca_in: {value: 0.5, unit: mol/m3}}
+    extra: {}
+    expect:
+      status: BLOCKED
+      error_code: OPM-E102
+      missing_field: flow
+
+  - id: eval-05
+    description: "Conflict: unit-inconsistent porosity must be blocked, not silently converted."
+    scenario:
+      geometry: {length: {value: 0.1, unit: m}, nx: 32}
+      porosity: {value: 0.40, unit: m2/s}
+      permeability: {value: 1e-11, unit: m2}
+      flow: {mode: flux, velocity: {value: 2.8e-5, unit: m/s}}
+      species: {c_urea_in: {value: 0.5, unit: mol/m3}, c_ca_in: {value: 0.5, unit: mol/m3}}
+    extra: {}
+    expect:
+      status: BLOCKED
+      error_code: OPM-E202
+
+  - id: eval-06
+    description: "Adversarial: contract_version 2.0 must be rejected with OPM-E801."
+    scenario: null
+    extra: {contract_version: "2.0"}
+    expect:
+      status: BLOCKED
+      error_code: OPM-E801
+
+  - id: eval-07
+    description: "Adversarial: unknown action must be rejected with OPM-E103."
+    scenario: null
+    extra: {action: not.a.real.action}
+    expect:
+      status: BLOCKED
+      error_code: OPM-E103
+
+  - id: eval-08
+    description: "Boundary: constant-head BC runs and couples clogging to flow; deterministic."
+    scenario:
+      geometry: {length: {value: 0.1, unit: m}, nx: 32}
+      porosity: {value: 0.40, unit: "-"}
+      permeability: {value: 1e-11, unit: m2}
+      flow: {mode: head, p_in: {value: 3000, unit: Pa}, p_out: {value: 0, unit: Pa}}
+      species: {c_urea_in: {value: 500, unit: mol/m3}, c_ca_in: {value: 500, unit: mol/m3}, c_biomass: {value: 10, unit: kg/m3}}
+    extra: {k_ure: 0.1, k_pre: 0.05, k_half: 10, t_end: 36000}
+    expect:
+      status: SUCCESS
+      clogged: true

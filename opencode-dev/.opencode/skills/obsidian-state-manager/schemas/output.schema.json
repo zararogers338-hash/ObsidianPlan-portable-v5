@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/obsidian-state-manager/output.schema.json",
+  "title": "obsidian-state-manager output contract",
+  "description": "Unified skill output envelope (Obsidian Plan spec §六). Every invocation returns this shape, success or failure. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version", "skill", "skill_version", "status", "summary",
+    "action", "project_id", "task_id",
+    "findings", "assumptions", "evidence_used", "uncertainty", "risks",
+    "artifacts", "requested_next_skills", "state", "validation", "provenance", "errors"
+  ],
+  "properties": {
+    "contract_version": {"type": "string", "pattern": "^1\\.\\d+$"},
+    "skill": {"type": "string", "const": "obsidian-state-manager"},
+    "skill_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+    },
+    "summary": {"type": "string"},
+    "action": {"type": ["string", "null"]},
+    "project_id": {"type": ["string", "null"]},
+    "task_id": {"type": ["string", "null"]},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "statement"],
+        "properties": {
+          "label": {
+            "type": "string",
+            "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"],
+            "description": "Epistemic label (spec §六). INFERRED/HYPOTHESIS/RECOMMENDATION may never be reported as OBSERVED."
+          },
+          "statement": {"type": "string"},
+          "source": {"type": "string"}
+        }
+      }
+    },
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "evidence_used": {"type": "array", "items": {"type": "string"}},
+    "uncertainty": {"type": "array", "items": {"type": "string"}},
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "statement"],
+        "properties": {
+          "label": {"type": "string",
+                    "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]},
+          "statement": {"type": "string"}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind"],
+        "properties": {
+          "kind": {"type": "string"},
+          "path": {"type": ["string", "null"]},
+          "note": {}
+        }
+      }
+    },
+    "requested_next_skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill", "reason"],
+        "properties": {
+          "skill": {"type": "string"},
+          "reason": {"type": "string"},
+          "inputs_needed": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "description": "Skill may request Router coordination but never invokes other skills directly (spec §七)."
+    },
+    "state": {
+      "type": ["string", "null"],
+      "enum": ["OPEN", "SCOPED", "EVIDENCE_GATHERING", "HYPOTHESIS_BUILDING", "DESIGNING",
+               "AWAITING_DATA", "ANALYZING", "UNDER_REVIEW", "VALIDATED", "REJECTED",
+               "DEPLOYABLE", null]
+    },
+    "validation": {
+      "type": "object",
+      "required": ["input_schema", "output_schema", "self_check", "rebuild_matches_snapshot"],
+      "properties": {
+        "input_schema": {"type": "string", "enum": ["passed", "failed", "pending"]},
+        "output_schema": {"type": "string", "enum": ["passed", "failed", "pending"]},
+        "self_check": {"type": "string", "enum": ["passed", "failed", "not_run", "skipped_dry_run"]},
+        "rebuild_matches_snapshot": {"type": ["boolean", "null"]}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["started_at", "completed_at", "store_root", "events_appended", "head_revision", "head_hash"],
+      "properties": {
+        "started_at": {"type": ["string", "null"]},
+        "completed_at": {"type": ["string", "null"]},
+        "store_root": {"type": "string"},
+        "host": {"type": ["string", "null"]},
+        "events_appended": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type"],
+            "properties": {
+              "type": {"type": "string"},
+              "revision": {"type": ["integer", "string", "null"]},
+              "hash": {"type": ["string", "null"]}
+            }
+          }
+        },
+        "head_revision": {"type": ["integer", "null"]},
+        "head_hash": {"type": ["string", "null"]}
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {"type": "string", "pattern": "^OSM-E[0-9]{3}$"},
+          "message": {"type": "string"},
+          "detail": {"type": "object"},
+          "retryable": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

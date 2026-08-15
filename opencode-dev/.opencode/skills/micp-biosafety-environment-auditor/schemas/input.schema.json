@@ -1,0 +1,244 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-biosafety-environment-auditor/input.schema.json",
+  "title": "micp-biosafety-environment-auditor input contract",
+  "description": "Unified skill input envelope (Obsidian Plan spec §六) plus biosafety/environment-domain payloads. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "task_id", "project_id", "request", "action", "skill_version", "timestamp"],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "SemVer-ish contract version. Runtime checks the major: 1.x accepted, 2.x rejected with MBS-E801."
+    },
+    "task_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "project_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "request": {"type": "string", "minLength": 1, "description": "Natural-language task statement (spec §六)."},
+    "action": {
+      "type": "string",
+      "enum": [
+        "audit",
+        "mass_balance",
+        "nh3_speciation",
+        "waste_loading",
+        "strain_verify",
+        "regulatory_lookup",
+        "risk_matrix",
+        "monitoring",
+        "treatment_compare",
+        "sampling_plan",
+        "emergency",
+        "permit_check"
+      ]
+    },
+    "context": {"type": "object", "description": "Controller-supplied working context (ephemeral tier)."},
+    "constraints": {"type": "array", "items": {"type": "string"}},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "data_refs": {"type": "array", "items": {"type": "string"}},
+    "upstream_outputs": {"type": "array", "items": {"type": "object"}},
+    "requested_output_format": {"type": "string", "enum": ["json", "summary", "table"], "default": "json"},
+    "risk_level": {"type": "string", "enum": ["low", "medium", "high", "critical"], "default": "medium"},
+    "human_approval_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["granted"],
+      "properties": {
+        "granted": {"type": "boolean"},
+        "approver": {"type": "string"},
+        "revision": {"type": "integer", "minimum": 0},
+        "scope": {"type": "string"}
+      }
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role"],
+      "properties": {
+        "role": {"type": "string", "enum": ["controller", "skill", "human", "auditor"]},
+        "id": {"type": "string"}
+      },
+      "default": {"role": "skill"}
+    },
+    "skill_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "controller_version": {"type": "string"},
+    "timestamp": {"type": "string", "description": "ISO-8601 caller timestamp."},
+    "dry_run": {"type": "boolean", "default": false, "description": "Validate + simulate only; never mutates anything."},
+
+    "site": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Site / trial profile used by the audit and by the site-aware tools.",
+      "properties": {
+        "name": {"type": "string"},
+        "location": {"type": "string"},
+        "jurisdiction": {"type": "string", "description": "Site jurisdiction; regulation lookups default to CN (China)."},
+        "strain": {"$ref": "#/definitions/strain"},
+        "pathogen_list_ref": {"type": ["string", "null"], "description": "Reference to the national pathogen list actually in force at the site (e.g. 国卫科教发〔2023〕24号). Null when not provided."},
+        "release_type": {"type": "string", "enum": ["contained", "sand_column", "open_environment", "injection"], "default": "contained"},
+        "groundwater_injection": {"type": "boolean"},
+        "site_sensitive_ecology": {"type": "boolean", "description": "Sensitive ecological receptors present at the trial site."},
+        "aerosol_potential": {"type": "boolean"},
+        "confined_space": {"type": "boolean"},
+        "personnel_exposure": {"type": "boolean"},
+        "waste_treatment_capacity": {"type": "boolean", "description": "Whether on-site waste treatment/containment capacity exists."},
+        "nh3_risk": {"type": "boolean"},
+        "arg_concern": {"type": "boolean", "description": "Antibiotic-resistance-gene mobilization concern for the released community."},
+        "calcium_chloride_use": {"type": "boolean"},
+        "salinity": {"type": "boolean"},
+        "odour_exposure": {"type": "boolean"},
+        "live_release_risk": {"type": "boolean"},
+        "discharge_flag": {"type": "boolean"},
+        "pH": {"type": "number", "minimum": 0, "maximum": 14},
+        "temperature_c": {"type": "number"},
+        "nh4_n_conc_mgL": {"type": "number", "minimum": 0},
+        "nh3_n_mgL": {"type": "number", "minimum": 0},
+        "regulatory": {
+          "type": "object",
+          "additionalProperties": {"type": "number"},
+          "description": "Verified regulatory limit overrides keyed by parameter (e.g. nh4_n_mgL)."
+        },
+        "soil_performance": {"type": "boolean"},
+        "geotechnical_check": {"type": "boolean"}
+      }
+    },
+
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The MICP sand-column / field plan under audit.",
+      "properties": {
+        "name": {"type": "string"},
+        "nitrogen": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Nitrogen-balance inputs (see nitrogen-balance.schema.json).",
+          "properties": {
+            "urea_input_g": {"type": "number", "minimum": 0},
+            "theoretical_total_n_g": {"type": "number", "minimum": 0},
+            "nh4_upper_bound_g": {"type": "number", "minimum": 0},
+            "nh3_potential_g": {"type": "number", "minimum": 0},
+            "liquid_residual_g": {"type": "number", "minimum": 0},
+            "sorbed_retained_g": {"type": "number", "minimum": 0},
+            "discharged_treated_g": {"type": "number", "minimum": 0},
+            "pH": {"type": "number", "minimum": 0, "maximum": 14},
+            "temperature_c": {"type": "number", "minimum": 0, "maximum": 60},
+            "nh4_n_conc_mgL": {"type": "number", "minimum": 0}
+          }
+        },
+        "waste": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "volume_l": {"type": "number", "minimum": 0},
+            "nh4_n_conc_mgL": {"type": "number", "minimum": 0},
+            "urea_conc_mgL": {"type": "number", "minimum": 0},
+            "total_n_load_g": {"type": "number", "minimum": 0},
+            "discharge_to_environment": {"type": "boolean"},
+            "available_options": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "measurements": {
+          "type": "object",
+          "additionalProperties": {"type": "number"},
+          "description": "Current monitoring measurements for alarm evaluation."
+        }
+      }
+    },
+
+    "strain": {"$ref": "#/definitions/strain"},
+
+    "nitrogen": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "mass_balance action payload (also accepted by audit's plan.nitrogen).",
+      "properties": {
+        "urea_input_g": {"type": "number", "minimum": 0},
+        "theoretical_total_n_g": {"type": "number", "minimum": 0},
+        "nh4_upper_bound_g": {"type": "number", "minimum": 0},
+        "nh3_potential_g": {"type": "number", "minimum": 0},
+        "liquid_residual_g": {"type": "number", "minimum": 0},
+        "sorbed_retained_g": {"type": "number", "minimum": 0},
+        "discharged_treated_g": {"type": "number", "minimum": 0},
+        "pH": {"type": "number", "minimum": 0, "maximum": 14},
+        "temperature_c": {"type": "number", "minimum": 0, "maximum": 60},
+        "nh4_n_conc_mgL": {"type": "number", "minimum": 0}
+      }
+    },
+
+    "conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "nh3_speciation action conditions.",
+      "properties": {
+        "pH": {"type": "number", "minimum": 0, "maximum": 14},
+        "temperature_c": {"type": "number", "minimum": 0, "maximum": 60},
+        "nh4_n_mgL": {"type": "number", "minimum": 0},
+        "ionic_strength": {"type": "number", "minimum": 0}
+      }
+    },
+    "total_ammonia_n_mgL": {"type": "number", "minimum": 0},
+
+    "waste": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "waste_loading / treatment_compare action payload.",
+      "properties": {
+        "volume_l": {"type": "number", "minimum": 0},
+        "nh4_n_conc_mgL": {"type": "number", "minimum": 0},
+        "urea_conc_mgL": {"type": "number", "minimum": 0},
+        "total_n_load_g": {"type": "number", "minimum": 0},
+        "pH": {"type": "number", "minimum": 0, "maximum": 14},
+        "temperature_c": {"type": "number", "minimum": 0, "maximum": 60},
+        "available_options": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+
+    "pathogen_list_ref": {"type": "string"},
+    "regulatory_query": {"type": "string"},
+    "regulatory_category": {"type": "string"},
+    "regulatory_record_id": {"type": "string"},
+    "query": {"type": "string"},
+
+    "measurements": {
+      "type": "object",
+      "additionalProperties": {"type": "number"},
+      "description": "monitoring / emergency action current measurements."
+    },
+
+    "permits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action"],
+        "properties": {
+          "action": {"type": "string"},
+          "granted": {"type": "boolean"},
+          "expiry_date": {"type": "string"},
+          "authority": {"type": "string"},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "requested_actions": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Actions needing approval: environmental_release, groundwater_injection, wastewater_discharge, strain_use, confined_space_entry, ..."
+    }
+  },
+  "definitions": {
+    "strain": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Microbial strain description for identity verification + biosafety classification.",
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "id": {"type": "string"},
+        "source": {"type": "string", "description": "Isolation origin / provenance chain."},
+        "culture_collection_id": {"type": "string", "description": "Accession, e.g. ATCC 11859 / DSM 33."},
+        "accession": {"type": "string"}
+      }
+    }
+  }
+}

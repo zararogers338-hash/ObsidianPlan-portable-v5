@@ -1,0 +1,42 @@
+{
+  "task_id": "ex-02",
+  "project_id": "proj-micp-01",
+  "request": "这批 pH 校准数据算一下斜率、R²、检出限和不确定度,并检查标定后测量是否漂移。",
+  "skill_version": "1.0.0",
+  "controller_version": "1.0.0",
+  "timestamp": "2026-08-06T12:00:00+00:00",
+  "requested_output_format": "qc_report",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "qc_input": {
+    "instruments": [
+      {"instrument_id": "pH-1", "kind": "pH", "model": "Mettler S220",
+       "calibration_ref": "cal-1", "measurement_range": [0, 14], "saturation_threshold": 14.0}
+    ],
+    "calibrations": [
+      {"calibration_id": "cal-1", "instrument_id": "pH-1", "method": "linear",
+       "status": "passed", "date": "2026-08-01", "operator": "lab-1",
+       "standards": [
+         {"concentration": 4.0, "response": -170.1},
+         {"concentration": 7.0, "response": 0.0},
+         {"concentration": 10.0, "response": 177.2}
+       ]}
+    ],
+    "measurements": [
+      {"measurement_id": "m0", "instrument_id": "pH-1", "sample_id": "s1",
+       "value": 7.02, "unit": "pH", "timestamp": "2026-08-02T09:00:00",
+       "qc": {"mean": 7.0, "sd": 0.05}},
+      {"measurement_id": "m1", "instrument_id": "pH-1", "sample_id": "s2",
+       "value": 7.11, "unit": "pH", "timestamp": "2026-08-02T09:15:00",
+       "qc": {"mean": 7.0, "sd": 0.05}},
+      {"measurement_id": "m2", "instrument_id": "pH-1", "sample_id": "s3",
+       "value": 8.40, "unit": "pH", "timestamp": "2026-08-02T09:30:00",
+       "qc": {"mean": 7.0, "sd": 0.05}}
+    ],
+    "samples": [
+      {"sample_id": "s1", "barcode": "S1001U", "collection_time": "2026-08-02T08:30:00"},
+      {"sample_id": "s2", "barcode": "S1002V", "collection_time": "2026-08-02T08:45:00"},
+      {"sample_id": "s3", "barcode": "S1003W", "collection_time": "2026-08-02T09:00:00"}
+    ]
+  }
+}

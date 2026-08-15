@@ -1,0 +1,265 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-lca-technoeconomic/input.schema.json",
+  "title": "micp-lca-technoeconomic input contract",
+  "description": "Unified skill input envelope (Obsidian Plan spec §六) plus LCA/techno-economic payload. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "task_id", "project_id", "request", "skill_version", "controller_version", "timestamp"],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "SemVer-ish contract version. Runtime checks major: 1.x accepted, 2.x rejected with LCA-E801."
+    },
+    "task_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "project_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "request": {"type": "string", "minLength": 1},
+    "action": {
+      "type": "string",
+      "enum": ["assess", "compare", "evaluate", "validate_scope", "convert_unit"]
+    },
+    "context": {"type": "object"},
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "analysis_year": {"type": "integer", "minimum": 2000, "maximum": 2100},
+        "random_seed": {"type": "integer"},
+        "monte_carlo_iterations": {"type": "integer", "minimum": 20, "maximum": 100000},
+        "run_monte_carlo": {"type": "boolean"},
+        "run_sensitivity": {"type": "boolean"},
+        "currency": {"type": "string", "enum": ["CNY", "USD", "EUR"]},
+        "price_tier": {"type": "string", "enum": ["industrial", "small_batch", "lab_catalogue"]},
+        "max_stale_years": {"type": "integer", "minimum": 1, "maximum": 50},
+        "forbidden_skills": {"type": "array", "items": {"type": "string"}},
+        "required_skills": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "evidence_refs": {"type": "array", "items": {"type": "object"}},
+    "data_refs": {"type": "array", "items": {"type": "object"}},
+    "upstream_outputs": {"type": "array", "items": {"type": "object"}},
+    "requested_output_format": {"type": "string", "enum": ["json", "summary", "markdown+json"], "default": "json"},
+    "risk_level": {"type": "string", "enum": ["low", "medium", "high", "critical"], "default": "low"},
+    "human_approval_state": {
+      "type": "string",
+      "enum": ["not_required", "pending", "approved", "rejected"],
+      "default": "not_required"
+    },
+    "skill_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "controller_version": {"type": "string"},
+    "timestamp": {"type": "string"},
+    "dry_run": {"type": "boolean", "default": false},
+
+    "functional_unit": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "ISO 14040 functional unit. Required before any formal calculation (LCA-E103).",
+      "properties": {
+        "description": {"type": "string", "minLength": 1},
+        "reference_flow": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": {"type": "number", "exclusiveMinimum": 0},
+            "unit": {"type": "string"}
+          }
+        },
+        "performance_target": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "metric": {"type": "string"},
+            "value": {"type": "number"},
+            "unit": {"type": "string"}
+          }
+        },
+        "service_life_years": {"type": "number", "minimum": 0}
+      }
+    },
+
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "System boundary declarations (spec §二).",
+      "properties": {
+        "time_boundary": {"type": "string"},
+        "geography": {"type": "string"},
+        "energy_mix": {"type": "string"},
+        "transport": {"type": "string"},
+        "material_source": {"type": "string"},
+        "waste_route": {"type": "string"},
+        "recycling": {"type": "string"},
+        "equipment_utilization": {"type": "string"},
+        "service_life": {"type": "string"},
+        "technology_readiness": {"type": "string"},
+        "analysis_size": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": {"type": "number", "exclusiveMinimum": 0},
+            "unit": {"type": "string"}
+          }
+        },
+        "reference_scale": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": {"type": "number", "exclusiveMinimum": 0},
+            "unit": {"type": "string"}
+          }
+        }
+      }
+    },
+
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Reference scenario for comparison. Required before any comparison (LCA-E104).",
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "type": {"type": "string", "enum": ["cement", "grouting", "chemical", "untreated", "other"]},
+        "description": {"type": "string"}
+      }
+    },
+
+    "scenarios": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "type": {"type": "string", "enum": ["micp", "cement", "grouting", "chemical", "baseline", "other"]},
+          "description": {"type": "string"},
+          "materials": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "urea_kg": {"type": "number", "minimum": 0},
+              "cacl2_kg": {"type": "number", "minimum": 0},
+              "calcium_lactate_kg": {"type": "number", "minimum": 0},
+              "media_kg": {"type": "number", "minimum": 0},
+              "culture_kg": {"type": "number", "minimum": 0},
+              "molasses_kg": {"type": "number", "minimum": 0},
+              "water_m3": {"type": "number", "minimum": 0},
+              "cement_kg": {"type": "number", "minimum": 0},
+              "price_tier": {"type": "string", "enum": ["industrial", "small_batch", "lab_catalogue"]},
+              "price_quotes": {"type": "object", "additionalProperties": true}
+            }
+          },
+          "energy": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "electricity_kwh": {"type": "number", "minimum": 0},
+              "diesel_L": {"type": "number", "minimum": 0},
+              "natural_gas_kg": {"type": "number", "minimum": 0}
+            }
+          },
+          "transport": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "material_distance_km": {"type": "number", "minimum": 0}
+            }
+          },
+          "waste": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "route": {"type": "string", "enum": ["none", "direct_discharge", "nitrification", "stripping", "recovery", "anammox", "landfill"]},
+              "nh3_n_kg": {"type": "number", "minimum": 0},
+              "derive_from_urea": {"type": "boolean"},
+              "slurry_m3": {"type": "number", "minimum": 0},
+              "sludge_t": {"type": "number", "minimum": 0}
+            }
+          },
+          "labour": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "hours": {"type": "number", "minimum": 0},
+              "rate_cny_h": {"type": "number", "minimum": 0}
+            }
+          },
+          "monitoring": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "electricity_kwh": {"type": "number", "minimum": 0},
+              "cost_cny": {"type": "number", "minimum": 0}
+            }
+          },
+          "capex": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "equipment_cny": {"type": "number", "minimum": 0},
+              "injection_system_cny": {"type": "number", "minimum": 0},
+              "monitoring_rig_cny": {"type": "number", "minimum": 0},
+              "site_setup_cny": {"type": "number", "minimum": 0},
+              "engineering_cny": {"type": "number", "minimum": 0},
+              "lab_scaleup_cny": {"type": "number", "minimum": 0}
+            }
+          },
+          "opex": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "monitoring_cny": {"type": "number", "minimum": 0},
+              "maintenance_cny": {"type": "number", "minimum": 0},
+              "insurance_cny": {"type": "number", "minimum": 0}
+            }
+          },
+          "contingency": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "risk_reserve_pct": {"type": "number", "minimum": 0},
+              "failure_cost_cny": {"type": "number", "minimum": 0},
+              "downtime_pct": {"type": "number", "minimum": 0}
+            }
+          },
+          "performance_target": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "metric": {"type": "string"},
+              "value": {"type": "number"},
+              "unit": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+
+    "factors": {
+      "type": "array",
+      "description": "Custom factor overrides. Each item mirrors the internal factor shape.",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["id", "value", "unit", "provenance", "region", "year"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "value": {"type": "number"},
+          "unit": {"type": "string", "minLength": 1},
+          "provenance": {"type": "string", "minLength": 1},
+          "region": {"type": "string", "minLength": 1},
+          "year": {"type": "integer"},
+          "version": {"type": "string"},
+          "uncertainty": {
+            "type": "object",
+            "properties": {
+              "type": {"type": "string"},
+              "value": {"type": "number", "minimum": 0}
+            }
+          }
+        }
+      }
+    }
+  }
+}

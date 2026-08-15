@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/obsidian-skill-router.output.json",
+  "title": "Obsidian Skill Router — Output Contract",
+  "description": "Strict output contract. Every route decision returns this envelope; machine-readable and controller-parseable.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "summary",
+    "findings",
+    "assumptions",
+    "evidence_used",
+    "uncertainty",
+    "risks",
+    "artifacts",
+    "requested_next_skills",
+    "validation",
+    "provenance",
+    "errors"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "SUCCESS",
+        "PARTIAL",
+        "BLOCKED",
+        "FAILED",
+        "NEED_ADDITIONAL_SKILL",
+        "HUMAN_APPROVAL_REQUIRED"
+      ]
+    },
+    "summary": { "type": "string" },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/labeledStatement" }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/labeledStatement" }
+    },
+    "evidence_used": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ref" }
+    },
+    "uncertainty": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ref" }
+    },
+    "requested_next_skills": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "route_plan": { "$ref": "#/$defs/routePlan" },
+    "capability_gap_spec": { "$ref": "#/$defs/capabilityGap" },
+    "validation": { "$ref": "#/$defs/validation" },
+    "provenance": { "$ref": "#/$defs/provenance" },
+    "errors": { "type": "array", "items": { "$ref": "#/$defs/osError" } }
+  },
+  "$defs": {
+    "labeledStatement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statement", "label"],
+      "properties": {
+        "statement": { "type": "string" },
+        "label": {
+          "type": "string",
+          "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+        }
+      }
+    },
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref_id"],
+      "properties": {
+        "ref_id": { "type": "string", "minLength": 1 },
+        "uri": { "type": "string" },
+        "media_type": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+    "routeStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["step_id", "skill", "reason", "input_summary", "expected_artifacts", "budget", "depends_on", "approval_required", "permission_request"],
+      "properties": {
+        "step_id": { "type": "string" },
+        "skill": { "type": "string" },
+        "reason": { "type": "string" },
+        "input_summary": { "type": "string" },
+        "expected_artifacts": { "type": "array", "items": { "type": "string" } },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["est_tokens", "est_cost_usd", "max_retries", "timeout_sec"],
+          "properties": {
+            "est_tokens": { "type": "number", "minimum": 0 },
+            "est_cost_usd": { "type": "number", "minimum": 0 },
+            "max_retries": { "type": "integer", "minimum": 0 },
+            "timeout_sec": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "depends_on": { "type": "array", "items": { "type": "string" } },
+        "approval_required": { "type": "boolean" },
+        "permission_request": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["tools", "network", "writes"],
+          "properties": {
+            "tools": { "type": "array", "items": { "type": "string" } },
+            "network": { "type": "boolean" },
+            "writes": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "routePlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plan_id", "mode", "steps", "guards", "total_budget"],
+      "properties": {
+        "plan_id": { "type": "string" },
+        "mode": {
+          "type": "string",
+          "enum": ["sequential", "parallel", "vote", "cross_review", "primary_support"]
+        },
+        "steps": { "type": "array", "items": { "$ref": "#/$defs/routeStep" } },
+        "guards": { "type": "array", "items": { "type": "string" } },
+        "total_budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["est_tokens", "est_cost_usd", "max_wall_time_sec"],
+          "properties": {
+            "est_tokens": { "type": "number", "minimum": 0 },
+            "est_cost_usd": { "type": "number", "minimum": 0 },
+            "max_wall_time_sec": { "type": "number", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "capabilityGap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["missing_capability", "required_inputs", "required_outputs", "required_tools", "domain_context", "suggested_name", "risk_notes"],
+      "properties": {
+        "missing_capability": { "type": "string" },
+        "required_inputs": { "type": "array", "items": { "type": "string" } },
+        "required_outputs": { "type": "array", "items": { "type": "string" } },
+        "required_tools": { "type": "array", "items": { "type": "string" } },
+        "domain_context": { "type": "string" },
+        "suggested_name": { "type": "string" },
+        "risk_notes": { "type": "string" }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["self_check_passed", "output_schema_valid", "checks"],
+      "properties": {
+        "self_check_passed": { "type": "boolean" },
+        "output_schema_valid": { "type": "boolean" },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "passed"],
+            "properties": {
+              "name": { "type": "string" },
+              "passed": { "type": "boolean" },
+              "detail": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registry_snapshot_id", "decision_log_ref", "router_version", "registry_version"],
+      "properties": {
+        "registry_snapshot_id": { "type": "string" },
+        "decision_log_ref": { "type": "string" },
+        "router_version": { "type": "string" },
+        "registry_version": { "type": "string" }
+      }
+    },
+    "osError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "retryable"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^OSR-E\\d{3}$"
+        },
+        "message": { "type": "string" },
+        "retryable": { "type": "boolean" },
+        "details": { "type": "object" }
+      }
+    }
+  }
+}

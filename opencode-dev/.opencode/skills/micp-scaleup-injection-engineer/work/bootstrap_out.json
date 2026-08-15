@@ -1,0 +1,1569 @@
+{
+  "contract_version": "1.0",
+  "skill": "micp-scaleup-injection-engineer",
+  "skill_version": "1.0.1",
+  "status": "PARTIAL",
+  "summary": "Scale-up plan metre: 3 kg CaCO3 over 0.05 m3; pressure EXCEEDS; uniformity 0.60; NH4-N 83966 mg/L [preliminary plan; stage gate BLOCKED]",
+  "action": "scaleup",
+  "project_id": "PRJ-SCALE-01",
+  "task_id": "T-LAB2METRE",
+  "findings": [
+    {
+      "label": "CALCULATED",
+      "statement": "scale metre: volume 0.05 m3, pore 0.020 m3, CaCO3 3.0 kg",
+      "source": "scaleup"
+    },
+    {
+      "label": "CALCULATED",
+      "statement": "pressure EXCEEDS: dP 9.44 bar vs allowable 5.00 bar",
+      "source": "scaleup"
+    },
+    {
+      "label": "CALCULATED",
+      "statement": "uniformity 0.60 (moderately heterogeneous — zoning/flux control advised); inlet clogging MEDIUM",
+      "source": "scaleup"
+    },
+    {
+      "label": "CALCULATED",
+      "statement": "NH4-N 1.7 kg (83966 mg/L porewater)",
+      "source": "scaleup"
+    },
+    {
+      "label": "INFERRED",
+      "statement": "produced NH4-N in porewater 83966 mg/L exceeds site limit 50 mg/L — effluent treatment / dilution / struvite recovery is REQUIRED before discharge.",
+      "source": "material_balance"
+    },
+    {
+      "label": "INFERRED",
+      "statement": "hydraulic gradient ~96.19 > 1.0 (VP2010 kept gradient < 1)",
+      "source": "clogging_risk"
+    },
+    {
+      "label": "INFERRED",
+      "statement": "scale penalty 0.15 (uniformity degrades with scale — VP2010)",
+      "source": "clogging_risk"
+    },
+    {
+      "label": "INFERRED",
+      "statement": "gate block: pressure exceeds allowable at metre scale",
+      "source": "stage_gate"
+    }
+  ],
+  "assumptions": [
+    {
+      "label": "INFERRED",
+      "statement": "conversion_efficiency design default 0.5 unless provided; VP2010 reports ~0.12 in a 1 m3 box — pilot must verify",
+      "source": "assumptions"
+    },
+    {
+      "label": "INFERRED",
+      "statement": "overburden assumed saturated bulk density 2000 kg/m3; fracture pressure = 2x overburden (classic borehole criterion); safe limit = 80% of fracture (OEGG 2017)",
+      "source": "assumptions"
+    },
+    {
+      "label": "INFERRED",
+      "statement": "bacteria suspension volume assumed 0.5 PV (Gomez 2017 used 0.5 PV injection)",
+      "source": "assumptions"
+    },
+    {
+      "label": "REPORTED",
+      "statement": "uniformity degrades with scale; lab uniformity is NOT representative (VP2010 m3 box)",
+      "source": "assumptions"
+    }
+  ],
+  "evidence_used": [
+    "AS2013 Al Qabany & Soga 2013 (concentration window)",
+    "VP2010 van Paassen 2010 (scale-up data, conversion, gradient<1)",
+    "OEGG2017 (pressure ~80% fracture, 5-15 L/min)",
+    "GA2017/GA2018 Gomez et al. (0.5 PV, Vs detection)"
+  ],
+  "uncertainty": [],
+  "risks": [],
+  "artifacts": [
+    {
+      "kind": "similarity_matrix",
+      "path": null,
+      "note": {
+        "rows": [
+          {
+            "parameter": "urea concentration",
+            "scaling_rule": "CONSERVED (do NOT scale by volume)",
+            "lab_value": "500 mol/m3",
+            "pilot_value": "500 mol/m3",
+            "field_value": "500 mol/m3",
+            "scalable": false,
+            "notes": "AS2013: 0.5 M optimum; >0.75 M risks clogging and lower UCS"
+          },
+          {
+            "parameter": "calcium concentration",
+            "scaling_rule": "CONSERVED (do NOT scale by volume)",
+            "lab_value": "500 mol/m3",
+            "pilot_value": "500 mol/m3",
+            "field_value": "500 mol/m3",
+            "scalable": false,
+            "notes": "paired with urea 1:1 (stoichiometry); concentration window applies"
+          },
+          {
+            "parameter": "treatment volume / pore volume",
+            "scaling_rule": "SCALED (linear with geometry)",
+            "lab_value": 0.05,
+            "pilot_value": null,
+            "field_value": null,
+            "scalable": true,
+            "notes": "mass requirements and solution volumes scale linearly with pore volume"
+          },
+          {
+            "parameter": "PV per treatment round",
+            "scaling_rule": "CONSERVED (PV count)",
+            "lab_value": 1.0,
+            "pilot_value": 1.0,
+            "field_value": 1.0,
+            "scalable": false,
+            "notes": "PV count is dimensionless; keep the same PV per round across scales"
+          },
+          {
+            "parameter": "pore velocity",
+            "scaling_rule": "CONSERVED (m/s)",
+            "lab_value": 0.023543630634895757,
+            "pilot_value": 0.023543630634895757,
+            "field_value": 0.023543630634895757,
+            "scalable": false,
+            "notes": "conserve pore velocity; flow rate then scales with cross-sectional area"
+          },
+          {
+            "parameter": "injection flow rate",
+            "scaling_rule": "RE-DERIVED (scales with cross-section)",
+            "lab_value": "30.0 L/min",
+            "pilot_value": null,
+            "field_value": null,
+            "scalable": true,
+            "notes": "Q = v_pore * A * phi; NOT constant — re-derive per geometry"
+          },
+          {
+            "parameter": "treatment rounds",
+            "scaling_rule": "RE-DERIVED (residence/reaction balance)",
+            "lab_value": 5,
+            "pilot_value": null,
+            "field_value": null,
+            "scalable": false,
+            "notes": "rounds depend on retention time vs ureolysis rate at the target length — recompute, do not reuse the lab count"
+          },
+          {
+            "parameter": "hydraulic gradient",
+            "scaling_rule": "RE-DERIVED (pressure vs path)",
+            "lab_value": null,
+            "pilot_value": null,
+            "field_value": null,
+            "scalable": false,
+            "notes": "VP2010 kept gradient < 1 in the 5 m column; gradient grows with path length for fixed velocity — the binding constraint is pressure"
+          },
+          {
+            "parameter": "injection pressure",
+            "scaling_rule": "RE-DERIVED (Darcy, path & permeability)",
+            "lab_value": 15000.0,
+            "pilot_value": null,
+            "field_value": null,
+            "scalable": false,
+            "notes": "dP grows with path length / k; cap at ~80% fracture pressure (OEGG 2017)"
+          },
+          {
+            "parameter": "uniformity / homogeneity",
+            "scaling_rule": "NEVER SCALES (degrades with scale)",
+            "lab_value": "high (small specimen)",
+            "pilot_value": "degraded",
+            "field_value": "heterogeneous by default",
+            "scalable": false,
+            "notes": "VP2010 m3 box: 12% conversion, CaCO3 in corners/bottom; plan zoning + monitoring, do not expect lab uniformity"
+          }
+        ],
+        "non_scalable_factors": [
+          {
+            "factor": "cementation concentration",
+            "reason": "AS2013: 0.5 M optimum, >0.75 M reduces strength ~50% and clogs; concentration is a chemical design variable, not a volume fraction.",
+            "action": "keep at lab-validated concentration window; verify at pilot before any change"
+          },
+          {
+            "factor": "pore velocity",
+            "reason": "reaction-transport balance (Pe, Da) must be preserved; scaling velocity by volume changes regime.",
+            "action": "conserve pore velocity; scale only flow rate with cross-section"
+          },
+          {
+            "factor": "injection pressure",
+            "reason": "pressure rises with path length and falls with permeability; linearly scaling it invites hydrofracture.",
+            "action": "recompute from Darcy; cap at ~80% fracture pressure"
+          },
+          {
+            "factor": "treatment rounds",
+            "reason": "rounds = f(residence time, ureolysis rate, target content); the lab count is specific to lab path length.",
+            "action": "recompute rounds from material balance + retention time"
+          },
+          {
+            "factor": "uniformity",
+            "reason": "heterogeneity, preferential flow and clogging worsen monotonically with scale (VP2010).",
+            "action": "zone-based treatment, flux control, monitoring wells, Vs/CPT verification"
+          }
+        ],
+        "conserved_quantities": [
+          "concentration",
+          "pore velocity",
+          "PV count",
+          "Pe",
+          "Da",
+          "relative retention time"
+        ],
+        "scaled_quantities": [
+          "volume",
+          "pore volume",
+          "reagent mass",
+          "solution volumes",
+          "total injection volume"
+        ],
+        "re_derived_quantities": [
+          "flow rate",
+          "injection pressure",
+          "rounds",
+          "gradient",
+          "schedule duration"
+        ]
+      }
+    },
+    {
+      "kind": "material_balance",
+      "path": null,
+      "note": {
+        "treatment_volume_m3": 0.05,
+        "pore_volume_m3": 0.020000000000000004,
+        "effective_porosity": 0.4,
+        "target_caco3_content_kg_m3": 60.0,
+        "caco3_required_kg": 3.0,
+        "caco3_mol": 29.973024278149666,
+        "urea_mol": 59.94604855629933,
+        "ca_mol": 59.94604855629933,
+        "urea_kg": 3.600359676291338,
+        "cementation_volume_m3": 0.11989209711259866,
+        "bacteria_volume_m3": 0.010000000000000002,
+        "total_injection_volume_m3": 0.12989209711259866,
+        "nh4_n_mol": 119.89209711259866,
+        "nh4_precip_tied_mol": 59.94604855629933,
+        "nh4_n_kg": 1.6793286042561695,
+        "nh4_n_conc_in_porewater_mol_m3": 5994.604855629932,
+        "nh4_n_conc_mg_L": 83966.43021280847,
+        "conversion_efficiency": 0.5,
+        "injection_flow_m3_s": 0.0005,
+        "injection_duration_days": 0.00300676150723608,
+        "rounds": 5,
+        "warnings": [
+          "produced NH4-N in porewater 83966 mg/L exceeds site limit 50 mg/L — effluent treatment / dilution / struvite recovery is REQUIRED before discharge."
+        ]
+      }
+    },
+    {
+      "kind": "pressure_constraints",
+      "path": null,
+      "note": {
+        "flow_mode": "constant_flux",
+        "darcy_velocity_m_s": 0.009417452253958302,
+        "injection_flow_m3_s": 0.0005,
+        "hydraulic_gradient": 96.19049091199003,
+        "pressure_drop_pa": 943628.7158466221,
+        "pressure_drop_bar": 9.436287158466222,
+        "overburden_pressure_pa": null,
+        "fracture_pressure_pa": null,
+        "safe_limit_pa": null,
+        "allowable_pressure_pa": 500000.0,
+        "margin_ratio": 0.5298694196174402,
+        "clogging_warning": true,
+        "verdict": "EXCEEDS",
+        "notes": [
+          "injection rate 30.0 L/min is outside the practical 5-15 L/min field range (OEGG 2017); field pumps may not deliver this uniformly.",
+          "constant-flux boundary: as clogging builds, pressure rises for fixed rate; monitor inlet pressure closely (inlet clogging is the classic MICP failure mode, VP2010)."
+        ]
+      }
+    },
+    {
+      "kind": "injection_layout",
+      "path": null,
+      "note": {
+        "pattern": "line_drive",
+        "wells": [
+          {
+            "id": "IW-1",
+            "type": "injection",
+            "x": 0.0,
+            "y": 0.0,
+            "depth": null,
+            "radius": 0.03
+          },
+          {
+            "id": "MW-1",
+            "type": "monitoring",
+            "x": 0.043,
+            "y": 0.0,
+            "depth": null,
+            "radius": 0.025
+          },
+          {
+            "id": "MW-2",
+            "type": "monitoring",
+            "x": 0.087,
+            "y": 0.0,
+            "depth": null,
+            "radius": 0.025
+          },
+          {
+            "id": "MW-3",
+            "type": "monitoring",
+            "x": 0.13,
+            "y": 0.0,
+            "depth": null,
+            "radius": 0.025
+          }
+        ],
+        "zones": [
+          {
+            "zone_id": "Z-SAND-A",
+            "layer": "SAND-A",
+            "thickness_m": 1.0,
+            "volume_m3": 0.05,
+            "porosity": 0.4,
+            "permeability_m2": 1e-11,
+            "injection_points": [
+              "IW-1"
+            ]
+          }
+        ],
+        "injection_radius": 0.13,
+        "spacing": null,
+        "notes": [
+          "Draft layout only — final borehole positions require geotechnical engineer sign-off (field gate).",
+          "Extraction wells balance flow and pull treatment through low-k layers.",
+          "Zone-based injection (packers / perforated intervals) is recommended for heterogeneous profiles (clogging_risk.preferential_flow_risk)."
+        ]
+      }
+    },
+    {
+      "kind": "injection_schedule",
+      "path": null,
+      "note": {
+        "phases": [
+          {
+            "phase": "bacteria",
+            "order": 0,
+            "duration_days": 0.0,
+            "volumes_m3": 0.010000000000000002,
+            "flow_mode": "constant_flux",
+            "flow_rate_m3_s": 0.0005,
+            "retention_time_s": 3600.0
+          },
+          {
+            "phase": "cementation",
+            "order": 1,
+            "duration_days": 0.001,
+            "volumes_m3": 0.023978419422519732,
+            "round": 1,
+            "flow_mode": "constant_flux",
+            "flow_rate_m3_s": 0.0005,
+            "retention_time_s": 3600.0,
+            "pulse": "continuous"
+          },
+          {
+            "phase": "cementation",
+            "order": 2,
+            "duration_days": 0.001,
+            "volumes_m3": 0.023978419422519732,
+            "round": 2,
+            "flow_mode": "constant_flux",
+            "flow_rate_m3_s": 0.0005,
+            "retention_time_s": 3600.0,
+            "pulse": "continuous"
+          },
+          {
+            "phase": "cementation",
+            "order": 3,
+            "duration_days": 0.001,
+            "volumes_m3": 0.023978419422519732,
+            "round": 3,
+            "flow_mode": "constant_flux",
+            "flow_rate_m3_s": 0.0005,
+            "retention_time_s": 3600.0,
+            "pulse": "continuous"
+          },
+          {
+            "phase": "cementation",
+            "order": 4,
+            "duration_days": 0.001,
+            "volumes_m3": 0.023978419422519732,
+            "round": 4,
+            "flow_mode": "constant_flux",
+            "flow_rate_m3_s": 0.0005,
+            "retention_time_s": 3600.0,
+            "pulse": "continuous"
+          },
+          {
+            "phase": "cementation",
+            "order": 5,
+            "duration_days": 0.001,
+            "volumes_m3": 0.023978419422519732,
+            "round": 5,
+            "flow_mode": "constant_flux",
+            "flow_rate_m3_s": 0.0005,
+            "retention_time_s": 3600.0,
+            "pulse": "continuous"
+          },
+          {
+            "phase": "flushing",
+            "order": 6,
+            "duration_days": 0.001,
+            "volumes_m3": 0.04000000000000001,
+            "flow_mode": "constant_flux",
+            "flow_rate_m3_s": 0.0005,
+            "note": "flush to recover residual ammonium and unreacted reagents"
+          }
+        ],
+        "sequence": [
+          "bacteria",
+          "cementation",
+          "cementation",
+          "cementation",
+          "cementation",
+          "cementation",
+          "flushing"
+        ],
+        "pulse_strategy": "continuous",
+        "retention_time_s": 3600.0,
+        "rounds": 5,
+        "flushing_pv": 2.0,
+        "total_duration_days": 0.26,
+        "notes": [
+          "durations are estimates from total volume / design flow; confirm at pilot",
+          "sequential bacteria -> cementation prevents mixed-flocculation clogging (VP2010)"
+        ]
+      }
+    },
+    {
+      "kind": "monitoring_plan",
+      "path": null,
+      "note": {
+        "parameters": [
+          {
+            "name": "injection_pressure",
+            "locations": [
+              {
+                "id": "IW-1",
+                "type": "injection_line"
+              }
+            ],
+            "frequency": "continuous (1 Hz log)",
+            "equipment": "pressure transducer + datalogger",
+            "thresholds": {
+              "alarm_low": null,
+              "alarm_high": 350000.0,
+              "stop_low": null,
+              "stop_high": 500000.0,
+              "units": "Pa"
+            },
+            "alarm": "reduce rate / pause phase",
+            "stop_rule": "STOP if pressure > allowable (or >80% fracture pressure)",
+            "data_save": "raw + 1 min rolling mean to datalogger; CSV + cloud backup"
+          },
+          {
+            "name": "flow_rate",
+            "locations": [
+              {
+                "id": "IW-1",
+                "type": "injection_line"
+              },
+              {
+                "id": "EW-1",
+                "type": "extraction_line"
+              }
+            ],
+            "frequency": "continuous (1 Hz)",
+            "equipment": "magnetic flow meter",
+            "thresholds": {
+              "alarm_low": null,
+              "alarm_high": null,
+              "stop_low": null,
+              "stop_high": null,
+              "units": "m3/s"
+            },
+            "alarm": "flow imbalance between inject/extract -> possible surface breakout",
+            "stop_rule": "STOP if injection/extraction imbalance > 20% sustained",
+            "data_save": "raw + cumulative volume integrator"
+          },
+          {
+            "name": "cumulative_volume",
+            "locations": [
+              {
+                "id": "IW-1",
+                "type": "injection_line"
+              }
+            ],
+            "frequency": "continuous (totalizer)",
+            "equipment": "totalizer / flow integrator",
+            "thresholds": {
+              "alarm_low": null,
+              "alarm_high": null,
+              "stop_low": null,
+              "stop_high": null,
+              "units": "m3"
+            },
+            "alarm": "compare against planned phase volume",
+            "stop_rule": "STOP phase at planned volume (volume-limited rounds)",
+            "data_save": "phase log with timestamps"
+          },
+          {
+            "name": "pH",
+            "locations": [
+              {
+                "id": "IW-1",
+                "type": "injection_line"
+              },
+              {
+                "id": "MW-1",
+                "type": "monitoring_well"
+              }
+            ],
+            "frequency": "every 15 min during injection",
+            "equipment": "inline pH probe (calibrated)",
+            "thresholds": {
+              "alarm_low": 6.5,
+              "alarm_high": 9.5,
+              "stop_low": 6.0,
+              "stop_high": 10.0,
+              "units": "-"
+            },
+            "alarm": "pH rise >9.5 indicates active ureolysis; drop <6.5 probe fault",
+            "stop_rule": "STOP if pH < 6.0 or > 10.0 (probe check / dosing fault)",
+            "data_save": "pH log + calibration records"
+          },
+          {
+            "name": "EC",
+            "locations": [
+              {
+                "id": "IW-1",
+                "type": "injection_line"
+              },
+              {
+                "id": "EW-1",
+                "type": "extraction_line"
+              }
+            ],
+            "frequency": "every 15 min",
+            "equipment": "conductivity probe",
+            "thresholds": {
+              "alarm_low": null,
+              "alarm_high": null,
+              "stop_low": null,
+              "stop_high": null,
+              "units": "mS/cm"
+            },
+            "alarm": "sudden EC jump = precipitation front; steady decline = reagent exhaustion",
+            "stop_rule": "no hard stop; trend-based advisory",
+            "data_save": "EC log + correlation with Ca/urea samples"
+          },
+          {
+            "name": "temperature",
+            "locations": [
+              {
+                "id": "IW-1",
+                "type": "injection_line"
+              }
+            ],
+            "frequency": "every 15 min",
+            "equipment": "thermocouple / RTD",
+            "thresholds": {
+              "alarm_low": 5.0,
+              "alarm_high": 40.0,
+              "stop_low": 2.0,
+              "stop_high": 45.0,
+              "units": "degC"
+            },
+            "alarm": "out of ureolysis-active window slows kinetics",
+            "stop_rule": "STOP if <2 C or >45 C (kinetics/equipment)",
+            "data_save": "temperature log"
+          },
+          {
+            "name": "ca_conc",
+            "locations": [
+              {
+                "id": "MW-1",
+                "type": "monitoring_well"
+              },
+              {
+                "id": "EW-1",
+                "type": "extraction_line"
+              }
+            ],
+            "frequency": "per round (grab sample, lab)",
+            "equipment": "EDTA titration / ICP / colorimetric kit",
+            "thresholds": {
+              "alarm_low": null,
+              "alarm_high": null,
+              "stop_low": null,
+              "stop_high": null,
+              "units": "mol/m3"
+            },
+            "alarm": "Ca breakthrough at monitoring well = front arrival",
+            "stop_rule": "advisory: adjust rounds based on Ca depletion profile",
+            "data_save": "sample log with lab results"
+          },
+          {
+            "name": "nh4_conc",
+            "locations": [
+              {
+                "id": "EW-1",
+                "type": "extraction_line"
+              }
+            ],
+            "frequency": "per round (grab sample, lab)",
+            "equipment": "Nessler / ion-selective / colorimetric",
+            "thresholds": {
+              "alarm_low": null,
+              "alarm_high": 40.0,
+              "stop_low": null,
+              "stop_high": 50.0,
+              "units": "mg/L NH4-N"
+            },
+            "alarm": "near discharge limit -> route to treatment",
+            "stop_rule": "STOP injection if effluent NH4-N > site limit (ammonia gate)",
+            "data_save": "effluent sample log + mass balance of NH4-N"
+          },
+          {
+            "name": "urea_conc",
+            "locations": [
+              {
+                "id": "EW-1",
+                "type": "extraction_line"
+              }
+            ],
+            "frequency": "per round (grab sample, lab)",
+            "equipment": "urease/colorimetric assay",
+            "thresholds": {
+              "alarm_low": null,
+              "alarm_high": null,
+              "stop_low": null,
+              "stop_high": null,
+              "units": "mol/m3"
+            },
+            "alarm": "unreacted urea in effluent = low conversion",
+            "stop_rule": "advisory: increase retention time",
+            "data_save": "effluent sample log"
+          },
+          {
+            "name": "tracer",
+            "locations": [
+              {
+                "id": "MW-1",
+                "type": "monitoring_well"
+              }
+            ],
+            "frequency": "one pulse at start + breakthrough sampling",
+            "equipment": "fluorometer / conductivity for NaCl tracer",
+            "thresholds": {
+              "alarm_low": null,
+              "alarm_high": null,
+              "stop_low": null,
+              "stop_high": null,
+              "units": "-"
+            },
+            "alarm": "early breakthrough / low recovery = preferential flow",
+            "stop_rule": "advisory: re-zone treatment if recovery < 70%",
+            "data_save": "breakthrough curve file"
+          },
+          {
+            "name": "shear_wave_velocity",
+            "locations": [
+              {
+                "id": "MW-1",
+                "type": "monitoring_well"
+              },
+              {
+                "id": "surface",
+                "type": "surface"
+              }
+            ],
+            "frequency": "after each round (MASW/bender)",
+            "equipment": "MASW / bender elements / geophones",
+            "thresholds": {
+              "alarm_low": null,
+              "alarm_high": null,
+              "stop_low": null,
+              "stop_high": null,
+              "units": "m/s"
+            },
+            "alarm": "Vs gain < expected = poor cementation progress",
+            "stop_rule": "advisory: additional rounds if Vs gain lags plan",
+            "data_save": "Vs profile per monitoring line"
+          },
+          {
+            "name": "groundwater_indicators",
+            "locations": [
+              {
+                "id": "MW-1",
+                "type": "monitoring_well"
+              },
+              {
+                "id": "MW-2",
+                "type": "monitoring_well"
+              }
+            ],
+            "frequency": "daily during treatment + weekly after",
+            "equipment": "downhole sampler + lab analysis",
+            "thresholds": {
+              "alarm_low": null,
+              "alarm_high": null,
+              "stop_low": null,
+              "stop_high": null,
+              "units": "-"
+            },
+            "alarm": "off-site plume detection",
+            "stop_rule": "STOP and contain if groundwater indicator exceeds baseline",
+            "data_save": "groundwater monitoring record"
+          }
+        ],
+        "sampling_schedule": {
+          "baseline": "2-4 weeks before injection (soil + groundwater + geophysics)",
+          "during_injection": "pressure/flow continuous; pH/EC/温度 every 15 min; chemistry grab per round",
+          "post_treatment": "core sampling + Vs + CPT at 7/28/90 days; groundwater recovery monitoring until NH4-N < limit"
+        },
+        "data_management": {
+          "storage": "datalogger CSV + cloud backup; immutable append-only (SHA-256 chain per project convention)",
+          "retention": "project lifetime + 5 years (environmental records)",
+          "audit": "calibration log per instrument; chain-of-custody for samples"
+        }
+      }
+    },
+    {
+      "kind": "clogging_risk",
+      "path": null,
+      "note": {
+        "inlet_clogging_risk": "MEDIUM",
+        "preferential_flow_risk": "LOW",
+        "uniformity_score": 0.6,
+        "uniformity_verdict": "moderately heterogeneous — zoning/flux control advised",
+        "drivers": [
+          "hydraulic gradient ~96.19 > 1.0 (VP2010 kept gradient < 1)",
+          "scale penalty 0.15 (uniformity degrades with scale — VP2010)"
+        ],
+        "mitigations": [
+          "lower cementation concentration toward 0.5 M (AS2013)",
+          "reduce injection rate / use pulsed injection to lower peak gradient",
+          "sequential bacteria+fixation injection (VP2010)"
+        ]
+      }
+    },
+    {
+      "kind": "stage_gate",
+      "path": null,
+      "note": {
+        "current_scale": "metre",
+        "gates": [
+          {
+            "gate": "G1",
+            "scale": "pilot_column",
+            "criteria": [
+              "uniformity >= MEDIUM",
+              "gradient < 1",
+              "no inlet clogging",
+              "NH4-N manageable",
+              "target content reachable in <= rounds"
+            ],
+            "passed": true,
+            "blocked_reasons": []
+          },
+          {
+            "gate": "G2",
+            "scale": "metre",
+            "criteria": [
+              "permeability field matches assumptions",
+              "tracer recovery >= 70%",
+              "pressure margin > 1.2",
+              "conversion within design window",
+              "core + Vs verify uniformity"
+            ],
+            "passed": false,
+            "blocked_reasons": [
+              "pressure exceeds allowable at metre scale"
+            ]
+          },
+          {
+            "gate": "G3",
+            "scale": "site",
+            "criteria": [
+              "pilot->site similarity holds",
+              "zoning validated",
+              "effluent plan demonstrated",
+              "regulatory permits in hand"
+            ],
+            "passed": null,
+            "blocked_reasons": []
+          },
+          {
+            "gate": "G4",
+            "scale": "field",
+            "criteria": [
+              "HUMAN approval with 6 items",
+              "site test evidence",
+              "emergency plan drilled",
+              "monitoring plan funded and instrumented"
+            ],
+            "passed": null,
+            "blocked_reasons": []
+          }
+        ],
+        "gate_ok": false,
+        "next_gate": "G3",
+        "stop_conditions": [
+          {
+            "id": "S1",
+            "condition": "injection pressure > allowable (or >80% fracture)",
+            "action": "stop injection, bleed pressure, investigate clogging, re-zone"
+          },
+          {
+            "id": "S2",
+            "condition": "effluent NH4-N > site limit",
+            "action": "stop injection, route effluent to treatment/struvite recovery"
+          },
+          {
+            "id": "S3",
+            "condition": "surface heave / breakout detected",
+            "action": "stop, evacuate, containment protocol (emergency plan)"
+          },
+          {
+            "id": "S4",
+            "condition": "tracer recovery < 70% or early breakthrough",
+            "action": "re-zone, add packers/extraction, re-pilot"
+          },
+          {
+            "id": "S5",
+            "condition": "temperature out of [2,45] C",
+            "action": "pause and re-sequence phases"
+          }
+        ],
+        "fallback_plan": {
+          "trigger": "any stop condition or gate failure",
+          "actions": [
+            "halt injection and bleed injection pressure slowly",
+            "recover and treat effluent (NH4-N) before discharge",
+            "re-zone treatment: packers, per-layer intervals, balanced extraction",
+            "reduce cementation concentration toward 0.5 M (AS2013)",
+            "switch constant-flux -> constant-head (pressure-limited)",
+            "if clogged at inlet: shorten treatment path, add wells, alternate bacteria/cementation (sequential, VP2010)",
+            "escalate to geotechnical engineer + controller; never restart without re-evaluation"
+          ]
+        },
+        "human_approval_required": false,
+        "summary": "Stage gate G2 for scale metre: BLOCKED"
+      }
+    }
+  ],
+  "requested_next_skills": [],
+  "state": null,
+  "validation": {
+    "input_schema": "passed",
+    "output_schema": "pending",
+    "self_check": "passed",
+    "checks": [
+      {
+        "name": "material_balance_stoichiometry",
+        "passed": true,
+        "detail": "ok"
+      },
+      {
+        "name": "envelope_shape",
+        "passed": true
+      },
+      {
+        "name": "status_valid",
+        "passed": true
+      },
+      {
+        "name": "epistemic_labels",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "output_schema",
+        "passed": true,
+        "detail": ""
+      }
+    ]
+  },
+  "provenance": {
+    "started_at": "2026-08-06T16:13:11.777Z",
+    "completed_at": "2026-08-06T16:13:11.832Z",
+    "skill": "micp-scaleup-injection-engineer",
+    "skill_version": "1.0.1",
+    "host": "DESKTOP-1SLGVM2",
+    "log_tail": [],
+    "artifacts_written": []
+  },
+  "errors": [],
+  "scale_level": "metre",
+  "site_assumptions": [
+    "layer SAND-A: h=1.00 m, k=1.00e-11 m2",
+    "effective permeability (harmonic) = 1.00e-11 m2",
+    "effective porosity = 0.400"
+  ],
+  "similarity_matrix": [
+    {
+      "parameter": "urea concentration",
+      "scaling_rule": "CONSERVED (do NOT scale by volume)",
+      "lab_value": "500 mol/m3",
+      "pilot_value": "500 mol/m3",
+      "field_value": "500 mol/m3",
+      "scalable": false,
+      "notes": "AS2013: 0.5 M optimum; >0.75 M risks clogging and lower UCS"
+    },
+    {
+      "parameter": "calcium concentration",
+      "scaling_rule": "CONSERVED (do NOT scale by volume)",
+      "lab_value": "500 mol/m3",
+      "pilot_value": "500 mol/m3",
+      "field_value": "500 mol/m3",
+      "scalable": false,
+      "notes": "paired with urea 1:1 (stoichiometry); concentration window applies"
+    },
+    {
+      "parameter": "treatment volume / pore volume",
+      "scaling_rule": "SCALED (linear with geometry)",
+      "lab_value": 0.05,
+      "pilot_value": null,
+      "field_value": null,
+      "scalable": true,
+      "notes": "mass requirements and solution volumes scale linearly with pore volume"
+    },
+    {
+      "parameter": "PV per treatment round",
+      "scaling_rule": "CONSERVED (PV count)",
+      "lab_value": 1.0,
+      "pilot_value": 1.0,
+      "field_value": 1.0,
+      "scalable": false,
+      "notes": "PV count is dimensionless; keep the same PV per round across scales"
+    },
+    {
+      "parameter": "pore velocity",
+      "scaling_rule": "CONSERVED (m/s)",
+      "lab_value": 0.023543630634895757,
+      "pilot_value": 0.023543630634895757,
+      "field_value": 0.023543630634895757,
+      "scalable": false,
+      "notes": "conserve pore velocity; flow rate then scales with cross-sectional area"
+    },
+    {
+      "parameter": "injection flow rate",
+      "scaling_rule": "RE-DERIVED (scales with cross-section)",
+      "lab_value": "30.0 L/min",
+      "pilot_value": null,
+      "field_value": null,
+      "scalable": true,
+      "notes": "Q = v_pore * A * phi; NOT constant — re-derive per geometry"
+    },
+    {
+      "parameter": "treatment rounds",
+      "scaling_rule": "RE-DERIVED (residence/reaction balance)",
+      "lab_value": 5,
+      "pilot_value": null,
+      "field_value": null,
+      "scalable": false,
+      "notes": "rounds depend on retention time vs ureolysis rate at the target length — recompute, do not reuse the lab count"
+    },
+    {
+      "parameter": "hydraulic gradient",
+      "scaling_rule": "RE-DERIVED (pressure vs path)",
+      "lab_value": null,
+      "pilot_value": null,
+      "field_value": null,
+      "scalable": false,
+      "notes": "VP2010 kept gradient < 1 in the 5 m column; gradient grows with path length for fixed velocity — the binding constraint is pressure"
+    },
+    {
+      "parameter": "injection pressure",
+      "scaling_rule": "RE-DERIVED (Darcy, path & permeability)",
+      "lab_value": 15000.0,
+      "pilot_value": null,
+      "field_value": null,
+      "scalable": false,
+      "notes": "dP grows with path length / k; cap at ~80% fracture pressure (OEGG 2017)"
+    },
+    {
+      "parameter": "uniformity / homogeneity",
+      "scaling_rule": "NEVER SCALES (degrades with scale)",
+      "lab_value": "high (small specimen)",
+      "pilot_value": "degraded",
+      "field_value": "heterogeneous by default",
+      "scalable": false,
+      "notes": "VP2010 m3 box: 12% conversion, CaCO3 in corners/bottom; plan zoning + monitoring, do not expect lab uniformity"
+    }
+  ],
+  "non_scalable_factors": [
+    {
+      "factor": "cementation concentration",
+      "reason": "AS2013: 0.5 M optimum, >0.75 M reduces strength ~50% and clogs; concentration is a chemical design variable, not a volume fraction.",
+      "action": "keep at lab-validated concentration window; verify at pilot before any change"
+    },
+    {
+      "factor": "pore velocity",
+      "reason": "reaction-transport balance (Pe, Da) must be preserved; scaling velocity by volume changes regime.",
+      "action": "conserve pore velocity; scale only flow rate with cross-section"
+    },
+    {
+      "factor": "injection pressure",
+      "reason": "pressure rises with path length and falls with permeability; linearly scaling it invites hydrofracture.",
+      "action": "recompute from Darcy; cap at ~80% fracture pressure"
+    },
+    {
+      "factor": "treatment rounds",
+      "reason": "rounds = f(residence time, ureolysis rate, target content); the lab count is specific to lab path length.",
+      "action": "recompute rounds from material balance + retention time"
+    },
+    {
+      "factor": "uniformity",
+      "reason": "heterogeneity, preferential flow and clogging worsen monotonically with scale (VP2010).",
+      "action": "zone-based treatment, flux control, monitoring wells, Vs/CPT verification"
+    }
+  ],
+  "injection_layout": {
+    "pattern": "line_drive",
+    "wells": [
+      {
+        "id": "IW-1",
+        "type": "injection",
+        "x": 0.0,
+        "y": 0.0,
+        "depth": null,
+        "radius": 0.03
+      },
+      {
+        "id": "MW-1",
+        "type": "monitoring",
+        "x": 0.043,
+        "y": 0.0,
+        "depth": null,
+        "radius": 0.025
+      },
+      {
+        "id": "MW-2",
+        "type": "monitoring",
+        "x": 0.087,
+        "y": 0.0,
+        "depth": null,
+        "radius": 0.025
+      },
+      {
+        "id": "MW-3",
+        "type": "monitoring",
+        "x": 0.13,
+        "y": 0.0,
+        "depth": null,
+        "radius": 0.025
+      }
+    ],
+    "zones": [
+      {
+        "zone_id": "Z-SAND-A",
+        "layer": "SAND-A",
+        "thickness_m": 1.0,
+        "volume_m3": 0.05,
+        "porosity": 0.4,
+        "permeability_m2": 1e-11,
+        "injection_points": [
+          "IW-1"
+        ]
+      }
+    ],
+    "injection_radius": 0.13,
+    "spacing": null,
+    "notes": [
+      "Draft layout only — final borehole positions require geotechnical engineer sign-off (field gate).",
+      "Extraction wells balance flow and pull treatment through low-k layers.",
+      "Zone-based injection (packers / perforated intervals) is recommended for heterogeneous profiles (clogging_risk.preferential_flow_risk)."
+    ]
+  },
+  "injection_schedule": {
+    "phases": [
+      {
+        "phase": "bacteria",
+        "order": 0,
+        "duration_days": 0.0,
+        "volumes_m3": 0.010000000000000002,
+        "flow_mode": "constant_flux",
+        "flow_rate_m3_s": 0.0005,
+        "retention_time_s": 3600.0
+      },
+      {
+        "phase": "cementation",
+        "order": 1,
+        "duration_days": 0.001,
+        "volumes_m3": 0.023978419422519732,
+        "round": 1,
+        "flow_mode": "constant_flux",
+        "flow_rate_m3_s": 0.0005,
+        "retention_time_s": 3600.0,
+        "pulse": "continuous"
+      },
+      {
+        "phase": "cementation",
+        "order": 2,
+        "duration_days": 0.001,
+        "volumes_m3": 0.023978419422519732,
+        "round": 2,
+        "flow_mode": "constant_flux",
+        "flow_rate_m3_s": 0.0005,
+        "retention_time_s": 3600.0,
+        "pulse": "continuous"
+      },
+      {
+        "phase": "cementation",
+        "order": 3,
+        "duration_days": 0.001,
+        "volumes_m3": 0.023978419422519732,
+        "round": 3,
+        "flow_mode": "constant_flux",
+        "flow_rate_m3_s": 0.0005,
+        "retention_time_s": 3600.0,
+        "pulse": "continuous"
+      },
+      {
+        "phase": "cementation",
+        "order": 4,
+        "duration_days": 0.001,
+        "volumes_m3": 0.023978419422519732,
+        "round": 4,
+        "flow_mode": "constant_flux",
+        "flow_rate_m3_s": 0.0005,
+        "retention_time_s": 3600.0,
+        "pulse": "continuous"
+      },
+      {
+        "phase": "cementation",
+        "order": 5,
+        "duration_days": 0.001,
+        "volumes_m3": 0.023978419422519732,
+        "round": 5,
+        "flow_mode": "constant_flux",
+        "flow_rate_m3_s": 0.0005,
+        "retention_time_s": 3600.0,
+        "pulse": "continuous"
+      },
+      {
+        "phase": "flushing",
+        "order": 6,
+        "duration_days": 0.001,
+        "volumes_m3": 0.04000000000000001,
+        "flow_mode": "constant_flux",
+        "flow_rate_m3_s": 0.0005,
+        "note": "flush to recover residual ammonium and unreacted reagents"
+      }
+    ],
+    "sequence": [
+      "bacteria",
+      "cementation",
+      "cementation",
+      "cementation",
+      "cementation",
+      "cementation",
+      "flushing"
+    ],
+    "pulse_strategy": "continuous",
+    "retention_time_s": 3600.0,
+    "rounds": 5,
+    "flushing_pv": 2.0,
+    "total_duration_days": 0.26,
+    "notes": [
+      "durations are estimates from total volume / design flow; confirm at pilot",
+      "sequential bacteria -> cementation prevents mixed-flocculation clogging (VP2010)"
+    ]
+  },
+  "material_balance": {
+    "treatment_volume_m3": 0.05,
+    "pore_volume_m3": 0.020000000000000004,
+    "effective_porosity": 0.4,
+    "target_caco3_content_kg_m3": 60.0,
+    "caco3_required_kg": 3.0,
+    "caco3_mol": 29.973024278149666,
+    "urea_mol": 59.94604855629933,
+    "ca_mol": 59.94604855629933,
+    "urea_kg": 3.600359676291338,
+    "cementation_volume_m3": 0.11989209711259866,
+    "bacteria_volume_m3": 0.010000000000000002,
+    "total_injection_volume_m3": 0.12989209711259866,
+    "nh4_n_mol": 119.89209711259866,
+    "nh4_precip_tied_mol": 59.94604855629933,
+    "nh4_n_kg": 1.6793286042561695,
+    "nh4_n_conc_in_porewater_mol_m3": 5994.604855629932,
+    "nh4_n_conc_mg_L": 83966.43021280847,
+    "conversion_efficiency": 0.5,
+    "injection_flow_m3_s": 0.0005,
+    "injection_duration_days": 0.00300676150723608,
+    "rounds": 5,
+    "warnings": [
+      "produced NH4-N in porewater 83966 mg/L exceeds site limit 50 mg/L — effluent treatment / dilution / struvite recovery is REQUIRED before discharge."
+    ]
+  },
+  "pressure_constraints": {
+    "flow_mode": "constant_flux",
+    "darcy_velocity_m_s": 0.009417452253958302,
+    "injection_flow_m3_s": 0.0005,
+    "hydraulic_gradient": 96.19049091199003,
+    "pressure_drop_pa": 943628.7158466221,
+    "pressure_drop_bar": 9.436287158466222,
+    "overburden_pressure_pa": null,
+    "fracture_pressure_pa": null,
+    "safe_limit_pa": null,
+    "allowable_pressure_pa": 500000.0,
+    "margin_ratio": 0.5298694196174402,
+    "clogging_warning": true,
+    "verdict": "EXCEEDS",
+    "notes": [
+      "injection rate 30.0 L/min is outside the practical 5-15 L/min field range (OEGG 2017); field pumps may not deliver this uniformly.",
+      "constant-flux boundary: as clogging builds, pressure rises for fixed rate; monitor inlet pressure closely (inlet clogging is the classic MICP failure mode, VP2010)."
+    ]
+  },
+  "monitoring_plan": {
+    "parameters": [
+      {
+        "name": "injection_pressure",
+        "locations": [
+          {
+            "id": "IW-1",
+            "type": "injection_line"
+          }
+        ],
+        "frequency": "continuous (1 Hz log)",
+        "equipment": "pressure transducer + datalogger",
+        "thresholds": {
+          "alarm_low": null,
+          "alarm_high": 350000.0,
+          "stop_low": null,
+          "stop_high": 500000.0,
+          "units": "Pa"
+        },
+        "alarm": "reduce rate / pause phase",
+        "stop_rule": "STOP if pressure > allowable (or >80% fracture pressure)",
+        "data_save": "raw + 1 min rolling mean to datalogger; CSV + cloud backup"
+      },
+      {
+        "name": "flow_rate",
+        "locations": [
+          {
+            "id": "IW-1",
+            "type": "injection_line"
+          },
+          {
+            "id": "EW-1",
+            "type": "extraction_line"
+          }
+        ],
+        "frequency": "continuous (1 Hz)",
+        "equipment": "magnetic flow meter",
+        "thresholds": {
+          "alarm_low": null,
+          "alarm_high": null,
+          "stop_low": null,
+          "stop_high": null,
+          "units": "m3/s"
+        },
+        "alarm": "flow imbalance between inject/extract -> possible surface breakout",
+        "stop_rule": "STOP if injection/extraction imbalance > 20% sustained",
+        "data_save": "raw + cumulative volume integrator"
+      },
+      {
+        "name": "cumulative_volume",
+        "locations": [
+          {
+            "id": "IW-1",
+            "type": "injection_line"
+          }
+        ],
+        "frequency": "continuous (totalizer)",
+        "equipment": "totalizer / flow integrator",
+        "thresholds": {
+          "alarm_low": null,
+          "alarm_high": null,
+          "stop_low": null,
+          "stop_high": null,
+          "units": "m3"
+        },
+        "alarm": "compare against planned phase volume",
+        "stop_rule": "STOP phase at planned volume (volume-limited rounds)",
+        "data_save": "phase log with timestamps"
+      },
+      {
+        "name": "pH",
+        "locations": [
+          {
+            "id": "IW-1",
+            "type": "injection_line"
+          },
+          {
+            "id": "MW-1",
+            "type": "monitoring_well"
+          }
+        ],
+        "frequency": "every 15 min during injection",
+        "equipment": "inline pH probe (calibrated)",
+        "thresholds": {
+          "alarm_low": 6.5,
+          "alarm_high": 9.5,
+          "stop_low": 6.0,
+          "stop_high": 10.0,
+          "units": "-"
+        },
+        "alarm": "pH rise >9.5 indicates active ureolysis; drop <6.5 probe fault",
+        "stop_rule": "STOP if pH < 6.0 or > 10.0 (probe check / dosing fault)",
+        "data_save": "pH log + calibration records"
+      },
+      {
+        "name": "EC",
+        "locations": [
+          {
+            "id": "IW-1",
+            "type": "injection_line"
+          },
+          {
+            "id": "EW-1",
+            "type": "extraction_line"
+          }
+        ],
+        "frequency": "every 15 min",
+        "equipment": "conductivity probe",
+        "thresholds": {
+          "alarm_low": null,
+          "alarm_high": null,
+          "stop_low": null,
+          "stop_high": null,
+          "units": "mS/cm"
+        },
+        "alarm": "sudden EC jump = precipitation front; steady decline = reagent exhaustion",
+        "stop_rule": "no hard stop; trend-based advisory",
+        "data_save": "EC log + correlation with Ca/urea samples"
+      },
+      {
+        "name": "temperature",
+        "locations": [
+          {
+            "id": "IW-1",
+            "type": "injection_line"
+          }
+        ],
+        "frequency": "every 15 min",
+        "equipment": "thermocouple / RTD",
+        "thresholds": {
+          "alarm_low": 5.0,
+          "alarm_high": 40.0,
+          "stop_low": 2.0,
+          "stop_high": 45.0,
+          "units": "degC"
+        },
+        "alarm": "out of ureolysis-active window slows kinetics",
+        "stop_rule": "STOP if <2 C or >45 C (kinetics/equipment)",
+        "data_save": "temperature log"
+      },
+      {
+        "name": "ca_conc",
+        "locations": [
+          {
+            "id": "MW-1",
+            "type": "monitoring_well"
+          },
+          {
+            "id": "EW-1",
+            "type": "extraction_line"
+          }
+        ],
+        "frequency": "per round (grab sample, lab)",
+        "equipment": "EDTA titration / ICP / colorimetric kit",
+        "thresholds": {
+          "alarm_low": null,
+          "alarm_high": null,
+          "stop_low": null,
+          "stop_high": null,
+          "units": "mol/m3"
+        },
+        "alarm": "Ca breakthrough at monitoring well = front arrival",
+        "stop_rule": "advisory: adjust rounds based on Ca depletion profile",
+        "data_save": "sample log with lab results"
+      },
+      {
+        "name": "nh4_conc",
+        "locations": [
+          {
+            "id": "EW-1",
+            "type": "extraction_line"
+          }
+        ],
+        "frequency": "per round (grab sample, lab)",
+        "equipment": "Nessler / ion-selective / colorimetric",
+        "thresholds": {
+          "alarm_low": null,
+          "alarm_high": 40.0,
+          "stop_low": null,
+          "stop_high": 50.0,
+          "units": "mg/L NH4-N"
+        },
+        "alarm": "near discharge limit -> route to treatment",
+        "stop_rule": "STOP injection if effluent NH4-N > site limit (ammonia gate)",
+        "data_save": "effluent sample log + mass balance of NH4-N"
+      },
+      {
+        "name": "urea_conc",
+        "locations": [
+          {
+            "id": "EW-1",
+            "type": "extraction_line"
+          }
+        ],
+        "frequency": "per round (grab sample, lab)",
+        "equipment": "urease/colorimetric assay",
+        "thresholds": {
+          "alarm_low": null,
+          "alarm_high": null,
+          "stop_low": null,
+          "stop_high": null,
+          "units": "mol/m3"
+        },
+        "alarm": "unreacted urea in effluent = low conversion",
+        "stop_rule": "advisory: increase retention time",
+        "data_save": "effluent sample log"
+      },
+      {
+        "name": "tracer",
+        "locations": [
+          {
+            "id": "MW-1",
+            "type": "monitoring_well"
+          }
+        ],
+        "frequency": "one pulse at start + breakthrough sampling",
+        "equipment": "fluorometer / conductivity for NaCl tracer",
+        "thresholds": {
+          "alarm_low": null,
+          "alarm_high": null,
+          "stop_low": null,
+          "stop_high": null,
+          "units": "-"
+        },
+        "alarm": "early breakthrough / low recovery = preferential flow",
+        "stop_rule": "advisory: re-zone treatment if recovery < 70%",
+        "data_save": "breakthrough curve file"
+      },
+      {
+        "name": "shear_wave_velocity",
+        "locations": [
+          {
+            "id": "MW-1",
+            "type": "monitoring_well"
+          },
+          {
+            "id": "surface",
+            "type": "surface"
+          }
+        ],
+        "frequency": "after each round (MASW/bender)",
+        "equipment": "MASW / bender elements / geophones",
+        "thresholds": {
+          "alarm_low": null,
+          "alarm_high": null,
+          "stop_low": null,
+          "stop_high": null,
+          "units": "m/s"
+        },
+        "alarm": "Vs gain < expected = poor cementation progress",
+        "stop_rule": "advisory: additional rounds if Vs gain lags plan",
+        "data_save": "Vs profile per monitoring line"
+      },
+      {
+        "name": "groundwater_indicators",
+        "locations": [
+          {
+            "id": "MW-1",
+            "type": "monitoring_well"
+          },
+          {
+            "id": "MW-2",
+            "type": "monitoring_well"
+          }
+        ],
+        "frequency": "daily during treatment + weekly after",
+        "equipment": "downhole sampler + lab analysis",
+        "thresholds": {
+          "alarm_low": null,
+          "alarm_high": null,
+          "stop_low": null,
+          "stop_high": null,
+          "units": "-"
+        },
+        "alarm": "off-site plume detection",
+        "stop_rule": "STOP and contain if groundwater indicator exceeds baseline",
+        "data_save": "groundwater monitoring record"
+      }
+    ],
+    "sampling_schedule": {
+      "baseline": "2-4 weeks before injection (soil + groundwater + geophysics)",
+      "during_injection": "pressure/flow continuous; pH/EC/温度 every 15 min; chemistry grab per round",
+      "post_treatment": "core sampling + Vs + CPT at 7/28/90 days; groundwater recovery monitoring until NH4-N < limit"
+    },
+    "data_management": {
+      "storage": "datalogger CSV + cloud backup; immutable append-only (SHA-256 chain per project convention)",
+      "retention": "project lifetime + 5 years (environmental records)",
+      "audit": "calibration log per instrument; chain-of-custody for samples"
+    }
+  },
+  "stop_conditions": [
+    {
+      "id": "S1",
+      "condition": "injection pressure > allowable (or >80% fracture)",
+      "action": "stop injection, bleed pressure, investigate clogging, re-zone"
+    },
+    {
+      "id": "S2",
+      "condition": "effluent NH4-N > site limit",
+      "action": "stop injection, route effluent to treatment/struvite recovery"
+    },
+    {
+      "id": "S3",
+      "condition": "surface heave / breakout detected",
+      "action": "stop, evacuate, containment protocol (emergency plan)"
+    },
+    {
+      "id": "S4",
+      "condition": "tracer recovery < 70% or early breakthrough",
+      "action": "re-zone, add packers/extraction, re-pilot"
+    },
+    {
+      "id": "S5",
+      "condition": "temperature out of [2,45] C",
+      "action": "pause and re-sequence phases"
+    }
+  ],
+  "fallback_plan": {
+    "trigger": "any stop condition or gate failure",
+    "actions": [
+      "halt injection and bleed injection pressure slowly",
+      "recover and treat effluent (NH4-N) before discharge",
+      "re-zone treatment: packers, per-layer intervals, balanced extraction",
+      "reduce cementation concentration toward 0.5 M (AS2013)",
+      "switch constant-flux -> constant-head (pressure-limited)",
+      "if clogged at inlet: shorten treatment path, add wells, alternate bacteria/cementation (sequential, VP2010)",
+      "escalate to geotechnical engineer + controller; never restart without re-evaluation"
+    ]
+  },
+  "environmental_requirements": {
+    "ammonia_n_produced_kg": 1.6793286042561695,
+    "ammonia_n_porewater_mg_L": 83966.43021280847,
+    "site_limit_mg_L": 50.0,
+    "over_limit": true,
+    "limit_missing": false,
+    "limit_status": "EXCEEDS limit 50 mg/L",
+    "treatment_options": [
+      "struvite (NH4MgPO4·6H2O) recovery: ~90% NH4-N removal (Gowthaman 2022)",
+      "anaerobic ammonium oxidation (Anammox) for concentrated effluent",
+      "zeolite amendment reduces ammonia release (Su et al. 2022)",
+      "flushing (N pore volumes) to dilute + recover residual ammonium"
+    ],
+    "discharge_requirement": "effluent NH4-N must be below site limit before discharge; treat or recover (never discharge untreated)"
+  }
+}

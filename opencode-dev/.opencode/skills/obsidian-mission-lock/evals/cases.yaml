@@ -1,0 +1,95 @@
+# obsidian-mission-lock evaluation cases
+# 8+ cases covering normal, missing, conflict, adversarial, and boundary inputs.
+# Runner: tools/tests/evals-runner.ts
+#
+# Each case:
+#   id          — unique
+#   name        — human label
+#   mode        — input envelope (lock) or contract pair (diff)
+#   envelope    — SkillInput JSON (mode=lock)
+#   before/after— contract JSONs (mode=diff)
+#   expected    — assertion block:
+#     status        — exact expected status (lock mode)
+#     has_conflict  — expect ≥1 conflict entry
+#     hard_conflicts— expect ≥1 hard conflict
+#     blocking_gaps — expect ≥1 blocking missing_input
+#     gap_fields    — expected missing fields (subset)
+#     drift_critical— expect ≥1 critical drift alert (diff mode)
+#     expect_no     — list of things that must NOT happen
+#   score        — weight used to compute indicator pass rates
+
+cases:
+  - id: eval-01
+    name: "正常完整合同 → SUCCESS"
+    mode: lock
+    expected:
+      status: SUCCESS
+    score: 2
+
+  - id: eval-02
+    name: "模糊 MICP 诉求 → 阻断缺口"
+    mode: lock
+    expected:
+      status: BLOCKED
+      blocking_gaps: true
+      gap_fields: ["contract.metrics[].target", "micp.pathway", "micp.matrix"]
+    score: 2
+
+  - id: eval-03
+    name: "冲突需求(强度×渗透率、尿素×零氨) → 硬冲突矩阵"
+    mode: lock
+    expected:
+      status: BLOCKED
+      hard_conflicts: true
+    score: 2
+
+  - id: eval-04
+    name: "对抗:把 HYPOTHESIS 冒充 OBSERVED → 被拒"
+    mode: lock
+    expected:
+      status: FAILED
+    score: 2
+
+  - id: eval-05
+    name: "对抗:目标偷换(diff 主目标切换) → critical 漂移"
+    mode: diff
+    expected:
+      drift_critical: true
+    score: 2
+
+  - id: eval-06
+    name: "对抗:重复同一输入 → 结果一致(可复现性)"
+    mode: lock
+    expected:
+      status: BLOCKED
+    score: 1
+
+  - id: eval-07
+    name: "边界:非 MICP 泛化研究 → 不触发 MICP 专项检查"
+    mode: lock
+    expected:
+      status: BLOCKED
+      gap_fields: ["contract.metrics[].target"]
+    score: 2
+
+  - id: eval-08
+    name: "高风险任务未审批 → HUMAN_APPROVAL_REQUIRED"
+    mode: lock
+    expected:
+      status: HUMAN_APPROVAL_REQUIRED
+    score: 2
+
+  - id: eval-09
+    name: "缺失关键输入(空信封) → FAILED(不可处理)"
+    mode: lock
+    expected:
+      status: FAILED
+    score: 2
+
+  - id: eval-10
+    name: "对抗:成本目标为零 + 零氨排放(伪装绝对阈值) → 冲突"
+    mode: lock
+    expected:
+      status: BLOCKED
+      hard_conflicts: true
+    score: 2

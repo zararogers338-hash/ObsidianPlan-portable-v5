@@ -1,0 +1,24 @@
+{
+  "task_id": "ex-003",
+  "project_id": "panshi-bench",
+  "request": "0.5 M 尿素 + 0.5 M 氯化钙的胶结液,一阶水解速率 k=1/3600 /s,模拟 2 小时沉淀:区分平衡可沉淀量与有限时间实际沉淀量。",
+  "context": {
+    "pathway": "ureolysis",
+    "matrix": "sand column"
+  },
+  "constraints": {},
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "skill_version": "1.0.0",
+  "controller_version": "0.1.0",
+  "timestamp": "2026-08-06T10:00:00Z",
+  "tool": "simulate",
+  "params": {
+    "initial": { "urea": 0.5, "ca": 0.5, "ct": 0.01, "nh3_tot": 0.0 },
+    "kinetics": { "mode": "first", "k": 0.00027778 },
+    "precipitation": { "enabled": true, "k_precip": 1e-8, "a_specific": 10.0, "si_threshold": 1.0 },
+    "t_end_s": 7200,
+    "dt_s": 300,
+    "cl": 0.1
+  }
+}

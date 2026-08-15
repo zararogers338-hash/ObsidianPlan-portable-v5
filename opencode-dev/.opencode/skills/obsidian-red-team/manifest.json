@@ -1,0 +1,85 @@
+{
+  "name": "obsidian-red-team",
+  "version": "1.0.0",
+  "contract_version": "1.0.0",
+  "display_name": "Obsidian Red Team｜科学反证与对抗审查器",
+  "description": "黑曜石科学反证与对抗审查器：对结论做十维主动攻击并输出严重度分级发现，存在 BLOCKING 时阻止状态升级。只提交发现与判定，不修改主结论或数据。",
+  "entry": "tools/ort/cli.py",
+  "layer": "panshi-governed-capability",
+  "risk_tier": "critical",
+  "network": false,
+  "capabilities": [
+    "red_team",
+    "adversarial_review",
+    "citation_verification",
+    "evidence_chain_audit",
+    "unit_dimension_check",
+    "mass_balance_check",
+    "statistical_structure_check",
+    "pseudo_replication_detection",
+    "model_boundary_check",
+    "escalation_guard",
+    "permission_boundary_check",
+    "counterexample_generation",
+    "severity_scoring",
+    "blocking_rule_engine",
+    "fix_retest_verification"
+  ],
+  "inputs_required": [
+    "task_id",
+    "project_id",
+    "request",
+    "skill_version",
+    "controller_version",
+    "timestamp"
+  ],
+  "outputs": [
+    "review_report",
+    "blocking_findings",
+    "counterexamples",
+    "alternative_explanations",
+    "required_fixes",
+    "retest_plan",
+    "state_recommendation",
+    "audit_artifact"
+  ],
+  "writes": [
+    "audit/**"
+  ],
+  "tool_permissions": [
+    "read"
+  ],
+  "stop_conditions": [
+    "输出通过 output.schema.json 自检后停止",
+    "任一硬门控失败即返回 BLOCKED/FAILED 并停止",
+    "存在 BLOCKING 发现即返回 BLOCKED(state_recommendation=REVIEW_FAIL/HOLD)并停止",
+    "需要其他能力返回 NEED_ADDITIONAL_SKILL 并停止",
+    "高风险待批准返回 HUMAN_APPROVAL_REQUIRED 并停止"
+  ],
+  "dependencies": [],
+  "compatible_controller": ">=1.0.0",
+  "cost_estimate": {
+    "tokens": 3500,
+    "usd": 0.035
+  },
+  "domain_keywords": [
+    "red_team",
+    "red team",
+    "红队",
+    "对抗",
+    "攻击",
+    "挑刺",
+    "反证",
+    "审查",
+    "审稿",
+    "audit",
+    "adversarial",
+    "反例",
+    "升级门",
+    "BLOCKING",
+    "阻断",
+    "counterexample"
+  ],
+  "license": "MIT",
+  "maintainer": "Panshi / Obsidian Plan"
+}

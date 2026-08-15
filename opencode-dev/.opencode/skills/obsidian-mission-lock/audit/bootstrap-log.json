@@ -1,0 +1,879 @@
+{
+  "s1-vague": {
+    "findings": [],
+    "assumptions": [],
+    "evidence_used": [],
+    "uncertainty": {
+      "level": "medium",
+      "notes": ""
+    },
+    "risks": [],
+    "artifacts": [],
+    "requested_next_skills": [],
+    "validation": {
+      "schema_passed": false,
+      "self_check_passed": true,
+      "tool_calls": [
+        {
+          "tool": "input-schema-validator",
+          "ok": true
+        },
+        {
+          "tool": "missing-field-detector",
+          "ok": true,
+          "note": "14 gap(s), 9 blocking"
+        },
+        {
+          "tool": "conflict-detector",
+          "ok": true,
+          "note": "0 conflict(s), 0 hard"
+        }
+      ]
+    },
+    "provenance": {
+      "skill": "obsidian-mission-lock",
+      "skill_version": "1.0.0",
+      "contract_version": "1.0.0",
+      "timestamp": "2026-08-06T14:19:51.917Z",
+      "tools_used": [
+        "input-schema-validator",
+        "missing-field-detector",
+        "conflict-detector"
+      ]
+    },
+    "errors": [],
+    "status": "BLOCKED",
+    "summary": "9 blocking input(s) missing: contract.objectives, contract.metrics, contract.metrics[].target, contract.failure_thresholds, contract.stop_conditions, contract.decision_use, micp.pathway, micp.matrix, micp.performance_metric.",
+    "missing_inputs": [
+      {
+        "field": "contract.objectives",
+        "why_critical": "A mission without decomposed objectives cannot be checked for scope drift later",
+        "how_to_obtain": "LLM decomposes request into scientific/engineering/decision objectives during lock phase",
+        "blocking": true
+      },
+      {
+        "field": "contract.metrics",
+        "why_critical": "Without measurable metrics there is no success criterion — the mission can never be declared done or failed",
+        "how_to_obtain": "Derive from request quantities; if none present, mark blocking and ask user for target performance values",
+        "blocking": true
+      },
+      {
+        "field": "contract.metrics[].target",
+        "why_critical": "A metric with no target value is a wish, not a criterion (SMART: must be measurable, S8)",
+        "how_to_obtain": "User supplies target; or contract marks the metric as UNKNOWN with an explicit plan to determine it",
+        "blocking": true
+      },
+      {
+        "field": "contract.failure_thresholds",
+        "why_critical": "Without failure thresholds, a failing mission burns budget indefinitely",
+        "how_to_obtain": "Set per-metric minimum-acceptable values or global abort rules",
+        "blocking": true
+      },
+      {
+        "field": "contract.stop_conditions",
+        "why_critical": "Stop conditions bound cost and enable clean termination independent of success/failure",
+        "how_to_obtain": "Budget cap, time cap, max iterations, or evidence-sufficiency condition",
+        "blocking": true
+      },
+      {
+        "field": "contract.decision_use",
+        "why_critical": "The final decision the research informs determines required evidence level and acceptable uncertainty",
+        "how_to_obtain": "Ask: 'what decision will be made with these results, and by whom?'",
+        "blocking": true
+      },
+      {
+        "field": "contract.spatial_scale",
+        "why_critical": "Lab/column/field scale changes which physics and which validation methods apply (S9)",
+        "how_to_obtain": "Extract from request; if absent ask for specimen size or site dimensions",
+        "blocking": false
+      },
+      {
+        "field": "contract.temporal_scale",
+        "why_critical": "Duration bounds (curing time, monitoring window) define the experiment matrix and cost",
+        "how_to_obtain": "Extract from request; if absent ask for target timeframe",
+        "blocking": false
+      },
+      {
+        "field": "contract.stakeholders",
+        "why_critical": "Approval gates and success criteria are meaningless without knowing who accepts the result",
+        "how_to_obtain": "Ask user / project registry; at minimum the requesting party",
+        "blocking": false
+      },
+      {
+        "field": "human_approval_state",
+        "why_critical": "High-risk missions (field deployment, live bio experiments, hazardous chemicals) require an explicit approval gate before any downstream skill runs",
+        "how_to_obtain": "Controller sets 'approved' after human review; skill defaults to 'not_required' only for low-risk desk research",
+        "blocking": false
+      },
+      {
+        "field": "micp.pathway",
+        "why_critical": "Ureolytic vs non-ureolytic pathways have different stoichiometry, kinetics, and risk profiles (S13); models are not interchangeable",
+        "how_to_obtain": "Declare in context.pathway: 'ureolysis' | 'denitrification' | 'eicp' | 'other'; if undecided, scope a pathway-selection sub-study",
+        "blocking": true
+      },
+      {
+        "field": "micp.matrix",
+        "why_critical": "Porous-medium type (sand/clay/rock fracture/concrete) governs injectability, retention, and which transport model applies (S12)",
+        "how_to_obtain": "Specify soil/rock type, gradation or fracture aperture in context.matrix",
+        "blocking": true
+      },
+      {
+        "field": "micp.performance_metric",
+        "why_critical": "MICP 'effectiveness' is meaningless until bound to a measurable engineering property (UCS, permeability, stiffness, durability) — see S11 for typical ranges",
+        "how_to_obtain": "Choose metric + target + unit; typical UCS gains 30–65%, permeability reductions 1–2 orders of magnitude (S11) as reasonableness reference only",
+        "blocking": true
+      },
+      {
+        "field": "micp.environmental_constraints",
+        "why_critical": "Ureolytic MICP emits NH₄⁺ (S10); sites with discharge limits must declare them before pathway selection",
+        "how_to_obtain": "Provide discharge/groundwater nitrogen limits in constraints, or state explicitly that none apply",
+        "blocking": false
+      }
+    ]
+  },
+  "s2-conflicts": {
+    "findings": [],
+    "assumptions": [],
+    "evidence_used": [],
+    "uncertainty": {
+      "level": "medium",
+      "notes": ""
+    },
+    "risks": [],
+    "artifacts": [],
+    "requested_next_skills": [],
+    "validation": {
+      "schema_passed": false,
+      "self_check_passed": true,
+      "tool_calls": [
+        {
+          "tool": "input-schema-validator",
+          "ok": true
+        },
+        {
+          "tool": "missing-field-detector",
+          "ok": true,
+          "note": "10 gap(s), 6 blocking"
+        },
+        {
+          "tool": "conflict-detector",
+          "ok": true,
+          "note": "5 conflict(s), 3 hard"
+        }
+      ]
+    },
+    "provenance": {
+      "skill": "obsidian-mission-lock",
+      "skill_version": "1.0.0",
+      "contract_version": "1.0.0",
+      "timestamp": "2026-08-06T14:19:51.917Z",
+      "tools_used": [
+        "input-schema-validator",
+        "missing-field-detector",
+        "conflict-detector"
+      ]
+    },
+    "errors": [],
+    "status": "BLOCKED",
+    "summary": "3 hard conflict(s) detected — no silent resolution permitted. Human decision required on: strength vs permeability; ammonium_emission vs pathway; ammonium_emission vs pathway.",
+    "conflict_matrix": [
+      {
+        "id": "CONF-001",
+        "between": [
+          "strength",
+          "permeability"
+        ],
+        "kind": "constraint-constraint",
+        "description": "MICP precipitation that raises strength typically clogs pores and reduces permeability by 1–2 orders of magnitude (S11); 'maximize strength' + 'maintain original permeability' is a hard physical trade-off, not an optimization problem. Constraint \"strength\"=\"maximize UCS\" vs \"permeability\"=\"keep original permeability unchanged\"",
+        "severity": "hard",
+        "resolution": "human_decision_required"
+      },
+      {
+        "id": "CONF-002",
+        "between": [
+          "strength",
+          "cost"
+        ],
+        "kind": "constraint-constraint",
+        "description": "Higher cementation usually needs more treatment cycles / reagent, raising cost; treat as soft unless both are pinned to exact values. Constraint \"strength\"=\"maximize UCS\" vs \"cost\"=\"minimum cost\"",
+        "severity": "soft",
+        "resolution": "unresolved"
+      },
+      {
+        "id": "CONF-003",
+        "between": [
+          "permeability",
+          "cost"
+        ],
+        "kind": "constraint-constraint",
+        "description": "Permeability control to tight tolerances requires staged injection and monitoring, increasing cost. Constraint \"permeability\"=\"keep original permeability unchanged\" vs \"cost\"=\"minimum cost\"",
+        "severity": "soft",
+        "resolution": "unresolved"
+      },
+      {
+        "id": "CONF-004",
+        "between": [
+          "ammonium_emission",
+          "pathway"
+        ],
+        "kind": "constraint-constraint",
+        "description": "Ureolytic MICP stoichiometrically produces 2 mol NH₄⁺ per mol urea (S10); 'urea pathway' + 'zero ammonium emission' is contradictory unless an explicit capture/removal step is added — non-urea pathways (S13) must not reuse urea-path models. Constraint \"ammonium_emission\"=\"zero NH4 emission\" vs \"pathway\"=\"urea hydrolysis\"",
+        "severity": "hard",
+        "resolution": "human_decision_required"
+      },
+      {
+        "id": "CONF-005",
+        "between": [
+          "ammonium_emission",
+          "pathway"
+        ],
+        "kind": "domain-blindspot",
+        "description": "Ureolytic MICP stoichiometrically produces 2 mol NH₄⁺ per mol urea (S10); constraint \"pathway\"=\"urea hydrolysis\" combined with \"ammonium_emission\"=\"zero NH4 emission\" is contradictory unless an explicit NH₄⁺ capture/removal step is added — non-urea pathways (S13) must not reuse urea-path models.",
+        "severity": "hard",
+        "resolution": "human_decision_required"
+      }
+    ],
+    "missing_inputs": [
+      {
+        "field": "contract.objectives",
+        "why_critical": "A mission without decomposed objectives cannot be checked for scope drift later",
+        "how_to_obtain": "LLM decomposes request into scientific/engineering/decision objectives during lock phase",
+        "blocking": true
+      },
+      {
+        "field": "contract.metrics",
+        "why_critical": "Without measurable metrics there is no success criterion — the mission can never be declared done or failed",
+        "how_to_obtain": "Derive from request quantities; if none present, mark blocking and ask user for target performance values",
+        "blocking": true
+      },
+      {
+        "field": "contract.metrics[].target",
+        "why_critical": "A metric with no target value is a wish, not a criterion (SMART: must be measurable, S8)",
+        "how_to_obtain": "User supplies target; or contract marks the metric as UNKNOWN with an explicit plan to determine it",
+        "blocking": true
+      },
+      {
+        "field": "contract.failure_thresholds",
+        "why_critical": "Without failure thresholds, a failing mission burns budget indefinitely",
+        "how_to_obtain": "Set per-metric minimum-acceptable values or global abort rules",
+        "blocking": true
+      },
+      {
+        "field": "contract.stop_conditions",
+        "why_critical": "Stop conditions bound cost and enable clean termination independent of success/failure",
+        "how_to_obtain": "Budget cap, time cap, max iterations, or evidence-sufficiency condition",
+        "blocking": true
+      },
+      {
+        "field": "contract.decision_use",
+        "why_critical": "The final decision the research informs determines required evidence level and acceptable uncertainty",
+        "how_to_obtain": "Ask: 'what decision will be made with these results, and by whom?'",
+        "blocking": true
+      },
+      {
+        "field": "contract.spatial_scale",
+        "why_critical": "Lab/column/field scale changes which physics and which validation methods apply (S9)",
+        "how_to_obtain": "Extract from request; if absent ask for specimen size or site dimensions",
+        "blocking": false
+      },
+      {
+        "field": "contract.temporal_scale",
+        "why_critical": "Duration bounds (curing time, monitoring window) define the experiment matrix and cost",
+        "how_to_obtain": "Extract from request; if absent ask for target timeframe",
+        "blocking": false
+      },
+      {
+        "field": "contract.stakeholders",
+        "why_critical": "Approval gates and success criteria are meaningless without knowing who accepts the result",
+        "how_to_obtain": "Ask user / project registry; at minimum the requesting party",
+        "blocking": false
+      },
+      {
+        "field": "human_approval_state",
+        "why_critical": "High-risk missions (field deployment, live bio experiments, hazardous chemicals) require an explicit approval gate before any downstream skill runs",
+        "how_to_obtain": "Controller sets 'approved' after human review; skill defaults to 'not_required' only for low-risk desk research",
+        "blocking": false
+      }
+    ]
+  },
+  "s3-project": {
+    "findings": [],
+    "assumptions": [],
+    "evidence_used": [],
+    "uncertainty": {
+      "level": "medium",
+      "notes": ""
+    },
+    "risks": [],
+    "artifacts": [],
+    "requested_next_skills": [],
+    "validation": {
+      "schema_passed": true,
+      "self_check_passed": true,
+      "tool_calls": [
+        {
+          "tool": "input-schema-validator",
+          "ok": true
+        },
+        {
+          "tool": "missing-field-detector",
+          "ok": true,
+          "note": "5 gap(s), 0 blocking"
+        },
+        {
+          "tool": "conflict-detector",
+          "ok": true,
+          "note": "1 conflict(s), 1 hard"
+        },
+        {
+          "tool": "unit-checker",
+          "ok": true,
+          "note": "0 error(s), 0 warning(s)"
+        },
+        {
+          "tool": "contract-validator",
+          "ok": true,
+          "note": "contract valid"
+        }
+      ]
+    },
+    "provenance": {
+      "skill": "obsidian-mission-lock",
+      "skill_version": "1.0.0",
+      "contract_version": "1.0.0",
+      "timestamp": "2026-08-06T14:19:51.918Z",
+      "tools_used": [
+        "input-schema-validator",
+        "missing-field-detector",
+        "conflict-detector",
+        "unit-checker",
+        "contract-validator"
+      ]
+    },
+    "errors": [],
+    "status": "BLOCKED",
+    "summary": "1 hard conflict(s) detected — no silent resolution permitted. Human decision required on: urea pathway vs ammonium mass balance.",
+    "contract": {
+      "task_id": "bootstrap",
+      "contract_version": "1.0.0",
+      "title": "Bootstrap mission",
+      "mission_type": "mixed",
+      "objectives": [
+        {
+          "id": "O1",
+          "statement": "Raise UCS of treated sand",
+          "kind": "engineering",
+          "depends_on": []
+        },
+        {
+          "id": "O2",
+          "statement": "Track ammonium balance",
+          "kind": "scientific",
+          "depends_on": [
+            "O1"
+          ]
+        }
+      ],
+      "primary_objective_id": "O1",
+      "secondary_objective_ids": [
+        "O2"
+      ],
+      "explicit_exclusions": [
+        "field deployment"
+      ],
+      "metrics": [
+        {
+          "name": "UCS",
+          "direction": "maximize",
+          "target": {
+            "value": 5,
+            "unit": "MPa"
+          },
+          "threshold": {
+            "value": 2,
+            "unit": "MPa"
+          }
+        }
+      ],
+      "success_criteria": [
+        "UCS >= 5 MPa"
+      ],
+      "failure_thresholds": [
+        "UCS < 2 MPa after 10 rounds"
+      ],
+      "stop_conditions": [
+        "budget cap"
+      ],
+      "human_approval_gates": [],
+      "stakeholders": [
+        "PI"
+      ],
+      "decision_use": "pilot go/no-go",
+      "statements": [
+        {
+          "text": "本项目三年前测得处理样 UCS 3.2 MPa",
+          "label": "OBSERVED",
+          "source": "project lab notebook 2023"
+        },
+        {
+          "text": "综述报告典型强度提升 30-65%",
+          "label": "REPORTED",
+          "source": "Fu et al. 2023 (S11)"
+        },
+        {
+          "text": "两次胶结液可将 UCS 提升至 6 MPa",
+          "label": "HYPOTHESIS"
+        }
+      ],
+      "assumptions": [],
+      "unknowns": [],
+      "risks": [],
+      "evidence_gaps": [],
+      "domain_tags": [
+        "micp",
+        "ureolysis"
+      ]
+    },
+    "conflict_matrix": [
+      {
+        "id": "CONF-001",
+        "between": [
+          "urea pathway",
+          "ammonium mass balance"
+        ],
+        "kind": "goal-contradiction",
+        "description": "Urea-hydrolysis MICP declared, but no ammonium (NH₄⁺) tracking, risk, or mitigation appears anywhere in the contract. Ureolysis produces 2 mol NH₄⁺ per mol urea (S10); omitting it breaks nitrogen mass conservation and hides an environmental-impact dimension.",
+        "severity": "hard",
+        "resolution": "unresolved"
+      }
+    ],
+    "missing_inputs": [
+      {
+        "field": "contract.spatial_scale",
+        "why_critical": "Lab/column/field scale changes which physics and which validation methods apply (S9)",
+        "how_to_obtain": "Extract from request; if absent ask for specimen size or site dimensions",
+        "blocking": false
+      },
+      {
+        "field": "contract.temporal_scale",
+        "why_critical": "Duration bounds (curing time, monitoring window) define the experiment matrix and cost",
+        "how_to_obtain": "Extract from request; if absent ask for target timeframe",
+        "blocking": false
+      },
+      {
+        "field": "human_approval_state",
+        "why_critical": "High-risk missions (field deployment, live bio experiments, hazardous chemicals) require an explicit approval gate before any downstream skill runs",
+        "how_to_obtain": "Controller sets 'approved' after human review; skill defaults to 'not_required' only for low-risk desk research",
+        "blocking": false
+      },
+      {
+        "field": "micp.environmental_constraints",
+        "why_critical": "Ureolytic MICP emits NH₄⁺ (S10); sites with discharge limits must declare them before pathway selection",
+        "how_to_obtain": "Provide discharge/groundwater nitrogen limits in constraints, or state explicitly that none apply",
+        "blocking": false
+      },
+      {
+        "field": "micp.nitrogen_balance",
+        "why_critical": "Ureolysis produces 2 mol NH₄⁺ per mol urea (S10); a contract that declares the urea pathway without addressing nitrogen mass conservation (in risks, metrics, or mitigations) has a mass-balance blind spot",
+        "how_to_obtain": "Add an explicit nitrogen/ammonium tracking item to contract.risks or contract.metrics (e.g. risk 'NH₄⁺ accumulation in effluent', or metric 'NH₄⁺ concentration, target ≤ discharge limit')",
+        "blocking": false
+      }
+    ]
+  },
+  "s4-locked": {
+    "findings": [],
+    "assumptions": [],
+    "evidence_used": [],
+    "uncertainty": {
+      "level": "medium",
+      "notes": ""
+    },
+    "risks": [],
+    "artifacts": [],
+    "requested_next_skills": [],
+    "validation": {
+      "schema_passed": true,
+      "self_check_passed": true,
+      "tool_calls": [
+        {
+          "tool": "input-schema-validator",
+          "ok": true
+        },
+        {
+          "tool": "missing-field-detector",
+          "ok": true,
+          "note": "7 gap(s), 2 blocking"
+        },
+        {
+          "tool": "conflict-detector",
+          "ok": true,
+          "note": "2 conflict(s), 1 hard"
+        },
+        {
+          "tool": "unit-checker",
+          "ok": true,
+          "note": "0 error(s), 0 warning(s)"
+        },
+        {
+          "tool": "contract-validator",
+          "ok": true,
+          "note": "contract valid"
+        }
+      ]
+    },
+    "provenance": {
+      "skill": "obsidian-mission-lock",
+      "skill_version": "1.0.0",
+      "contract_version": "1.0.0",
+      "timestamp": "2026-08-06T14:19:51.919Z",
+      "tools_used": [
+        "input-schema-validator",
+        "missing-field-detector",
+        "conflict-detector",
+        "unit-checker",
+        "contract-validator"
+      ]
+    },
+    "errors": [],
+    "status": "BLOCKED",
+    "summary": "1 hard conflict(s) detected — no silent resolution permitted. Human decision required on: urea pathway vs ammonium mass balance.",
+    "contract": {
+      "task_id": "bootstrap",
+      "contract_version": "1.0.0",
+      "title": "Bootstrap mission",
+      "mission_type": "mixed",
+      "objectives": [
+        {
+          "id": "O1",
+          "statement": "Raise UCS of treated sand",
+          "kind": "engineering",
+          "depends_on": []
+        },
+        {
+          "id": "O2",
+          "statement": "Track ammonium balance",
+          "kind": "scientific",
+          "depends_on": [
+            "O1"
+          ]
+        }
+      ],
+      "primary_objective_id": "O1",
+      "secondary_objective_ids": [
+        "O2"
+      ],
+      "explicit_exclusions": [
+        "field deployment"
+      ],
+      "metrics": [
+        {
+          "name": "UCS",
+          "direction": "maximize",
+          "target": {
+            "value": 5,
+            "unit": "MPa"
+          },
+          "threshold": {
+            "value": 2,
+            "unit": "MPa"
+          }
+        },
+        {
+          "name": "urea cost",
+          "direction": "minimize",
+          "target": {
+            "value": 20000,
+            "unit": "CNY"
+          }
+        }
+      ],
+      "success_criteria": [
+        "UCS >= 5 MPa"
+      ],
+      "failure_thresholds": [
+        "UCS < 2 MPa after 10 rounds"
+      ],
+      "stop_conditions": [
+        "budget cap"
+      ],
+      "human_approval_gates": [],
+      "stakeholders": [
+        "PI"
+      ],
+      "decision_use": "pilot go/no-go",
+      "statements": [],
+      "assumptions": [],
+      "unknowns": [],
+      "risks": [],
+      "evidence_gaps": [],
+      "domain_tags": [
+        "micp",
+        "ureolysis"
+      ]
+    },
+    "conflict_matrix": [
+      {
+        "id": "CONF-001",
+        "between": [
+          "UCS",
+          "urea cost"
+        ],
+        "kind": "metric-metric",
+        "description": "Higher cementation usually needs more treatment cycles / reagent, raising cost; treat as soft unless both are pinned to exact values. [UCS: maximize → 5 MPa] vs [urea cost: minimize → 20000 CNY]",
+        "severity": "soft",
+        "resolution": "unresolved"
+      },
+      {
+        "id": "CONF-002",
+        "between": [
+          "urea pathway",
+          "ammonium mass balance"
+        ],
+        "kind": "goal-contradiction",
+        "description": "Urea-hydrolysis MICP declared, but no ammonium (NH₄⁺) tracking, risk, or mitigation appears anywhere in the contract. Ureolysis produces 2 mol NH₄⁺ per mol urea (S10); omitting it breaks nitrogen mass conservation and hides an environmental-impact dimension.",
+        "severity": "hard",
+        "resolution": "unresolved"
+      }
+    ],
+    "missing_inputs": [
+      {
+        "field": "contract.spatial_scale",
+        "why_critical": "Lab/column/field scale changes which physics and which validation methods apply (S9)",
+        "how_to_obtain": "Extract from request; if absent ask for specimen size or site dimensions",
+        "blocking": false
+      },
+      {
+        "field": "contract.temporal_scale",
+        "why_critical": "Duration bounds (curing time, monitoring window) define the experiment matrix and cost",
+        "how_to_obtain": "Extract from request; if absent ask for target timeframe",
+        "blocking": false
+      },
+      {
+        "field": "human_approval_state",
+        "why_critical": "High-risk missions (field deployment, live bio experiments, hazardous chemicals) require an explicit approval gate before any downstream skill runs",
+        "how_to_obtain": "Controller sets 'approved' after human review; skill defaults to 'not_required' only for low-risk desk research",
+        "blocking": false
+      },
+      {
+        "field": "micp.pathway",
+        "why_critical": "Ureolytic vs non-ureolytic pathways have different stoichiometry, kinetics, and risk profiles (S13); models are not interchangeable",
+        "how_to_obtain": "Declare in context.pathway: 'ureolysis' | 'denitrification' | 'eicp' | 'other'; if undecided, scope a pathway-selection sub-study",
+        "blocking": true
+      },
+      {
+        "field": "micp.matrix",
+        "why_critical": "Porous-medium type (sand/clay/rock fracture/concrete) governs injectability, retention, and which transport model applies (S12)",
+        "how_to_obtain": "Specify soil/rock type, gradation or fracture aperture in context.matrix",
+        "blocking": true
+      },
+      {
+        "field": "micp.environmental_constraints",
+        "why_critical": "Ureolytic MICP emits NH₄⁺ (S10); sites with discharge limits must declare them before pathway selection",
+        "how_to_obtain": "Provide discharge/groundwater nitrogen limits in constraints, or state explicitly that none apply",
+        "blocking": false
+      },
+      {
+        "field": "micp.nitrogen_balance",
+        "why_critical": "Ureolysis produces 2 mol NH₄⁺ per mol urea (S10); a contract that declares the urea pathway without addressing nitrogen mass conservation (in risks, metrics, or mitigations) has a mass-balance blind spot",
+        "how_to_obtain": "Add an explicit nitrogen/ammonium tracking item to contract.risks or contract.metrics (e.g. risk 'NH₄⁺ accumulation in effluent', or metric 'NH₄⁺ concentration, target ≤ discharge limit')",
+        "blocking": false
+      }
+    ]
+  },
+  "s4-self-audit": {
+    "same_task": true,
+    "version_bump": "none",
+    "changes": [
+      {
+        "path": "$.primary_objective_id",
+        "kind": "modified",
+        "before": "O1",
+        "after": "O2"
+      },
+      {
+        "path": "$.explicit_exclusions",
+        "kind": "removed",
+        "before": "field deployment"
+      },
+      {
+        "path": "$.metrics[UCS]",
+        "kind": "removed",
+        "before": {
+          "name": "UCS",
+          "direction": "maximize",
+          "target": {
+            "value": 5,
+            "unit": "MPa"
+          },
+          "threshold": {
+            "value": 2,
+            "unit": "MPa"
+          }
+        }
+      },
+      {
+        "path": "$.secondary_objective_ids",
+        "kind": "removed",
+        "before": "O2"
+      }
+    ],
+    "drift_alerts": [
+      {
+        "severity": "critical",
+        "kind": "primary-objective-changed",
+        "message": "Primary objective switched from [O1] \"Raise UCS of treated sand\" to [O2] \"Track ammonium balance\" — possible objective substitution; requires human approval"
+      },
+      {
+        "severity": "critical",
+        "kind": "exclusion-removed",
+        "message": "Explicit exclusion removed: \"field deployment\" — scope boundary moved outward"
+      }
+    ],
+    "summary": "4 field change(s), 2 critical + 0 warning drift alert(s). CRITICAL alerts present — contract revision must NOT be released without human re-approval."
+  },
+  "s4-raw": {
+    "findings": [],
+    "assumptions": [],
+    "evidence_used": [],
+    "uncertainty": {
+      "level": "medium",
+      "notes": ""
+    },
+    "risks": [],
+    "artifacts": [],
+    "requested_next_skills": [],
+    "validation": {
+      "schema_passed": false,
+      "self_check_passed": true,
+      "tool_calls": [
+        {
+          "tool": "input-schema-validator",
+          "ok": true
+        },
+        {
+          "tool": "missing-field-detector",
+          "ok": true,
+          "note": "14 gap(s), 9 blocking"
+        },
+        {
+          "tool": "conflict-detector",
+          "ok": true,
+          "note": "1 conflict(s), 0 hard"
+        }
+      ]
+    },
+    "provenance": {
+      "skill": "obsidian-mission-lock",
+      "skill_version": "1.0.0",
+      "contract_version": "1.0.0",
+      "timestamp": "2026-08-06T14:19:51.919Z",
+      "tools_used": [
+        "input-schema-validator",
+        "missing-field-detector",
+        "conflict-detector"
+      ]
+    },
+    "errors": [],
+    "status": "BLOCKED",
+    "summary": "9 blocking input(s) missing: contract.objectives, contract.metrics, contract.metrics[].target, contract.failure_thresholds, contract.stop_conditions, contract.decision_use, micp.pathway, micp.matrix, micp.performance_metric.",
+    "conflict_matrix": [
+      {
+        "id": "CONF-001",
+        "between": [
+          "strength",
+          "cost"
+        ],
+        "kind": "constraint-constraint",
+        "description": "Higher cementation usually needs more treatment cycles / reagent, raising cost; treat as soft unless both are pinned to exact values. Constraint \"strength\"=\"maximize UCS\" vs \"cost\"=\"minimize urea cost\"",
+        "severity": "soft",
+        "resolution": "unresolved"
+      }
+    ],
+    "missing_inputs": [
+      {
+        "field": "contract.objectives",
+        "why_critical": "A mission without decomposed objectives cannot be checked for scope drift later",
+        "how_to_obtain": "LLM decomposes request into scientific/engineering/decision objectives during lock phase",
+        "blocking": true
+      },
+      {
+        "field": "contract.metrics",
+        "why_critical": "Without measurable metrics there is no success criterion — the mission can never be declared done or failed",
+        "how_to_obtain": "Derive from request quantities; if none present, mark blocking and ask user for target performance values",
+        "blocking": true
+      },
+      {
+        "field": "contract.metrics[].target",
+        "why_critical": "A metric with no target value is a wish, not a criterion (SMART: must be measurable, S8)",
+        "how_to_obtain": "User supplies target; or contract marks the metric as UNKNOWN with an explicit plan to determine it",
+        "blocking": true
+      },
+      {
+        "field": "contract.failure_thresholds",
+        "why_critical": "Without failure thresholds, a failing mission burns budget indefinitely",
+        "how_to_obtain": "Set per-metric minimum-acceptable values or global abort rules",
+        "blocking": true
+      },
+      {
+        "field": "contract.stop_conditions",
+        "why_critical": "Stop conditions bound cost and enable clean termination independent of success/failure",
+        "how_to_obtain": "Budget cap, time cap, max iterations, or evidence-sufficiency condition",
+        "blocking": true
+      },
+      {
+        "field": "contract.decision_use",
+        "why_critical": "The final decision the research informs determines required evidence level and acceptable uncertainty",
+        "how_to_obtain": "Ask: 'what decision will be made with these results, and by whom?'",
+        "blocking": true
+      },
+      {
+        "field": "contract.spatial_scale",
+        "why_critical": "Lab/column/field scale changes which physics and which validation methods apply (S9)",
+        "how_to_obtain": "Extract from request; if absent ask for specimen size or site dimensions",
+        "blocking": false
+      },
+      {
+        "field": "contract.temporal_scale",
+        "why_critical": "Duration bounds (curing time, monitoring window) define the experiment matrix and cost",
+        "how_to_obtain": "Extract from request; if absent ask for target timeframe",
+        "blocking": false
+      },
+      {
+        "field": "contract.stakeholders",
+        "why_critical": "Approval gates and success criteria are meaningless without knowing who accepts the result",
+        "how_to_obtain": "Ask user / project registry; at minimum the requesting party",
+        "blocking": false
+      },
+      {
+        "field": "human_approval_state",
+        "why_critical": "High-risk missions (field deployment, live bio experiments, hazardous chemicals) require an explicit approval gate before any downstream skill runs",
+        "how_to_obtain": "Controller sets 'approved' after human review; skill defaults to 'not_required' only for low-risk desk research",
+        "blocking": false
+      },
+      {
+        "field": "micp.pathway",
+        "why_critical": "Ureolytic vs non-ureolytic pathways have different stoichiometry, kinetics, and risk profiles (S13); models are not interchangeable",
+        "how_to_obtain": "Declare in context.pathway: 'ureolysis' | 'denitrification' | 'eicp' | 'other'; if undecided, scope a pathway-selection sub-study",
+        "blocking": true
+      },
+      {
+        "field": "micp.matrix",
+        "why_critical": "Porous-medium type (sand/clay/rock fracture/concrete) governs injectability, retention, and which transport model applies (S12)",
+        "how_to_obtain": "Specify soil/rock type, gradation or fracture aperture in context.matrix",
+        "blocking": true
+      },
+      {
+        "field": "micp.performance_metric",
+        "why_critical": "MICP 'effectiveness' is meaningless until bound to a measurable engineering property (UCS, permeability, stiffness, durability) — see S11 for typical ranges",
+        "how_to_obtain": "Choose metric + target + unit; typical UCS gains 30–65%, permeability reductions 1–2 orders of magnitude (S11) as reasonableness reference only",
+        "blocking": true
+      },
+      {
+        "field": "micp.environmental_constraints",
+        "why_critical": "Ureolytic MICP emits NH₄⁺ (S10); sites with discharge limits must declare them before pathway selection",
+        "how_to_obtain": "Provide discharge/groundwater nitrogen limits in constraints, or state explicitly that none apply",
+        "blocking": false
+      }
+    ]
+  }
+}

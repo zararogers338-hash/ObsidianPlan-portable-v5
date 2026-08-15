@@ -1,0 +1,87 @@
+{
+  "task_id": "t-oml-003",
+  "project_id": "p-micp-research",
+  "request": "研究尿素水解型 MICP 对中砂地基的无侧限抗压强度提升,目标 28 天 UCS ≥ 5 MPa,并评估铵态氮环境影响。实验室 38mm×76mm 圆柱体,预算上限 5 万元。",
+  "constraints": {
+    "pathway": "ureolysis",
+    "matrix": "medium sand",
+    "discharge_limits": "no applicable discharge limits (lab)",
+    "budget": "50000 CNY"
+  },
+  "evidence_refs": [
+    "doi:10.1016/j.jare.2017.10.009",
+    "doi:10.1016/j.bgtech.2023.100002"
+  ],
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-controller-0.1.0",
+  "timestamp": "2026-08-06T10:00:00Z",
+  "context": {
+    "pathway": "ureolysis",
+    "matrix": "medium sand",
+    "draft_contract": {
+      "task_id": "t-oml-003",
+      "contract_version": "1.0.0",
+      "title": "MICP 中砂地基强度提升与铵态氮环境评估",
+      "mission_type": "mixed",
+      "objectives": [
+        { "id": "O1", "statement": "测定尿素水解型 MICP 处理中砂的 28 天 UCS", "kind": "scientific", "depends_on": [] },
+        { "id": "O2", "statement": "建立胶结液浓度-处理轮次-UCS 的工程经验模型", "kind": "engineering", "depends_on": ["O1"] },
+        { "id": "O3", "statement": "评估处理过程铵态氮生成量与质量守恒", "kind": "scientific", "depends_on": ["O1"] },
+        { "id": "O4", "statement": "决策是否进入中试规模验证", "kind": "decision", "depends_on": ["O2", "O3"] }
+      ],
+      "primary_objective_id": "O1",
+      "secondary_objective_ids": ["O2", "O3"],
+      "explicit_exclusions": ["field deployment", "non-urea pathways", "crack repair"],
+      "metrics": [
+        {
+          "name": "UCS strength",
+          "direction": "maximize",
+          "target": { "value": 5, "unit": "MPa" },
+          "threshold": { "value": 3, "unit": "MPa" }
+        },
+        {
+          "name": "ammonium discharge",
+          "direction": "report",
+          "unit": "mmol/L",
+          "target": { "value": 0, "unit": "mmol/L" }
+        }
+      ],
+      "success_criteria": [
+        "28 天 UCS ≥ 5 MPa(3 个平行样均值)",
+        "铵态氮质量守恒误差 ≤ 15%"
+      ],
+      "failure_thresholds": [
+        "10 轮处理后 UCS < 3 MPa",
+        "铵态氮回收率 < 85%"
+      ],
+      "stop_conditions": [
+        "预算 50000 CNY 耗尽",
+        "90 天期限",
+        "连续 3 轮强度无增长"
+      ],
+      "human_approval_gates": [
+        "实验室生物安全审批"
+      ],
+      "stakeholders": ["课题组长", "实验员", "环境安全员"],
+      "spatial_scale": "lab 38 mm - 76 mm",
+      "temporal_scale": "28 day - 90 day",
+      "decision_use": "决定是否投入中试规模验证",
+      "statements": [
+        { "text": "尿素水解型 MICP 每摩尔尿素产生 2 摩尔铵态氮", "label": "REPORTED", "source": "Krajewska 2018, doi:10.1016/j.jare.2017.10.009 (S10)" },
+        { "text": "MICP 处理土壤强度提升典型量级 30-65%", "label": "REPORTED", "source": "Fu et al. 2023, doi:10.1016/j.bgtech.2023.100002 (S11)" }
+      ],
+      "assumptions": [
+        { "text": "沙样级配均匀,干密度一致", "label": "INFERRED" }
+      ],
+      "unknowns": ["最适胶结液浓度与轮次组合"],
+      "risks": [
+        { "text": "铵态氮累积超标", "label": "HYPOTHESIS" },
+        { "text": "菌种活性批次间波动", "label": "HYPOTHESIS" }
+      ],
+      "evidence_gaps": ["本地沙样对该菌种的适配性数据缺失"],
+      "domain_tags": ["micp", "ureolysis"]
+    }
+  }
+}

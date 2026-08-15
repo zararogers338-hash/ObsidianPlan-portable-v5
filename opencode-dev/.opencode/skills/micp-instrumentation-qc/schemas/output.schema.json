@@ -1,0 +1,110 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.dev/skills/micp-instrumentation-qc/output.schema.json",
+  "title": "micp-instrumentation-qc output envelope",
+  "description": "Machine-readable result envelope emitted by the skill. Custom project convention (Obsidian Plan), version 1.0.0. Downstream skills parse status/summary/findings/validation/provenance without ambiguity.",
+  "type": "object",
+  "required": ["status", "summary", "validation", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"],
+      "description": "SUCCESS=all QC gates passed; PARTIAL=usable with non-blocking gaps (e.g. missing instrument registry); BLOCKED=hard gate or unverifiable evidence; FAILED=unprocessable/corrupt; NEED_ADDITIONAL_SKILL=downstream capability required; HUMAN_APPROVAL_REQUIRED=approval gate pending"
+    },
+    "summary": { "type": "string", "minLength": 1 },
+    "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "evidence_used": { "type": "array", "items": { "type": "string" } },
+    "uncertainty": { "type": "object", "properties": { "level": { "enum": ["low", "medium", "high"] }, "notes": { "type": "string" } }, "additionalProperties": false },
+    "risks": { "type": "array", "items": { "type": "object", "properties": { "description": { "type": "string" }, "level": { "enum": ["low", "medium", "high"] } }, "required": ["description"], "additionalProperties": false } },
+    "artifacts": { "type": "array", "items": { "type": "string" } },
+    "requested_next_skills": { "type": "array", "items": { "type": "object", "properties": { "skill": { "type": "string" }, "why": { "type": "string" }, "required_inputs": { "type": "array", "items": { "type": "string" } } }, "required": ["skill", "why"], "additionalProperties": false } },
+    "qc_report": {
+      "type": "object",
+      "description": "Present when status != FAILED. Domain-specific QC result.",
+      "properties": {
+        "report_type": { "type": "string", "enum": ["qc_report", "qc_plan", "integrity_report", "calibration_report"] },
+        "overall_passed": { "type": "boolean" },
+        "pass_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "instrument_status": { "type": "array", "items": { "$ref": "#/$defs/instrument_status" } },
+        "sample_flags": { "type": "array", "items": { "$ref": "#/$defs/sample_flag" } },
+        "analysis_restrictions": { "type": "array", "items": { "type": "string" } },
+        "retest_items": { "type": "array", "items": { "type": "string" } },
+        "calibration": { "type": "object", "description": "Calibration curve result when calibration data provided: slope, intercept, r2, lod, loq, expanded_uncertainty" },
+        "control": { "type": "object", "description": "Control-chart result when measurements provided: pass count, warnings, out_of_control, drift flags" },
+        "sample_chain": { "type": "object", "description": "Sample-chain result when samples provided: barcodes, duplicate_ids, timestamp_misalignments" },
+        "integrity": { "type": "object", "description": "Integrity result when raw/derived provided: files, statuses, chain_ok, appended_log" }
+      },
+      "additionalProperties": false
+    },
+    "missing_inputs": { "type": "array", "items": { "$ref": "#/$defs/missing" } },
+    "validation": { "type": "object", "required": ["schema_passed", "self_check_passed", "tool_calls"], "properties": { "schema_passed": { "type": "boolean" }, "self_check_passed": { "type": "boolean" }, "tool_calls": { "type": "array", "items": { "type": "object", "properties": { "tool": { "type": "string" }, "ok": { "type": "boolean" }, "note": { "type": "string" } }, "required": ["tool", "ok"], "additionalProperties": false } } }, "additionalProperties": false },
+    "provenance": { "type": "object", "required": ["skill", "skill_version", "contract_version", "timestamp", "tools_used"], "properties": { "skill": { "type": "string" }, "skill_version": { "type": "string" }, "contract_version": { "type": "string" }, "timestamp": { "type": "string", "format": "date-time" }, "tools_used": { "type": "array", "items": { "type": "string" } }, "source_input": { "type": "string", "description": "Optional reference to the input envelope (path or digest) for audit" } }, "additionalProperties": false },
+    "errors": { "type": "array", "items": { "$ref": "#/$defs/error" } }
+  },
+  "$defs": {
+    "label": { "type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"] },
+    "statement": { "type": "object", "required": ["text", "label"], "properties": { "text": { "type": "string", "minLength": 1 }, "label": { "$ref": "#/$defs/label" }, "source": { "type": "string", "description": "Required when label is OBSERVED or REPORTED" } }, "additionalProperties": false },
+    "finding": {
+      "type": "object",
+      "required": ["id", "type", "severity", "message", "statement"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "enum": ["instrument", "calibration", "measurement", "sample_chain", "integrity", "unit", "policy", "capability"] },
+        "severity": { "type": "string", "enum": ["blocker", "warning", "info"] },
+        "message": { "type": "string", "minLength": 1 },
+        "statement": { "$ref": "#/$defs/statement" }
+      },
+      "additionalProperties": false
+    },
+    "instrument_status": {
+      "type": "object",
+      "required": ["instrument_id", "kind", "status"],
+      "properties": {
+        "instrument_id": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string" },
+        "status": { "type": "string", "enum": ["PASS", "FAIL", "WARN", "UNKNOWN"] },
+        "reason": { "type": "string" },
+        "lod": { "type": "number" },
+        "loq": { "type": "number" },
+        "expanded_uncertainty": { "type": "number" },
+        "certified": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "sample_flag": {
+      "type": "object",
+      "required": ["sample_id", "flag", "severity"],
+      "properties": {
+        "sample_id": { "type": "string", "minLength": 1 },
+        "flag": { "type": "string", "enum": ["OUT_OF_CONTROL", "WARNING", "DRIFT", "OVER_RANGE", "SATURATION", "BASELINE_ANOMALY", "TIMESTAMP_MISALIGNMENT", "DUPLICATE_ID", "UNVERIFIED"] },
+        "severity": { "type": "string", "enum": ["blocker", "warning", "info"] },
+        "details": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "missing": {
+      "type": "object",
+      "required": ["field", "why_critical", "how_to_obtain", "blocking"],
+      "properties": {
+        "field": { "type": "string" },
+        "why_critical": { "type": "string" },
+        "how_to_obtain": { "type": "string" },
+        "blocking": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^MICQ-E1\\d{3}$" },
+        "message": { "type": "string" },
+        "retryable": { "type": "boolean" },
+        "details": { "type": "object" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

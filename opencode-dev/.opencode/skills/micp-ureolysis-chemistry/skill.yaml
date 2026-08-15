@@ -1,0 +1,73 @@
+name: micp-ureolysis-chemistry
+title: "MICP Ureolysis Chemistry | 尿素水解、碳酸盐平衡与反应动力学"
+version: 1.0.0
+contract_version: 1.0.0
+layer: panshi-governed-capability
+license: MIT
+compatibility:
+  opencode: ">=1.18"
+  runtime: "python >=3.10"
+  bun: ">=1.3 (optional)"
+entrypoint: tools/cli.py
+discovery:
+  format: SKILL.md
+  locations:
+    - .opencode/skills/
+    - .claude/skills/
+    - .agents/skills/
+inputs:
+  schema: schemas/input.schema.json
+outputs:
+  - "schema: schemas/output.schema.json"
+  - "statuses: SUCCESS"
+  - "statuses: PARTIAL"
+  - "statuses: BLOCKED"
+  - "statuses: FAILED"
+  - "statuses: NEED_ADDITIONAL_SKILL"
+  - "statuses: HUMAN_APPROVAL_REQUIRED"
+tools:
+  balance: "tools/cli.py balance — elemental & charge conservation; stoichiometry"
+  speciate: "tools/cli.py speciate — carbonate equilibrium, pH, SI with activity"
+  simulate: tools/cli.py simulate — coupled ureolysis+precipitation kinetics
+  fit: tools/cli.py fit — kinetic parameter inversion from time series
+  sens: "tools/cli.py sens — OAT sensitivity & uncertainty propagation"
+  units: tools/cli.py units — unit/dimension validation
+  phreeqc-in: tools/cli.py phreeqc-in — PHREEQC deck generation (offline)
+  phreeqc-run: "tools/cli.py phreeqc-run — PHREEQC execution, offline degradation"
+  validate: tools/cli.py validate — envelope structural validation
+  version: tools/cli.py version — skill/environment versions
+permissions:
+  read: project files (read-only)
+  write: audit/ directory only
+  requires_approval:
+    - network access
+    - external writes
+    - PHREEQC execution
+    - experiment execution
+    - invoking other skills
+offline: true
+deterministic: true
+dependencies:
+  - "python_packages: numpy"
+  - "python_packages: scipy"
+  - "optional: PyYAML (evals only)"
+  - "external: PHREEQC v3 (optional"
+  - "external: validation only)"
+outputs_detail:
+  schema: schemas/output.schema.json
+  statuses:
+    - SUCCESS
+    - PARTIAL
+    - BLOCKED
+    - FAILED
+    - NEED_ADDITIONAL_SKILL
+    - HUMAN_APPROVAL_REQUIRED
+dependencies_detail:
+  python_packages:
+    - numpy
+    - scipy
+  optional:
+    - PyYAML (evals only)
+  external:
+    - PHREEQC v3 (optional
+    - validation only)

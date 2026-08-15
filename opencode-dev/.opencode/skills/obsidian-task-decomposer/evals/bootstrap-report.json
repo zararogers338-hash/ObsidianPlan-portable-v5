@@ -1,0 +1,37 @@
+{
+  "skill": "obsidian-task-decomposer",
+  "version": "1.0.0",
+  "generated_at": "2026-08-06T00:00:00Z",
+  "scenarios": {
+    "decompose-micp": {
+      "passed": true,
+      "nodes": 7,
+      "critical_path_hours": 26.5
+    },
+    "cycle-detection": {
+      "passed": true,
+      "cycle_walk": [
+        "a",
+        "b",
+        "a"
+      ]
+    },
+    "replan-after-failure": {
+      "passed": true,
+      "preserved": [
+        "lit_review",
+        "unrelated_calibration"
+      ],
+      "invalidated": [
+        "ammonium_balance",
+        "mechanism_model"
+      ]
+    },
+    "paper-study-review": {
+      "passed": true,
+      "unverifiable_nodes": []
+    }
+  },
+  "all_passed": true,
+  "failures": []
+}

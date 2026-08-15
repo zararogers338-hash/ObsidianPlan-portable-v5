@@ -1,0 +1,29 @@
+{
+  "name": "micp-scaleup-injection-engineer",
+  "display_name": "MICP Injection Design & Scale-Up Engineer｜MICP 注入设计与工程尺度放大器",
+  "version": "1.0.1",
+  "contract_version": "1.0",
+  "description": "MICP injection design and engineering-scale amplifier: lab→pilot column→metre→site→field scale-up with similarity matrices, material balance, pressure/flow constraints, injection layout & schedule, monitoring & alarms, clogging risk, stop conditions and fallback plans. Field deployment requires human approval with six approval items.",
+  "category": "micp-engineering",
+  "domain": "microbial-engineering",
+  "skills_chain": ["micp-biology-reasoner", "micp-porous-media-transport", "micp-geotechnical-performance", "micp-ureolysis-chemistry"],
+  "capabilities": ["scaleup"],
+  "risk_tier": "high",
+  "network": false,
+  "offline": true,
+  "entry": {
+    "cli": "tools/scaleup.py",
+    "mode": "stdin_stdout"
+  },
+  "schemas": {
+    "input": "schemas/input.schema.json",
+    "output": "schemas/output.schema.json",
+    "injection_plan": "schemas/injection-plan.schema.json",
+    "monitoring_plan": "schemas/monitoring-plan.schema.json"
+  },
+  "tools": ["tools/scaleup.py"],
+  "maintainer": "Panshi / Obsidian Plan",
+  "license": "MIT",
+  "error_code_prefix": "MSI",
+  "compatible_controller": "obsidian-ctl-0.1.0"
+}

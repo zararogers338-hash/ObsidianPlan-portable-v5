@@ -1,0 +1,53 @@
+{
+  "skill": "micp-ureolysis-chemistry",
+  "version": "1.0.0",
+  "tests": [
+    {
+      "id": "B1",
+      "name": "钙质量守恒闸门(不守恒数据被拒)",
+      "passed": true,
+      "problems": [],
+      "evidence": {
+        "ca_passed": false,
+        "status": "BLOCKED",
+        "gate_enforced": true
+      },
+      "request": "沉淀后液相 Ca2+ 测出来只有 0.02 mol/L,固体 X 射线荧光扫出 0.01 mol/L 当量 CaCO3,但是我们总共加了 0.05 mol/L 钙,剩下的钙去哪了?你给我算算守恒不守恒。"
+    },
+    {
+      "id": "B2",
+      "name": "同钙不同 pH 沉淀趋势",
+      "passed": true,
+      "problems": [],
+      "evidence": {
+        "si_7.5": 2.033,
+        "si_9.0": 3.537
+      },
+      "request": "同样是 0.05 M 的钙液,pH 拉到 7.5 和 9.0,沉淀的趋势会不会不一样?帮我算一下饱和指数对比一下。"
+    },
+    {
+      "id": "B3",
+      "name": "动力学≠平衡(有限时间 vs 平衡上界)",
+      "passed": true,
+      "problems": [],
+      "evidence": {
+        "kinetic": 0.49998,
+        "equilibrium_bound": 0.5
+      },
+      "request": "0.5 M 尿素加 0.5 M 氯化钙,水解 k=1/3600 每秒,跑两个小时,最后到底沉淀了多少碳酸钙?平衡上能沉多少,实际两小时能沉多少,分开告诉我。"
+    },
+    {
+      "id": "B4",
+      "name": "完整算例+反向守恒核对",
+      "passed": true,
+      "problems": [],
+      "evidence": {
+        "N_residual": 0.0,
+        "Ca_residual": 0.0,
+        "stoich": true
+      },
+      "request": "帮我把这组尿素水解反应算一下,0.5 M 尿素 0.5 M 钙,水解后尿素剩多少,铵多少,钙多少,沉淀多少,然后你反过去核对一下元素守不守恒。"
+    }
+  ],
+  "all_passed": true
+}

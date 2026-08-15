@@ -1,0 +1,43 @@
+{
+  "contract_version": "1.0",
+  "task_id": "MMO-EX-04",
+  "project_id": "P-MICP-OPT-01",
+  "request": "单目标贝叶斯优化：最大化一天内 CaCO3 产率，决策变量为 k_ure 与 k_pre",
+  "action": "optimize",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T00:00:00Z",
+  "model_specification": {
+    "purpose": "OPTIMIZATION",
+    "model_kind": "ode",
+    "state_variables": ["urea", "ca", "nh4", "biomass", "calcite"],
+    "parameters": [
+      {"name": "k_ure", "role": "literature_prior", "value": 1e-4, "unit": "1/s"},
+      {"name": "k_pre", "role": "literature_prior", "value": 1e-4, "unit": "1/s"}
+    ],
+    "parameter_sources": [
+      {"parameter": "k_ure", "source": "Lauchnor et al. 2015"},
+      {"parameter": "k_pre", "source": "Palandri & Kharaka 2004"}
+    ],
+    "equations": {
+      "kind": "ode",
+      "ureolysis": "dU/dt = -k_ure*B*U/(K_half+U)",
+      "precipitation": "r_pre = k_pre*min(Ca, CO3)"
+    },
+    "initial_conditions": {"urea0": 500, "ca0": 500, "biomass0": 1.0, "phi0": 0.4},
+    "observations": ["urea", "nh4", "caco3"],
+    "error_model": "additive_gaussian",
+    "space_scale": "lab_column",
+    "time_scale": "days"
+  },
+  "optimization": {
+    "mode": "single",
+    "variables": [{"name": "k_ure"}, {"name": "k_pre"}],
+    "bounds": [[1e-5, 5e-4], [1e-5, 5e-4]],
+    "target": {"output": "caco3_kg", "t_end": 86400},
+    "maximize": true
+  },
+  "constraints": {"random_seed": 7, "n_init": 5, "n_iter": 12},
+  "risk_level": "low",
+  "human_approval_state": "not_required"
+}

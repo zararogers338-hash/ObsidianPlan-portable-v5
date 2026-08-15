@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-modeling-optimizer.optimization-result.json",
+  "title": "micp-modeling-optimizer — Optimization Result",
+  "description": "Result of single-objective (Bayesian) or multi-objective (NSGA-II) optimization, including the Pareto-front approximation, recommended candidates with reasons, robustness, and experiments to run next.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["method", "n_objectives"],
+  "properties": {
+    "method": { "type": "string", "enum": ["EGO (Jones 1998)", "nsga2", "morris_elementary_effects"] },
+    "n_objectives": { "type": "integer", "minimum": 1 },
+    "objective_names": { "type": "array", "items": { "type": "string" } },
+    "best_point": {
+      "type": "array",
+      "items": { "type": "number" },
+      "description": "Single-objective result: optimal decision vector."
+    },
+    "best_value": { "type": "number", "description": "Single-objective result: optimum value." },
+    "n_evaluations": { "type": "integer", "minimum": 0 },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "iter": { "type": "integer" },
+          "point": { "type": "array", "items": { "type": "number" } },
+          "value": { "type": "number" }
+        }
+      }
+    },
+    "n_front_solutions": { "type": "integer", "minimum": 0 },
+    "front": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["x", "objectives"],
+        "properties": {
+          "x": { "type": "array", "items": { "type": "number" } },
+          "objectives": { "type": "array", "items": { "type": "number" } }
+        }
+      },
+      "description": "Pareto-front approximation (NSGA-II)."
+    },
+    "ideal_point": { "type": "array", "items": { "type": "number" } },
+    "knee_index": { "type": "integer" },
+    "knee_point": {
+      "type": "object",
+      "properties": {
+        "x": { "type": "array", "items": { "type": "number" } },
+        "objectives": { "type": "array", "items": { "type": "number" } }
+      }
+    },
+    "recommended_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "x": { "type": "array", "items": { "type": "number" } },
+          "reason": { "type": "string" },
+          "objectives": { "type": "array", "items": { "type": "number" } }
+        }
+      }
+    },
+    "robustness": {
+      "type": "object",
+      "description": "Monte-Carlo robustness analysis of the front solutions.",
+      "properties": {
+        "method": { "type": "string" },
+        "n_samples_per_solution": { "type": "integer" },
+        "sigma_fraction_of_range": { "type": "number" },
+        "solutions": { "type": "array" }
+      }
+    },
+    "seed": { "type": "integer" }
+  }
+}

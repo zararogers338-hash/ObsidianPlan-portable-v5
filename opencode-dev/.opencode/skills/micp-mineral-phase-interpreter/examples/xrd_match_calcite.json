@@ -1,0 +1,24 @@
+{
+  "contract_version": "1.0",
+  "task_id": "ex-02",
+  "project_id": "demo-calcite",
+  "request": "对 MICP 处理砂样品的 XRD 进行晶型匹配并给出候选相",
+  "action": "tools.xrd_match",
+  "skill_version": "1.0.0",
+  "controller_version": "0.1.0",
+  "timestamp": "2026-08-06T00:00:00Z",
+  "samples": [
+    {
+      "id": "x1",
+      "data_type": "xrd_twotheta_intensity",
+      "source": "实验室 XRD",
+      "wavelength_A": 1.540598,
+      "values": [29.3,20,29.4,100,29.5,20,35.9,12,36.0,14,36.1,12,38.9,10,39.0,18,39.1,10,43.1,10,43.2,18,43.3,10]
+    }
+  ],
+  "thresholds": {
+    "xrd_d_spacing_tol_A": 0.03,
+    "xrd_min_relative_intensity": 10.0,
+    "xrd_min_peaks": 2
+  }
+}

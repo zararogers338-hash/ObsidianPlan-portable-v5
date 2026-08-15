@@ -1,0 +1,27 @@
+{
+  "task_id": "TASK-REC-0001",
+  "project_id": "PRJ-MICP-BIO",
+  "request": "data-analyst 已完成一次拟合,现请求再次调用 data-analyst 处理同一输入(重复调用),并且 evidence-synthesizer 请求直接调用 literature-scout(专业 Skill 直连,星型拓扑违规)。",
+  "context": {
+    "call_chain": ["obsidian-controller", "obsidian-data-analyst"],
+    "completed_calls": [
+      {
+        "skill": "obsidian-data-analyst",
+        "input_digest": "9f8b7a6c",
+        "status": "SUCCESS",
+        "tokens_used": 15000,
+        "cost_usd_used": 0.12
+      }
+    ],
+    "environment": { "workspace": "PRJ-MICP-BIO" }
+  },
+  "constraints": {
+    "max_depth": 2,
+    "max_total_calls": 8,
+    "max_retries_per_skill": 1
+  },
+  "risk_level": "medium",
+  "skill_version": "1.0.0",
+  "controller_version": "1.2.0",
+  "timestamp": "2026-08-06T12:00:00Z"
+}

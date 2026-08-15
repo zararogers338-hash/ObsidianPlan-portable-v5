@@ -1,0 +1,38 @@
+{
+  "task_id": "boot-02",
+  "project_id": "panshi-bootstrap",
+  "request": "自举复检：对 Red Team 刚才的审查报告做对抗复检，检查是否遗漏最强反例、是否只给泛泛意见、是否错误阻断、是否缺少证据定位、是否给出不可执行修复建议",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T13:05:00Z",
+  "constraints": {"state_gate": "REVIEW"},
+  "targets": [
+    {
+      "id": "RT-F02-001",
+      "type": "conclusion",
+      "summary": "认识论越级：目标自标 RECOMMENDATION 却声明支持 VALIDATED，BLOCKING",
+      "location": "evals/bootstrap/step1-output.json findings[0]",
+      "epistemic_label": "INFERRED",
+      "status_support": "SUPPORTED",
+      "claims": ["该 BLOCKING 发现证据定位具体", "该 BLOCKING 修复要求可执行"]
+    },
+    {
+      "id": "RT-F07-003",
+      "type": "conclusion",
+      "summary": "missing boundary conditions: I2 threshold 与 min studies 未在边界条件中声明，CRITICAL",
+      "location": "evals/bootstrap/step1-output.json findings[2]",
+      "epistemic_label": "INFERRED",
+      "status_support": "SUPPORTED",
+      "claims": ["I2 阈值缺失是模型边界问题", "2 研究固定效应合并本身无方法学问题"]
+    },
+    {
+      "id": "RT-GAP-1",
+      "type": "conclusion",
+      "summary": "复检对象：审查报告是否遗漏最强反例 —— I2 受精度混淆，75% 阈值不能单独作为可合并判据；2 研究固定效应合并是方法学上公认不可靠的",
+      "location": "bootstrap 自我复检输入",
+      "epistemic_label": "HYPOTHESIS",
+      "status_support": "OPEN",
+      "claims": ["I2 是异质性的精度混淆度量", "2 研究固定效应合并方法学不可靠", "GRADE 不精确域需样本量/功效证据"]
+    }
+  ]
+}

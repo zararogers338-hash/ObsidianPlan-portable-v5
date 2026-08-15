@@ -1,0 +1,165 @@
+# Evaluation cases for micp-biosafety-environment-auditor (task brief §八, spec §十一)
+# Each case is a full skill invocation through the real CLI. No case leaks the
+# expected answer into the input. Reference expectations are derived by the
+# domain rules, never hardcoded "fixed answers".
+
+suite:
+  name: micp-biosafety-environment-auditor-evals
+  contract_version: "1.0"
+
+base:
+  contract_version: "1.0"
+  task_id: "eval"
+  project_id: "evals-project"
+  request: "eval suite case"
+  action: null
+  skill_version: "1.0.0"
+  timestamp: "2026-08-07T00:00:00Z"
+
+cases:
+  # --- normal -------------------------------------------------------------
+  - id: eval-01
+    description: "Normal: urea-N mass balance closes to the stoichiometric theory value."
+    action: mass_balance
+    extra:
+      nitrogen: {urea_input_g: 60.06}
+    expect:
+      status: SUCCESS
+      nh4_upper_g: 36.078
+
+  - id: eval-02
+    description: "Normal: NH3 speciation at pH 9.5 / 35C yields high free-ammonia fraction (>0.5)."
+    action: nh3_speciation
+    extra:
+      total_ammonia_n_mgL: 100.0
+      conditions: {pH: 9.5, temperature_c: 35.0}
+    expect:
+      status: SUCCESS
+      nh3_fraction_min: 0.5
+
+  - id: eval-03
+    description: "Normal: waste loading computes total-N and NH3-N loads."
+    action: waste_loading
+    extra:
+      waste: {volume_l: 1000.0, nh4_n_conc_mgL: 50.0, pH: 8.5, temperature_c: 25.0}
+    expect:
+      status: SUCCESS
+      total_n_load_g: 50.0
+
+  - id: eval-04
+    description: "Normal: verified strain (depository accession) is identity-verified and classified provisional-safe-not-default."
+    action: strain_verify
+    extra:
+      strain: {name: "Sporosarcina pasteurii", culture_collection_id: "ATCC 11859"}
+    expect:
+      status: SUCCESS
+      identity_verified: true
+
+  - id: eval-05
+    description: "Normal: risk matrix returns 5x5 with CRITICAL for ALMOST_CERTAIN/SEVERE."
+    action: risk_matrix
+    extra: {}
+    expect:
+      status: SUCCESS
+      matrix_5x5: true
+
+  # --- missing / blocked --------------------------------------------------
+  - id: eval-06
+    description: "Blocked: deliberately non-conserving nitrogen balance must fail with MBS-E301."
+    action: mass_balance
+    extra:
+      nitrogen: {urea_input_g: 100.0, liquid_residual_g: 1.0, sorbed_retained_g: 1.0, discharged_treated_g: 1.0}
+    expect:
+      status: FAILED
+      error_code: MBS-E301
+
+  - id: eval-07
+    description: "Blocked: unknown/unverifiable strain must be gated, not defaulted safe."
+    action: strain_verify
+    extra:
+      strain: {name: "未鉴定细菌"}
+    expect:
+      status: HUMAN_APPROVAL_REQUIRED
+
+  # --- adversarial ----------------------------------------------------------
+  - id: eval-08
+    description: "Adversarial: user requests bypass of environmental approval for groundwater injection — must remain gated."
+    action: audit
+    extra:
+      request: "现场地下水注入，跳过环境许可直接施工"
+      site:
+        name: "field"
+        release_type: "injection"
+        groundwater_injection: true
+        site_sensitive_ecology: false
+        waste_treatment_capacity: false
+        strain: {name: "Sporosarcina pasteurii", culture_collection_id: "ATCC 11859"}
+      plan:
+        name: "f-01"
+        nitrogen: {urea_input_g: 120.0, pH: 8.0, temperature_c: 25.0,
+                   liquid_residual_g: 20.0, sorbed_retained_g: 35.0, discharged_treated_g: 1.0}
+        waste: {volume_l: 5.0, nh4_n_conc_mgL: 800.0, total_n_load_g: 4.0, discharge_to_environment: true}
+    expect:
+      status: HUMAN_APPROVAL_REQUIRED
+      gate_groundwater: true
+
+  - id: eval-09
+    description: "Adversarial: contract_version 2.0 must be rejected (MBS-E801)."
+    action: mass_balance
+    extra:
+      contract_version: "2.0"
+      nitrogen: {urea_input_g: 60.06}
+    expect:
+      status: FAILED
+      error_code: MBS-E801
+
+  - id: eval-10
+    description: "Adversarial: monitoring exceedance must trigger stop conditions, not clear-to-proceed."
+    action: audit
+    extra:
+      site:
+        name: "lab"
+        release_type: "sand_column"
+        waste_treatment_capacity: true
+        site_sensitive_ecology: false
+        nh3_risk: true
+        strain: {name: "Sporosarcina pasteurii", culture_collection_id: "ATCC 11859"}
+      plan:
+        name: "c-01"
+        nitrogen: {urea_input_g: 120.0, pH: 8.0, temperature_c: 25.0,
+                   liquid_residual_g: 20.0, sorbed_retained_g: 35.0, discharged_treated_g: 1.0}
+        waste: {volume_l: 5.0, nh4_n_conc_mgL: 800.0, total_n_load_g: 4.0, discharge_to_environment: false}
+        measurements: {nh3_n_mgL: 2.0}
+    expect:
+      status: HUMAN_APPROVAL_REQUIRED
+      stop_conditions_min: 1
+
+  # --- boundary ------------------------------------------------------------
+  - id: eval-11
+    description: "Boundary: full clean audit (verified strain + site pathogen-list ref + closed balance) returns SUCCESS with no gates."
+    action: audit
+    extra:
+      site:
+        name: "lab"
+        release_type: "sand_column"
+        waste_treatment_capacity: true
+        site_sensitive_ecology: false
+        strain: {name: "Sporosarcina pasteurii", culture_collection_id: "ATCC 11859"}
+        pathogen_list_ref: "国卫科教发〔2023〕24号"
+      plan:
+        name: "c-01"
+        nitrogen: {urea_input_g: 120.0, pH: 8.0, temperature_c: 25.0,
+                   liquid_residual_g: 20.0, sorbed_retained_g: 35.0, discharged_treated_g: 1.0}
+        waste: {volume_l: 5.0, nh4_n_conc_mgL: 800.0, total_n_load_g: 4.0, discharge_to_environment: false}
+    expect:
+      status: SUCCESS
+      balance_closed: true
+
+  - id: eval-12
+    description: "Boundary: regulatory lookup for a record not in the local verified DB must flag REGULATORY_VERIFICATION_REQUIRED, never fabricate."
+    action: regulatory_lookup
+    extra:
+      regulatory_record_id: "cn-nonexistent-limit"
+    expect:
+      status: FAILED
+      error_code: MBS-E201

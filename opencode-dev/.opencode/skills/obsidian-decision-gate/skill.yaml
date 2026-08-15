@@ -1,0 +1,70 @@
+name: obsidian-decision-gate
+display_name: Obsidian Decision Gate｜黑曜石证据成熟度与工程决策门
+version: 1.0.0
+description: "Final release skill of the Obsidian engineering loop. Synthesizes Mission Lock metrics, evidence cards, experiment/model/QC results, geotechnical performance, scale-up plans, biosafety & environment audits, LCA, and red-team findings into a governed research-state decision (REJECTED/OPEN/ EVIDENCE_GATHERING/SUPPORTED/VALIDATED/PILOT_READY/DEPLOYABLE/SUSPENDED/ EXPIRED) with machine-enforced blocking rules, human-approval gates, decision memos and state-transition requests."
+contract_version: 1.0
+entry:
+  cli: tools/odg/cli.py
+  mode: stdin_stdout
+capabilities:
+  - decision_gate
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - context
+outputs:
+  - status
+  - decision
+  - current_state
+  - proposed_state
+  - gate_results
+  - blocking_items
+  - decision_memo
+  - state_transition_request
+tool_permissions:
+  - read
+writes:
+  - "state/gates/**"
+stop_conditions:
+  - "blocking_items non-empty -> BLOCKED"
+  - "proposed_state requires human approval without granted record -> HUMAN_APPROVAL_REQUIRED"
+  - "illegal state jump (not in whitelist) -> BLOCKED ODG-E305"
+  - "output envelope fails output schema -> FAILED ODG-E701"
+domain_keywords:
+  - 决策门
+  - 阶段门
+  - gate
+  - 放行
+  - go/no-go
+  - go-no-go
+  - 状态升级
+  - 批准
+  - approval
+  - 决策评审
+  - 证据成熟度
+  - 状态转换
+dependencies:
+  - obsidian-mission-lock
+  - obsidian-state-manager
+  - micp-evidence-synthesizer
+  - micp-hypothesis-forge
+  - micp-data-analyst
+  - obsidian-red-team
+compatible_controller: obsidian-ctl-0.1.0
+network: false
+risk_tier: high
+units:
+  strength: MPa
+cost_estimate:
+  tokens: 4000
+  usd: 0.04
+compatibility:
+  opencode_loader: "discovery pattern {skill,skills}/**/SKILL.md; frontmatter name+description"
+  contract_major: 1
+  schema_breaking_bump: major
+  optional_field_bump: minor
+  implementation_fix_bump: patch
+  migrate_or_reject: Outputs written under an older major contract are either migrated by an explicit migration step or rejected with ODG-E802; never silently reinterpreted.
+maintainer: Panshi / Obsidian Plan
+license: MIT (project convention; repo root LICENSE)

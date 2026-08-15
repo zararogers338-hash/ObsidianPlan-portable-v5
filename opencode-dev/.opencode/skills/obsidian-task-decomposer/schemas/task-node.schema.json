@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian-panshi.local/skills/obsidian-task-decomposer/schemas/task-node.schema.json",
+  "title": "Task node (DAG vertex) contract",
+  "description": "One node of the emitted task DAG. Nodes are atomic research tasks: exactly one accountable primary skill, at most one collaborator, a verifiable definition of done, explicit failure semantics, and a cost budget.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id", "title", "kind", "primary_skill", "inputs", "outputs", "depends_on",
+    "definition_of_done", "failure_modes", "retry_policy", "risk_level",
+    "data_sensitivity", "est_effort_hours", "est_context_tokens", "max_cost_budget",
+    "human_approval_gate"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9][a-z0-9._-]*$",
+      "description": "Stable node id; kebab-case recommended. Referenced by depends_on and by replan triggers."
+    },
+    "title": {"type": "string", "minLength": 3, "maxLength": 300},
+    "kind": {
+      "type": "string",
+      "enum": [
+        "evidence_retrieval", "mechanism_reasoning", "experiment_design",
+        "data_processing", "simulation", "measurement", "audit", "decision",
+        "synthesis", "red_team_review", "human_wait"
+      ]
+    },
+    "primary_skill": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The single accountable skill, e.g. 'micp-literature-scout'."
+    },
+    "collaborator_skill": {
+      "type": "array",
+      "maxItems": 1,
+      "items": {"type": "string", "minLength": 1, "maxLength": 128},
+      "description": "At most one supporting skill. More than one means the node must be split."
+    },
+    "inputs": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {"type": "string", "minLength": 1, "maxLength": 500},
+      "description": "Producer references: '<node_id>:<artifact>' for upstream outputs, or 'request'/'context'/'constraints'/'evidence_refs:<id>'/'data_refs:<id>' for external inputs. Anything else is an implicit dependency and fails self-audit gate G1."
+    },
+    "outputs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {"type": "string", "minLength": 1, "maxLength": 500},
+      "description": "Artifact names this node produces, referenceable downstream as '<this id>:<artifact>'."
+    },
+    "depends_on": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {"type": "string", "minLength": 1, "maxLength": 128},
+      "description": "Ids of nodes that must complete first. Must be consistent with inputs: if an input names '<node>:<artifact>', that node must be (transitively) upstream."
+    },
+    "preconditions": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {"type": "string", "minLength": 1, "maxLength": 1000},
+      "description": "Conditions that must hold at execution start, beyond dependency completion (e.g. 'instrument X calibrated')."
+    },
+    "definition_of_done": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact", "acceptance_criteria"],
+      "properties": {
+        "artifact": {"type": "string", "minLength": 1, "maxLength": 500},
+        "acceptance_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["metric"],
+            "properties": {
+              "metric": {"type": "string", "minLength": 1, "maxLength": 300},
+              "comparator": {"type": "string", "enum": ["<", "<=", "==", ">=", ">", "present", "matches"]},
+              "threshold": {"type": ["number", "string", "boolean"]},
+              "unit": {"type": "string", "maxLength": 40, "description": "Units are mandatory for physical quantities; unit mismatches raise E_UNIT_INCONSISTENT at audit time."}
+            }
+          }
+        }
+      }
+    },
+    "failure_modes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {"type": "string", "minLength": 1, "maxLength": 1000}
+    },
+    "retry_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_attempts", "on_exhaustion"],
+      "properties": {
+        "max_attempts": {"type": "integer", "minimum": 0, "maximum": 10},
+        "backoff": {"type": "string", "enum": ["none", "linear", "exponential"]},
+        "on_exhaustion": {"type": "string", "enum": ["fail_task", "replan_local", "escalate_human"]},
+        "retryable_error_codes": {"type": "array", "items": {"type": "string", "maxLength": 64}, "maxItems": 20}
+      }
+    },
+    "risk_level": {"type": "string", "enum": ["low", "medium", "high"]},
+    "data_sensitivity": {"type": "string", "enum": ["public", "internal", "sensitive", "restricted"]},
+    "est_effort_hours": {"type": "number", "exclusiveMinimum": 0, "maximum": 10000},
+    "est_context_tokens": {"type": "integer", "minimum": 0, "maximum": 10000000},
+    "max_cost_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount", "currency"],
+      "properties": {
+        "amount": {"type": "number", "minimum": 0, "maximum": 100000000},
+        "currency": {"type": "string", "minLength": 1, "maxLength": 8}
+      }
+    },
+    "human_approval_gate": {
+      "type": "boolean",
+      "description": "True when this node may modify data, write long-term knowledge, run real (wet-lab) experiments, operate hazardous materials, or execute high-risk external commands. Such nodes require controller-mediated human approval before execution; the planner marks them but never approves them."
+    },
+    "irreversible": {"type": "boolean"},
+    "optional": {"type": "boolean", "description": "True = node belongs to an optional path; plan must still close without it."},
+    "on_failure_replan": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {"type": "string", "minLength": 1, "maxLength": 128},
+      "description": "Node ids of declared recovery/fallback tasks activated if this node exhausts retries."
+    },
+    "tool_permissions": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {"type": "string", "enum": ["read_files", "write_files", "network", "execute_commands", "lab_instruments", "long_term_memory_write"]},
+      "description": "Least-privilege tool permissions the executing skill will need. 'network', 'execute_commands', 'lab_instruments' and 'long_term_memory_write' imply human_approval_gate=true when risk_level is high."
+    },
+    "notes": {"type": "string", "maxLength": 2000}
+  }
+}

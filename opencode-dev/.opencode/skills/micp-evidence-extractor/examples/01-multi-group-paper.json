@@ -1,0 +1,60 @@
+{
+  "task_id": "ex-01",
+  "project_id": "panshi-demo",
+  "request": "从这篇 MICP 论文提取结构化证据卡：区分 Control 与 MICP 两组、Day 7 与 Day 14 两个时间点，OD600 与脲酶活性分别提取，并核验 DOI。",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T10:00:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "constraints": {
+    "offline": true
+  },
+  "document": {
+    "source_id": "ex-paper-2023",
+    "title": "Microbially induced calcite precipitation in sand columns: group- and time-resolved evidence",
+    "authors": ["Zhao, L.", "Wang, J."],
+    "year": "2023",
+    "journal": "Geotechnical Testing Journal",
+    "doi": "10.1002/jctb.280520402",
+    "document_type": "original_research",
+    "access_date": "2026-08-07",
+    "fulltext_source": "doi.org/10.1002/jctb.280520402",
+    "sections": [
+      {
+        "kind": "methods",
+        "heading": "Materials and Methods",
+        "text": "Sporosarcina pasteurii (ATCC 11859) was cultured in B4 medium at 30 C for 48 h. Urease activity reached 0.8 mM urea/min/OD. Urea concentration 0.5 M and CaCl2 0.5 M were injected in three treatment rounds. Columns 50 mm diameter, 100 mm tall."
+      },
+      {
+        "kind": "results",
+        "heading": "Results",
+        "text": "UCS reached 3.2 MPa after 14 days of treatment. CaCO3 content was 12 percent at day 28."
+      }
+    ],
+    "tables": [
+      {
+        "table_id": "t1",
+        "caption": "UCS results",
+        "header": ["Group", "Day 7 UCS (kPa)", "Day 14 UCS (kPa)"],
+        "rows": [
+          ["Control", "150", "210"],
+          ["MICP", "1200", "2500"]
+        ],
+        "source_locator": "Table 1"
+      },
+      {
+        "table_id": "t2",
+        "caption": "Biological characterization",
+        "header": ["Sample", "OD600", "Urease (mM urea/min/OD)"],
+        "rows": [
+          ["S. pasteurii", "1.2", "0.8"],
+          ["Blank", "0.05", "0.0"]
+        ],
+        "source_locator": "Table 2"
+      }
+    ],
+    "figures": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "task_id": "ex-pseudo-01",
+  "project_id": "panshi-example",
+  "request": "审查把同一砂柱多个测点当独立试样的统计结论",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T12:20:00Z",
+  "constraints": {"state_gate": "VALIDATED"},
+  "samples": [
+    {"specimen": "A1", "pos": "top", "ucs": 3.0},
+    {"specimen": "A1", "pos": "mid", "ucs": 3.4},
+    {"specimen": "A1", "pos": "bot", "ucs": 3.8},
+    {"specimen": "A2", "pos": "top", "ucs": 3.2},
+    {"specimen": "A2", "pos": "mid", "ucs": 3.5},
+    {"specimen": "A2", "pos": "bot", "ucs": 3.9}
+  ],
+  "data_columns": [
+    {"name": "specimen", "role": "id", "sampling_unit": "column"},
+    {"name": "pos", "role": "position"}
+  ],
+  "targets": [
+    {
+      "id": "T1",
+      "type": "analysis",
+      "summary": "6 个测点被视为 6 个独立样本，组间差异显著（p=0.01）。",
+      "location": "stats.xlsx",
+      "epistemic_label": "INFERRED",
+      "analysis": {"p_value": 0.01, "effect_size": 1.2, "effect_type": "cohens_d",
+                   "n_independent": 6, "n_rows": 6}
+    }
+  ]
+}

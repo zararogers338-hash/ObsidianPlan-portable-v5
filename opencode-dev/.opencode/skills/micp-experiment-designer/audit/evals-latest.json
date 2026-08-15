@@ -1,0 +1,79 @@
+{
+  "metrics": {
+    "structured_output_pass_rate": 100.0,
+    "pass_threshold": 95.0,
+    "cases": [
+      {
+        "id": "eval-01",
+        "name": "正常双样本均值设计 → doe_power 计算 n",
+        "score": 2,
+        "passed": true,
+        "unmet": []
+      },
+      {
+        "id": "eval-02",
+        "name": "有限样本预算 → 明确功效与取舍",
+        "score": 2,
+        "passed": true,
+        "unmet": []
+      },
+      {
+        "id": "eval-03",
+        "name": "对抗:缺失效应量(delta=0) → 拒绝",
+        "score": 2,
+        "passed": true,
+        "unmet": []
+      },
+      {
+        "id": "eval-04",
+        "name": "对抗:单位不一致(无效浓度单位) → E_UNIT_UNKNOWN",
+        "score": 1,
+        "passed": true,
+        "unmet": []
+      },
+      {
+        "id": "eval-05",
+        "name": "正常随机化 → 可复现(同种子同分配)",
+        "score": 2,
+        "passed": true,
+        "unmet": []
+      },
+      {
+        "id": "eval-06",
+        "name": "正常 SOP 生成 → 含阻断项与 MICP 检查",
+        "score": 2,
+        "passed": true,
+        "unmet": []
+      },
+      {
+        "id": "eval-07",
+        "name": "对抗:移除对照组 → 阻断",
+        "score": 2,
+        "passed": true,
+        "unmet": []
+      },
+      {
+        "id": "eval-08",
+        "name": "边界:重复 1(<2) → 阻断",
+        "score": 1,
+        "passed": true,
+        "unmet": []
+      },
+      {
+        "id": "eval-09",
+        "name": "对抗:预算不足要求 0.90 功效 → 取舍明确不伪造",
+        "score": 2,
+        "passed": true,
+        "unmet": []
+      },
+      {
+        "id": "eval-10",
+        "name": "非尿素路径带尿素假设 → 警告不误判",
+        "score": 2,
+        "passed": true,
+        "unmet": []
+      }
+    ]
+  },
+  "thresholds_met": true
+}

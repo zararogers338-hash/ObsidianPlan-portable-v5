@@ -1,0 +1,11 @@
+{
+  "task_id": "ex-03-blocked-missing-request",
+  "project_id": "panshi-demo",
+  "request": "",
+  "risk_level": "medium",
+  "human_approval_state": {"required": false, "granted": false},
+  "requested_output_format": "json",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T10:30:00Z"
+}

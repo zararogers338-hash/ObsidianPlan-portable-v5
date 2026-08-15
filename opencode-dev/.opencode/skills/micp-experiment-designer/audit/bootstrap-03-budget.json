@@ -1,0 +1,39 @@
+{
+  "payload": {
+    "design": {
+      "kind": "two_group_means",
+      "delta": 0.8,
+      "sigma": 1.0,
+      "alpha": 0.05
+    },
+    "sample_budget": 8
+  },
+  "result": {
+    "kind": "two_group_means",
+    "backend": "scipy",
+    "alpha": 0.05,
+    "two_sided": true,
+    "effect_size": 0.8,
+    "sigma": 1.0,
+    "cohens_d": 0.8,
+    "n_per_group": 8,
+    "total_n": 16,
+    "power_at_n": 0.2983241746055919,
+    "minimal_detectable_effect_at_power80": 1.506283203985633,
+    "target_power": 0.8,
+    "tradeoffs": [
+      {
+        "loss": "power",
+        "achievable_power": 0.2983,
+        "needed_n_for_power80": 26,
+        "note": "sample budget is binding; keep the effect size or lower power explicitly"
+      },
+      {
+        "loss": "effect_size",
+        "minimal_detectable_effect": 1.5063,
+        "note": "with this budget you can only reliably detect effects >= MDE at power 0.80"
+      }
+    ],
+    "interpretation": "有限样本预算下无法同时满足目标效应量与 0.80 功效；必须显式选择损失哪一头（缩小可检测效应或接受更低功效），并在预注册中声明。"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "contract_version": "1.0",
+  "task_id": "task-export-cites-03",
+  "project_id": "literature-review-micp",
+  "request": "把筛选后的 MICP 证据导出为 BibTeX 与 CSL-JSON",
+  "action": "cite.export",
+  "format": "bibtex",
+  "out_file": "exports/micp_core_refs.bib",
+  "records": [
+    {
+      "ref_id": "rec-micp-review-001",
+      "doi": "10.1016/j.bgtech.2023.100002",
+      "title": "Microbially induced carbonate precipitation (MICP) for soil strengthening: A comprehensive review",
+      "year": 2023,
+      "container": "Biogeotechnics",
+      "authors": ["Wang Y", "Soga K", "DeJong J T"],
+      "kind": "review"
+    },
+    {
+      "ref_id": "rec-cgj-saturation-002",
+      "doi": "10.1139/cgj-2012-0023",
+      "title": "Cementation of sand soil by microbially induced calcite precipitation at various degrees of saturation",
+      "year": 2013,
+      "container": "Canadian Geotechnical Journal",
+      "authors": ["Cheng L", "Cord-Ruwisch R"],
+      "kind": "research"
+    },
+    {
+      "ref_id": "rec-jgge-optimization-003",
+      "doi": "10.1061/(asce)gt.1943-5606.0000787",
+      "title": "Experimental Optimization of Microbial-Induced Carbonate Precipitation for Soil Improvement",
+      "year": 2013,
+      "container": "Journal of Geotechnical and Geoenvironmental Engineering",
+      "authors": ["Whiffin V S", "van Paassen L A", "Harkes M P"],
+      "kind": "research"
+    }
+  ],
+  "human_approval_state": {
+    "granted": true,
+    "approver": "obsidian-controller"
+  },
+  "actor": {"role": "controller", "id": "obsidian-router"},
+  "skill_version": "1.0.0",
+  "controller_version": "1.0",
+  "timestamp": "2026-08-06T12:00:00Z"
+}

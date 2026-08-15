@@ -1,0 +1,95 @@
+{
+  "$schema": "https://obsidian.dev/manifest.schema.json",
+  "name": "micp-experiment-designer",
+  "title": "MICP Experiment Designer | 可复现、可证伪的实验设计与 SOP",
+  "version": "1.0.0",
+  "contract_version": "1.0.0",
+  "layer": "panshi-governed-capability",
+  "license": "MIT",
+  "compatibility": {
+    "opencode": ">=1.18",
+    "python": ">=3.10",
+    "node": ">=18"
+  },
+  "entrypoint": "tools/cli.py",
+  "discovery": {
+    "format": "SKILL.md",
+    "locations": [
+      ".opencode/skills/",
+      ".claude/skills/",
+      ".agents/skills/",
+      "skills/"
+    ]
+  },
+  "inputs": {
+    "schema": "schemas/input.schema.json",
+    "reference": "https://obsidian.dev/skills/micp-experiment-designer/input.schema.json"
+  },
+  "outputs": {
+    "schema": "schemas/output.schema.json",
+    "statuses": [
+      "SUCCESS",
+      "PARTIAL",
+      "BLOCKED",
+      "FAILED",
+      "NEED_ADDITIONAL_SKILL",
+      "HUMAN_APPROVAL_REQUIRED"
+    ]
+  },
+  "errors": [
+    "OED-E1001",
+    "OED-E1002",
+    "OED-E1003",
+    "OED-E1004",
+    "OED-E1005",
+    "OED-E1006",
+    "OED-E1007",
+    "OED-E1008",
+    "OED-E1009",
+    "OED-E1010"
+  ],
+  "tools": [
+    {
+      "name": "doe_power",
+      "entrypoint": "tools/doe_power.py",
+      "purpose": "DOE & sample-size/power analysis: two-group t-test, two-proportion, ANOVA, finite-budget trade-off"
+    },
+    {
+      "name": "randomizer",
+      "entrypoint": "tools/randomizer.py",
+      "purpose": "Reproducible randomization & experiment-number generation (complete/blocked, seeded)"
+    },
+    {
+      "name": "quantity_calc",
+      "entrypoint": "tools/quantity_calc.py",
+      "purpose": "Reagent/material quantity & unit calculator with dimensional checks"
+    },
+    {
+      "name": "sop_check",
+      "entrypoint": "tools/sop_check.py",
+      "purpose": "SOP generation & step-consistency checking (controls, replicates, endpoints, stopping rules)"
+    },
+    {
+      "name": "preregister",
+      "entrypoint": "tools/preregister.py",
+      "purpose": "Preregistration summary & raw-data template generation"
+    },
+    {
+      "name": "validate",
+      "entrypoint": "tools/validate.py",
+      "purpose": "Validate JSON against bundled input/output schemas (self-check + pre-flight)"
+    }
+  ],
+  "permissions": {
+    "read": "project files (read-only)",
+    "write": "audit/ directory only",
+    "requires_approval": [
+      "network access",
+      "external writes",
+      "experiment execution",
+      "invoking other skills"
+    ]
+  },
+  "offline": true,
+  "deterministic": true
+}

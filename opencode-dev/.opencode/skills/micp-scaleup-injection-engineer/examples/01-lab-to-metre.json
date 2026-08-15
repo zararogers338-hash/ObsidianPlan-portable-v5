@@ -1,0 +1,61 @@
+{
+  "contract_version": "1.0",
+  "task_id": "T-LAB2METRE",
+  "project_id": "PRJ-SCALE-01",
+  "request": "把 5cm 砂柱方案放大到 1m 米级砂柱试验，给出注入参数表、管路布置、注入周期、质量平衡、监测计划、堵塞预警、停工条件与回退方案",
+  "action": "scaleup",
+  "skill_version": "1.0.0",
+  "controller_version": "1.4.2",
+  "timestamp": "2026-08-07T09:00:00Z",
+  "risk_level": "medium",
+  "lab": {
+    "recipe": {
+      "urea_conc": {"value": 500, "unit": "mol/m3"},
+      "ca_conc": {"value": 500, "unit": "mol/m3"},
+      "biomass": 0.8,
+      "pore_volumes_per_treatment": 1.0,
+      "rounds": 5,
+      "flow_mode": "constant_flux",
+      "flow_rate": {"value": 0.0005, "unit": "m3/s"},
+      "pressure_drop": {"value": 15000, "unit": "Pa"},
+      "treatment_length": {"value": 0.05, "unit": "m"},
+      "injection_strategy": "sequential_bacteria_cementation"
+    }
+  },
+  "target": {
+    "scale_level": "metre",
+    "geometry": {
+      "volume": {"value": 0.05, "unit": "m3"},
+      "length": {"value": 1.0, "unit": "m"},
+      "radius": {"value": 0.13, "unit": "m"}
+    },
+    "objective": "uniform_strength",
+    "duration_days": 14
+  },
+  "site": {
+    "layers": [
+      {"name": "SAND-A", "thickness": {"value": 1.0, "unit": "m"},
+       "d50": {"value": 0.2, "unit": "mm"},
+       "fines_content": 0.02,
+       "porosity": 0.4,
+       "permeability": {"value": 1e-11, "unit": "m2"},
+       "saturation": 1.0}
+    ],
+    "groundwater_level": {"value": 0.3, "unit": "m"},
+    "anisotropy": 1.5
+  },
+  "wells": {
+    "pattern": "line_drive",
+    "injection_radius": {"value": 0.13, "unit": "m"},
+    "well_radius": {"value": 0.03, "unit": "m"}
+  },
+  "constraints": {
+    "allowed_injection_pressure": {"value": 500000, "unit": "Pa"},
+    "target_caco3_content_kg_m3": 60,
+    "ammonia_limit_mg_L": 50,
+    "conversion_efficiency": 0.5,
+    "pulse_strategy": "continuous",
+    "retention_time": {"value": 3600, "unit": "s"},
+    "flushing_pv": 2.0
+  }
+}

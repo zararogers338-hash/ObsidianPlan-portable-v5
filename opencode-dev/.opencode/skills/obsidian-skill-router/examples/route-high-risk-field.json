@@ -1,0 +1,25 @@
+{
+  "task_id": "TASK-FIELD-0917",
+  "project_id": "PRJ-MICP-FIELD",
+  "request": "现场注入试验方案:在低渗透含水层中规模化注入尿素-氯化钙浆液,评估氨气释放风险与周边环境影响,并规划注入参数。属于高风险现场部署。",
+  "context": {
+    "call_chain": ["obsidian-controller", "obsidian-task-decomposer"],
+    "completed_calls": [],
+    "environment": { "workspace": "PRJ-MICP-FIELD" }
+  },
+  "constraints": {
+    "max_depth": 5,
+    "max_total_calls": 20,
+    "max_retries_per_skill": 2,
+    "max_cost_usd_total": 2.5,
+    "max_tokens_total": 200000
+  },
+  "evidence_refs": [
+    { "ref_id": "ev:site:hydro", "uri": "file:///state/evidence/site_hydro.json", "media_type": "application/json" }
+  ],
+  "risk_level": "high",
+  "human_approval_state": "pending",
+  "skill_version": "1.0.0",
+  "controller_version": "1.2.0",
+  "timestamp": "2026-08-06T11:30:00Z"
+}

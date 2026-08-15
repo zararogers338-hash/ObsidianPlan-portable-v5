@@ -1,0 +1,38 @@
+{
+  "contract_version": "1.0",
+  "task_id": "example-inlet-clogging",
+  "project_id": "micp-clogging-risk-02",
+  "request": "High-concentration treatment: predict whether inlet clogging occurs and how fast permeability collapses.",
+  "action": "analyze",
+  "skill_version": "1.0.0",
+  "controller_version": "1.0.0",
+  "timestamp": "2026-08-06T10:00:00Z",
+  "scenario": {
+    "geometry": {
+      "length": { "value": 0.1, "unit": "m" },
+      "nx": 32
+    },
+    "porosity": { "value": 0.38, "unit": "-" },
+    "permeability": { "value": 1e-11, "unit": "m2" },
+    "flow": {
+      "mode": "flux",
+      "velocity": { "value": 2.8e-5, "unit": "m/s" }
+    },
+    "species": {
+      "c_urea_in": { "value": 500, "unit": "mol/m3" },
+      "c_ca_in": { "value": 500, "unit": "mol/m3" },
+      "c_biomass": { "value": 10, "unit": "kg/m3" }
+    },
+    "scale": "column"
+  },
+  "k_ure": 0.1,
+  "k_pre": 0.05,
+  "k_half": 10,
+  "t_end": 72000,
+  "risk_level": "high",
+  "human_approval_state": {
+    "granted": true,
+    "approver": "pi@obsidian",
+    "scope": "modeling-only; no field action"
+  }
+}

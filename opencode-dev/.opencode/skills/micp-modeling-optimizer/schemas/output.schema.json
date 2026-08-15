@@ -1,0 +1,311 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-modeling-optimizer.output.json",
+  "title": "micp-modeling-optimizer — Output Contract",
+  "description": "Unified output envelope (spec §八) for the micp-modeling-optimizer skill. Every load-bearing claim carries one epistemic tag: OBSERVED | REPORTED | CALCULATED | INFERRED | HYPOTHESIS | RECOMMENDATION.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "skill",
+    "skill_version",
+    "status",
+    "summary",
+    "findings",
+    "assumptions",
+    "evidence_used",
+    "uncertainty",
+    "risks",
+    "artifacts",
+    "requested_next_skills",
+    "validation",
+    "provenance",
+    "errors"
+  ],
+  "properties": {
+    "contract_version": { "type": "string", "pattern": "^1\\.\\d+$" },
+    "skill": { "type": "string", "const": "micp-modeling-optimizer" },
+    "skill_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+    },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 8000 },
+    "action": { "type": "string" },
+    "project_id": { "type": "string" },
+    "task_id": { "type": "string" },
+    "findings": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["statement", "epistemic_tag"],
+        "properties": {
+          "statement": { "type": "string", "minLength": 1, "maxLength": 2000 },
+          "epistemic_tag": {
+            "type": "string",
+            "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+          },
+          "source": { "type": "string", "maxLength": 2000 }
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["statement"],
+        "properties": {
+          "statement": { "type": "string", "minLength": 1, "maxLength": 2000 },
+          "falsifiable_by": { "type": "string", "maxLength": 2000 }
+        }
+      }
+    },
+    "evidence_used": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ref_id"],
+        "properties": {
+          "ref_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "how_used": { "type": "string", "maxLength": 2000 },
+          "verifiable": { "type": "boolean" },
+          "note": { "type": "string", "maxLength": 2000 }
+        }
+      }
+    },
+    "uncertainty": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["topic", "level"],
+        "properties": {
+          "topic": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "level": { "type": "string", "enum": ["low", "medium", "high"] },
+          "note": { "type": "string", "maxLength": 2000 }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["risk", "severity"],
+        "properties": {
+          "risk": { "type": "string", "minLength": 1, "maxLength": 2000 },
+          "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+          "mitigation": { "type": "string", "maxLength": 2000 }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact_id", "kind", "content_type"],
+        "properties": {
+          "artifact_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "kind": { "type": "string", "enum": ["model_diagnostics", "visualization_html", "report", "reproducibility_manifest"] },
+          "content_type": { "type": "string", "enum": ["application/json", "text/html", "text/plain", "text/csv"] },
+          "description": { "type": "string", "maxLength": 2000 },
+          "payload": { "type": "object" }
+        }
+      }
+    },
+    "requested_next_skills": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["skill", "reason"],
+        "properties": {
+          "skill": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "reason": { "type": "string", "minLength": 1, "maxLength": 2000 },
+          "inputs_needed": { "type": "array", "items": { "type": "string", "maxLength": 500 }, "maxItems": 20 }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_schema", "output_schema", "self_check"],
+      "properties": {
+        "input_schema": { "type": "boolean" },
+        "output_schema": { "type": "boolean" },
+        "self_check": { "type": ["boolean", "null"] },
+        "checks": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill", "skill_version"],
+      "properties": {
+        "skill": { "type": "string", "const": "micp-modeling-optimizer" },
+        "skill_version": { "type": "string" },
+        "started_at": { "type": "string", "maxLength": 40 },
+        "completed_at": { "type": ["string", "null"], "maxLength": 40 },
+        "generator": { "type": "string", "maxLength": 128 },
+        "seed": { "type": "integer" }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message", "retryable"],
+        "properties": {
+          "code": { "type": "string", "minLength": 1, "maxLength": 64 },
+          "message": { "type": "string", "minLength": 1, "maxLength": 4000 },
+          "retryable": { "type": "boolean" },
+          "details": { "type": "object" }
+        }
+      }
+    },
+    "missing_inputs": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "why_critical", "how_to_obtain"],
+        "properties": {
+          "field": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "why_critical": { "type": "string", "minLength": 1, "maxLength": 1000 },
+          "how_to_obtain": { "type": "string", "minLength": 1, "maxLength": 1000 }
+        }
+      }
+    },
+
+    "model_purpose": {
+      "oneOf": [
+        { "type": "string", "enum": ["EXPLANATION", "PREDICTION", "CONTROL", "OPTIMIZATION", "SCALE_UP", "PARAMETER_INFERENCE"] },
+        { "type": "array", "items": { "type": "string", "enum": ["EXPLANATION", "PREDICTION", "CONTROL", "OPTIMIZATION", "SCALE_UP", "PARAMETER_INFERENCE"] } }
+      ],
+      "description": "Locked model purpose."
+    },
+    "model_specification": { "type": "object", "description": "Normalized model specification." },
+    "equations": { "type": "array", "items": { "type": "object" }, "description": "Governing equations with their model family." },
+    "parameters": { "type": "array", "items": { "type": "object" } },
+    "parameter_sources": { "type": "array", "items": { "type": "object" } },
+    "identifiability": {
+      "type": "object",
+      "description": "Parameter identifiability analysis (Fisher information + correlation).",
+      "properties": {
+        "n_parameters": { "type": "integer" },
+        "n_observations": { "type": "integer" },
+        "rank": { "type": "integer" },
+        "invertible": { "type": "boolean" },
+        "parameters": { "type": "array" },
+        "highly_correlated_pairs": { "type": "array" },
+        "verdict": { "type": "string" }
+      }
+    },
+    "calibration": {
+      "type": "object",
+      "description": "Fitted parameters + train/holdout diagnostics.",
+      "properties": {
+        "theta": { "type": "array", "items": { "type": "number" } },
+        "cost": { "type": "number" },
+        "train_rss": { "type": "number" },
+        "holdout_rss": { "type": "number" },
+        "holdout_overfit_ratio": { "type": "number" },
+        "backend": { "type": "string" }
+      }
+    },
+    "sensitivity": {
+      "type": "object",
+      "description": "Global sensitivity (Sobol' or Morris).",
+      "properties": {
+        "method": { "type": "string" },
+        "first_order": { "type": "array", "items": { "type": "number" } },
+        "total_order": { "type": "array", "items": { "type": "number" } },
+        "n_evaluations": { "type": "integer" }
+      }
+    },
+    "optimization_results": {
+      "type": "object",
+      "description": "Single/multi-objective optimization result."
+    },
+    "pareto_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["x", "objectives"],
+        "properties": {
+          "x": { "type": "array", "items": { "type": "number" } },
+          "objectives": { "type": "array", "items": { "type": "number" } }
+        }
+      }
+    },
+    "model_output": {
+      "type": "object",
+      "description": "Solver output arrays (times / urea / ca / nh4 / calcite_kg / phi / ...)."
+    },
+    "conservation": { "type": "object" },
+    "numerical": { "type": "object" },
+    "mass_balance": { "type": "object" },
+    "uncertainty_analysis": {
+      "type": "object",
+      "description": "Monte-Carlo uncertainty propagation result.",
+      "properties": {
+        "method": { "type": "string" },
+        "n_samples": { "type": "integer" },
+        "outputs": { "type": "array" }
+      }
+    },
+    "doe_report": { "type": "object" },
+    "response_surface_report": { "type": "object" }
+  },
+  "allOf": [
+    {
+      "anyOf": [
+        {
+          "properties": {
+            "status": { "const": "SUCCESS" }
+          }
+        },
+        {
+          "properties": {
+            "status": { "const": "PARTIAL" }
+          }
+        },
+        {
+          "properties": {
+            "status": { "const": "FAILED" }
+          }
+        },
+        {
+          "properties": {
+            "status": { "const": "NEED_ADDITIONAL_SKILL" }
+          }
+        },
+        {
+          "properties": {
+            "status": { "const": "HUMAN_APPROVAL_REQUIRED" }
+          }
+        },
+        {
+          "properties": {
+            "status": { "const": "BLOCKED" }
+          },
+          "required": ["missing_inputs"]
+        }
+      ]
+    }
+  ]
+}

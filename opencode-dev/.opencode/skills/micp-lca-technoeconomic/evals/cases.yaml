@@ -1,0 +1,274 @@
+# Evaluation cases — micp-lca-technoeconomic
+#
+# Offline, deterministic evaluation of the tool pipeline and the skill
+# contract. The runner (run_evals.py) is pure stdlib + pyyaml, needs no
+# network, and reports the minimum performance indicators declared in
+# skill.yaml (M1–M7).
+
+# Shared base envelope. Individual cases override / extend it.
+base:
+  contract_version: "1.0"
+  task_id: "lca-eval"
+  project_id: "panshi-eval"
+  request: "对 MICP 处理 1 m3 砂体的方案做 LCA 与技术经济分析, 与水泥基准比较"
+  action: "compare"
+  skill_version: "1.0.0"
+  controller_version: "obsidian-ctl-0.1.0"
+  timestamp: "2026-08-07T00:00:00Z"
+  risk_level: "medium"
+  human_approval_state: "not_required"
+  constraints:
+    analysis_year: 2026
+    random_seed: 42
+  functional_unit:
+    description: "处理 1 m3 松散砂体, 目标 UCS >= 1.0 MPa"
+    reference_flow: {value: 1, unit: "m3"}
+    performance_target: {metric: UCS, value: 1.0, unit: MPa}
+  scope:
+    time_boundary: "2026, 一次性施工"
+    geography: "中国华北"
+    energy_mix: "华北电网平均"
+    transport: "材料公路运输 100 km"
+    material_source: "工业级尿素与 CaCl2"
+    waste_route: "nitrification"
+    technology_readiness: "TRL 6 现场中试"
+    analysis_size: {value: 100, unit: "m3"}
+    reference_scale: {value: 100, unit: "m3"}
+  baseline: {id: "cement-dsm", type: cement, description: "水泥搅拌桩处理 1 m3 砂体"}
+  scenarios:
+    - id: "micp-urea-cacl2"
+      type: "micp"
+      materials:
+        urea_kg: 40.0
+        cacl2_kg: 30.0
+        media_kg: 2.0
+        culture_kg: 1.0
+        water_m3: 0.5
+        price_tier: "industrial"
+      energy: {electricity_kwh: 15.0, diesel_L: 2.0}
+      transport: {material_distance_km: 100.0}
+      waste: {route: nitrification, derive_from_urea: true}
+      labour: {hours: 6.0}
+      capex:
+        equipment_cny: 80000
+        injection_system_cny: 30000
+        site_setup_cny: 20000
+        engineering_cny: 15000
+      opex: {monitoring_cny: 5000, maintenance_cny: 3000, insurance_cny: 1000}
+      contingency: {risk_reserve_pct: 10.0, failure_cost_cny: 20000, downtime_pct: 5.0}
+    - id: "cement-dsm"
+      type: "cement"
+      materials: {cement_kg: 350.0, water_m3: 0.2}
+      energy: {electricity_kwh: 8.0, diesel_L: 3.0}
+      transport: {material_distance_km: 50.0}
+      waste: {slurry_m3: 0.1}
+      labour: {hours: 2.0}
+      capex:
+        equipment_cny: 50000
+        injection_system_cny: 20000
+        site_setup_cny: 15000
+      opex: {monitoring_cny: 2000, maintenance_cny: 1000, insurance_cny: 500}
+      contingency: {risk_reserve_pct: 8.0}
+
+cases:
+  # --- positive: normal well-formed requests --------------------------------
+  - id: pos-01-micp-vs-cement
+    description: "双情景 LCA+TEA 完整比较: MICP vs 水泥 DSM"
+    extra: {}
+    expect:
+      status: SUCCESS
+      output_schema: passed
+      scenarios: 2
+      has_comparison: true
+      has_hotspots: true
+
+  - id: pos-02-monte-carlo
+    description: "蒙特卡洛 200 次, seed 确定, 输出 90% 区间"
+    extra:
+      constraints:
+        run_monte_carlo: true
+        monte_carlo_iterations: 200
+        random_seed: 7
+    expect:
+      status: SUCCESS
+      mc_present: true
+      mc_n: 200
+      mc_interval_valid: true
+
+  - id: pos-03-anammox-route
+    description: "废液路线 anammox 比 nitrification 碳排更低"
+    extra:
+      scenarios:
+        - id: "micp-urea-cacl2"
+          type: "micp"
+          materials: {urea_kg: 40.0, cacl2_kg: 30.0, media_kg: 2.0, culture_kg: 1.0, water_m3: 0.5, price_tier: "industrial"}
+          energy: {electricity_kwh: 15.0}
+          transport: {material_distance_km: 100.0}
+          waste: {route: anammox, derive_from_urea: true}
+          labour: {hours: 6.0}
+          capex: {equipment_cny: 80000}
+          opex: {}
+          contingency: {}
+        - id: "cement-dsm"
+          type: "cement"
+          materials: {cement_kg: 350.0, water_m3: 0.2}
+          energy: {electricity_kwh: 8.0}
+          transport: {material_distance_km: 50.0}
+          waste: {slurry_m3: 0.1}
+          capex: {equipment_cny: 50000}
+          opex: {}
+          contingency: {}
+    expect:
+      status: SUCCESS
+      anammox_lower_gwp: true
+
+  # --- missing-input: BLOCKED with per-field guidance -----------------------
+  - id: miss-01-no-functional-unit
+    description: "缺功能单位必须 BLOCKED"
+    extra:
+      functional_unit: null
+    expect:
+      status: BLOCKED
+      error_code: LCA-E103
+
+  - id: miss-02-no-baseline
+    description: "缺基准方案必须 BLOCKED"
+    extra:
+      baseline: null
+    expect:
+      status: BLOCKED
+      error_code: LCA-E104
+
+  - id: miss-03-incomplete-scope
+    description: "scope 缺能源结构等边界字段必须 BLOCKED"
+    extra:
+      scope: "@replace"
+    expect:
+      status: BLOCKED
+      error_code: LCA-E106
+
+  # --- adversarial: engineered to break the contract -------------------------
+  - id: adv-01-lab-price-as-field
+    description: "实验室试剂价直接当现场成本必须被标记 LCA-E204"
+    extra:
+      scenarios:
+        - id: "micp-urea-cacl2"
+          type: "micp"
+          materials: {urea_kg: 40.0, cacl2_kg: 30.0, media_kg: 2.0, culture_kg: 1.0, water_m3: 0.5, price_tier: "lab_catalogue"}
+          energy: {electricity_kwh: 15.0}
+          transport: {material_distance_km: 100.0}
+          waste: {route: nitrification, derive_from_urea: true}
+          labour: {hours: 6.0}
+          capex: {equipment_cny: 80000}
+          opex: {}
+          contingency: {}
+        - id: "cement-dsm"
+          type: "cement"
+          materials: {cement_kg: 350.0, water_m3: 0.2}
+          energy: {electricity_kwh: 8.0}
+          transport: {material_distance_km: 50.0}
+          waste: {slurry_m3: 0.1}
+          capex: {equipment_cny: 50000}
+          opex: {}
+          contingency: {}
+    expect:
+      status: SUCCESS
+      lab_tier_flagged: true
+
+  - id: adv-02-asymmetric-boundary
+    description: "MICP 计入废液处理而水泥基准完全没有废液 → 不对称必须被如实暴露"
+    extra:
+      scenarios:
+        - id: "micp-urea-cacl2"
+          type: "micp"
+          materials: {urea_kg: 40.0, cacl2_kg: 30.0, media_kg: 2.0, culture_kg: 1.0, water_m3: 0.5, price_tier: "industrial"}
+          energy: {electricity_kwh: 15.0}
+          transport: {material_distance_km: 100.0}
+          waste: {route: nitrification, derive_from_urea: true}
+          labour: {hours: 6.0}
+          capex: {equipment_cny: 80000}
+          opex: {}
+          contingency: {}
+        - id: "cement-dsm"
+          type: "cement"
+          materials: {cement_kg: 350.0, water_m3: 0.2}
+          energy: {electricity_kwh: 8.0}
+          transport: {material_distance_km: 50.0}
+          waste: {}
+          capex: {equipment_cny: 50000}
+          opex: {}
+          contingency: {}
+    expect:
+      status: SUCCESS
+      waste_asymmetry_surfaced: true
+
+  - id: adv-03-expired-factor
+    description: "过期因子(>5年)必须产生 warning"
+    extra:
+      constraints: {analysis_year: 2031, random_seed: 42}
+    expect:
+      status: SUCCESS
+      expired_warning: true
+
+  - id: adv-04-dimension-conflict
+    description: "单位量纲冲突必须被工具拒绝(不崩溃)"
+    extra:
+      # mass→volume conversion inside a scenario must not crash the pipeline
+      scenarios: null
+    expect:
+      status: BLOCKED
+
+  # --- boundary / degenerate -------------------------------------------------
+  - id: bnd-01-transport-sensitivity
+    description: "运输距离 500 km vs 10 km 必须改变 GWP"
+    extra:
+      scenarios:
+        - id: "micp-far"
+          type: "micp"
+          materials: {urea_kg: 40.0, cacl2_kg: 30.0, media_kg: 2.0, culture_kg: 1.0, water_m3: 0.5, price_tier: "industrial"}
+          energy: {electricity_kwh: 15.0}
+          transport: {material_distance_km: 500.0}
+          waste: {route: nitrification, derive_from_urea: true}
+          labour: {hours: 6.0}
+          capex: {equipment_cny: 80000}
+          opex: {}
+          contingency: {}
+        - id: "cement-dsm"
+          type: "cement"
+          materials: {cement_kg: 350.0, water_m3: 0.2}
+          energy: {electricity_kwh: 8.0}
+          transport: {material_distance_km: 50.0}
+          waste: {slurry_m3: 0.1}
+          capex: {equipment_cny: 50000}
+          opex: {}
+          contingency: {}
+    expect:
+      status: SUCCESS
+      transport_changes_gwp: true
+
+  - id: bnd-02-waste-on-off
+    description: "含/不含废液处理必须改变 GWP 且氮负荷始终报告"
+    extra:
+      scenarios:
+        - id: "micp-notreat"
+          type: "micp"
+          materials: {urea_kg: 40.0, cacl2_kg: 30.0, media_kg: 2.0, culture_kg: 1.0, water_m3: 0.5, price_tier: "industrial"}
+          energy: {electricity_kwh: 15.0}
+          transport: {material_distance_km: 100.0}
+          waste: {route: none, derive_from_urea: true}
+          labour: {hours: 6.0}
+          capex: {equipment_cny: 80000}
+          opex: {}
+          contingency: {}
+        - id: "cement-dsm"
+          type: "cement"
+          materials: {cement_kg: 350.0, water_m3: 0.2}
+          energy: {electricity_kwh: 8.0}
+          transport: {material_distance_km: 50.0}
+          waste: {slurry_m3: 0.1}
+          capex: {equipment_cny: 50000}
+          opex: {}
+          contingency: {}
+    expect:
+      status: SUCCESS
+      nitrogen_load_reported: true

@@ -1,0 +1,36 @@
+{
+  "bootstrap": "2026-08-07",
+  "skill": "micp-mineral-phase-interpreter",
+  "skill_version": "1.1.1",
+  "step1_interpret": {
+    "status": "SUCCESS",
+    "confirmed": [
+      "vaterite"
+    ],
+    "candidate": [
+      "calcite",
+      "aragonite"
+    ],
+    "rejected": [
+      "acc"
+    ],
+    "winner": {
+      "phase": "vaterite",
+      "confidence": "confirmed",
+      "score": 0.875
+    },
+    "self_check": "passed"
+  },
+  "step2_report": {
+    "status": "SUCCESS",
+    "winner": "vaterite"
+  },
+  "step3_validate": {
+    "valid": true
+  },
+  "step4_self_check": {
+    "passed": true,
+    "status": "SUCCESS"
+  },
+  "all_steps_pass": true
+}

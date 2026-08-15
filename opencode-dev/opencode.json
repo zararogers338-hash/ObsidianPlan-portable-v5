@@ -1,0 +1,191 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "docs/Panshi_Constitution_MICP_Obsidian_Plan_v1.0.md"
+  ],
+  "skills": {
+    "paths": [
+      ".opencode/skills"
+    ]
+  },
+  "agent": {
+    "effect": {
+      "mode": "subagent",
+      "description": "Work with Effect v4 / effect-smol TypeScript code in this repo",
+      "prompt": "You are the **effect** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-biology-reasoner": {
+      "mode": "subagent",
+      "description": "Evidence-constrained mechanistic reasoning over MICP biology — strains, growth state, urease activity, survival, attachment, transport, community competition and cultivation conditions. Load when a task asks why a strain, batch, OD600, urease activity, viability, attachment, or community behaves as it does; when unit-inconsistent or unverifiable biological inputs must be flagged; or when treatment...",
+      "prompt": "You are the **micp-biology-reasoner** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-biosafety-environment-auditor": {
+      "mode": "subagent",
+      "description": "Biosafety & environmental-risk audit for MICP (microbial-induced carbonate precipitation) sand-column and field plans. Verifies strain identity and biosafety class; builds the urea→total-N→NH4+→NH3 nitrogen mass balance; screens hazards (release, aerosol, waterborne, salt load, ARG, soil ecology, odour, confined space); scores exposure pathways; generates the risk matrix (LOW/MODERATE/HIGH/CRITICA...",
+      "prompt": "You are the **micp-biosafety-environment-auditor** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-data-analyst": {
+      "mode": "subagent",
+      "description": "MICP 实验与模拟数据的可追溯清洗、统计推断、效应量评估、不确定性量化与工程可视化。 当请求要求对 MICP/biocementation 的数值数据（UCS、渗透、CaCO3、尿素水解动力学、柱/批实验） 做统计推断、清洗、伪重复检测、效应量、置信区间、敏感性分析、空间均匀性、回归、方差分析、 功效分析或可视化时加载。Do NOT use for: 纯文献综述、无数据的定性问答、执行真实实验、 矿相/化学/输运过程建模（路由到对应专业 Skill）、仅解释单条曲线。触发词：data-analyst, MICP 数据, 统计, 显著性, 效应量, 置信区间, 伪重复, 均匀性, 清洗, 敏感性, 回归, ANOVA, UCS 数据, 渗透数据, CaCO3 数据, 可视化.",
+      "prompt": "You are the **micp-data-analyst** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-evidence-extractor": {
+      "mode": "subagent",
+      "description": "MICP 结构化证据抽取器：读取 MICP 论文全文、补充材料、实验报告、CSV 与表格， 将其转换为可比较、可追溯、可验证的 Evidence Card。逐实验组、逐时间点、逐测量方法抽取， 绝不混组、绝不把图中估读写成原文报告、绝不把 OD600 与脲酶活性/CFU 混淆。 当请求要求从 MICP/biocementation 文献提取结构化证据、构造证据卡、核验 DOI、 单位规范化、实验组隔离或数据溯源时加载。Do NOT use for: 纯文献检索（literature-scout）、 数据统计分析（data-analyst）、多源证据综合（evidence-synthesizer）、 执行真实实验、纯定性问答。触发词：evidence-extractor, 证据卡, Evidence Card, 提取, 抽取, 结构化提取, MICP 论文, 结构化数据, DOI 核验, 单...",
+      "prompt": "You are the **micp-evidence-extractor** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-evidence-synthesizer": {
+      "mode": "subagent",
+      "description": "Synthesize multiple MICP / biocementation Evidence Cards into conditioned conclusions: align a PICO/PECO framework, check cross-study comparability (strain, material, grain size, concentration, scale, injection protocol, measurement, endpoint), unify units while preserving raw values, build evidence and conflict matrices, distinguish statistical / methodological / mechanistic / scale heterogeneity...",
+      "prompt": "You are the **micp-evidence-synthesizer** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-experiment-designer": {
+      "mode": "subagent",
+      "description": "Reproducible, falsifiable experiment design and SOP (可复现、可证伪的实验设计与 SOP). Load when a Hypothesis Card or a vague research goal — especially MICP / biocementation / mineral-intelligence work under the Panshi research core — must become an executable experiment plan with controls, replication, statistical power, stop conditions, and a Standard Operating Procedure; when a design must be checked for mi...",
+      "prompt": "You are the **micp-experiment-designer** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-geotechnical-performance": {
+      "mode": "subagent",
+      "description": "Evaluate the engineering performance of MICP biocementation (strength, stiffness, permeability, deformation, liquefaction resistance, erosion resistance, durability) from laboratory/field geotechnical test data, and judge engineering significance. Use when a request asks to interpret UCS, direct shear, triaxial, split/bending tensile, shear-wave or energy-based test results for MICP-treated soil; ...",
+      "prompt": "You are the **micp-geotechnical-performance** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-hypothesis-forge": {
+      "mode": "subagent",
+      "description": "Forge falsifiable, measurable mechanism hypotheses for MICP — one main plus competing hypotheses with refutation conditions, observable variables, time scales, scope, evidence, and a discriminating-experiment matrix. Use when the Obsidian Controller asks to explain WHY a microbial/geochemical/mineral/civil-engineering phenomenon occurs or to generate alternative mechanisms for the same observation...",
+      "prompt": "You are the **micp-hypothesis-forge** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-instrumentation-qc": {
+      "mode": "subagent",
+      "description": "MICP Instrumentation QC (仪器、标定、采样链与质量控制) for the Obsidian Plan / Panshi research project. Load when the Obsidian Controller asks to build or audit a QC plan for MICP instruments (pH, EC, NH4+, Ca2+, OD600, enzyme activity, flow, pressure, mass, UCS, XRD, SEM), to compute calibration curves and measurement uncertainty, to run control-chart / drift detection, to manage the sample chain and barcodes,...",
+      "prompt": "You are the **micp-instrumentation-qc** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-knowledge-graph-steward": {
+      "mode": "subagent",
+      "description": "Govern the MICP knowledge graph: entities, relations, claims, evidence, conflicts, and long-term memory with full traceability. Load when a knowledge base needs to be created, queried, imported/exported, versioned, migrated, backed up, or restored; when claims/evidence/entities/relations are added or retracted; when contradictory facts need to coexist as open conflicts instead of being silently ov...",
+      "prompt": "You are the **micp-knowledge-graph-steward** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-lca-technoeconomic": {
+      "mode": "subagent",
+      "description": "MICP / biocementation 方案的生命周期评价(LCA)与技术经济分析(TEA)。功能单位与系统边界定义、生命周期清单、 碳排/能耗/用水/氮盐负荷/富营养化评价、CAPEX/OPEX 与单位工程量成本、规模化成本、敏感性/情景/不确定性分析、 热点(Pareto)分析,并与水泥/化学注浆等基准方案做对称比较。当请求要求对 MICP 方案做全生命周期/碳排/技术经济/ 成本评价或与水泥等传统方案比较时加载。Do NOT use for: 纯岩土性能预测(强度/渗透率建模)、菌株机理推理、 实验数据统计分析(路由到对应专业 Skill)、无功能单位/基准的泛泛\"绿色低碳\"议论。触发词: 全生命周期, LCA, 碳排, 碳足迹, 技术经济, 成本, CAPEX, OPEX, 功能单位, 系统边界, 敏感性, 不确定性, 水泥比较, 注浆比较.",
+      "prompt": "You are the **micp-lca-technoeconomic** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-literature-scout": {
+      "mode": "subagent",
+      "description": "MICP Literature Scout｜文献、标准、专利与工程案例检索。可复现检索 MICP/EICP/生物矿化/尿素水解/非尿素路径/岩土加固/环境影响证据;核验 DOI 与元数据一致性;分层与证据质量初筛;导出 BibTeX/CSV/JSON;输出认识论标签化的机器可读结果。",
+      "prompt": "You are the **micp-literature-scout** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-mineral-phase-interpreter": {
+      "mode": "subagent",
+      "description": "综合 XRD/SEM/EDS/FTIR/Raman/TGA 多模态表征,判断 MICP 沉淀物的矿物相、晶体形貌、 成核位置与有效晶桥,并管理测量不确定性。Load when the controller or a task asks for mineral phase identification, polymorph (calcite/aragonite/vaterite/ACC) quantification, crystal morphology interpretation from SEM, XRD peak matching, or multi-modal characterization fusion of carbonate precipitates.",
+      "prompt": "You are the **micp-mineral-phase-interpreter** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-modeling-optimizer": {
+      "mode": "subagent",
+      "description": "MICP 机理建模、参数反演与多目标优化器。对 MICP/biocementation 任务提供机理模型构建 （尿素水解动力学、CaCO3 沉淀动力学、生物活性衰减、孔隙率/渗透率演化、反应-运移耦合）、 参数拟合与可识别性分析、全局敏感性分析（Sobol/Morris）、DOE 与响应面、贝叶斯优化、 多目标优化（NSGA-II Pareto 前沿）、不确定性与鲁棒性分析。模型目的必须在建模前锁定 （EXPLANATION/PREDICTION/CONTROL/OPTIMIZATION/SCALE_UP/PARAMETER_INFERENCE）； 缺少边界条件/单位/参数来源时返回 MODEL_BLOCKED。Do NOT use for: 纯数据统计推断 （路由到 micp-data-analyst）、纯文献综述、矿相鉴定、实验方案设计（路由到 obsidian-experiment-...",
+      "prompt": "You are the **micp-modeling-optimizer** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-porous-media-transport": {
+      "mode": "subagent",
+      "description": "MICP porous media transport modeling: bacteria, urea, calcium and calcite precipitation coupled through a porous medium — advection, dispersion, adsorption/filtration retention, ureolysis, precipitation and the clogging feedback on porosity and permeability. Use when the Obsidian controller asks to simulate or analyze a MICP column / sand-pack / core / field flow-and- reaction system: constant-flu...",
+      "prompt": "You are the **micp-porous-media-transport** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-reproducibility-versioning": {
+      "mode": "subagent",
+      "description": "MICP 研究的可复现性、数据溯源与版本治理：为原始/派生数据、实验参数、仪器配置、代码、 模型、随机种子、依赖、Skill/Prompt/宪法版本、Evidence/Hypothesis/Experiment Spec/ Decision Memo 与报告建立可追溯、可重建、可比较、可回滚的版本体系。负责数据分层 (data/raw 只读、processed 由代码重建)、清单/Manifest 生成、环境与依赖锁定、随机种子 管理、输入输出 provenance 记录、版本兼容检查与 Schema 迁移、结果差异比较、一键复现、 原始数据写保护与产物污染检测。当请求要求复现、版本追溯、数据溯源、环境锁定、依赖 导出、哈希校验、差异比较、回滚或数据治理时加载。Do NOT use for: 数据分析/统计本身 (micp-data-analyst)、机理建模、无数据治理诉求的常规任务。触...",
+      "prompt": "You are the **micp-reproducibility-versioning** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-scaleup-injection-engineer": {
+      "mode": "subagent",
+      "description": "MICP injection design and engineering-scale amplifier: converts laboratory beaker / specimen / sand-column recipes into pilot columns, metre-scale trials, site tests and field construction plans. Builds lab–pilot–field similarity matrices, flags which parameters scale similarly and which must NEVER scale linearly by volume, computes material balances, pressure/flow constraints, injection schedules...",
+      "prompt": "You are the **micp-scaleup-injection-engineer** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "micp-ureolysis-chemistry": {
+      "mode": "subagent",
+      "description": "MICP Ureolysis Chemistry｜尿素水解、碳酸盐平衡与反应动力学. Load when a calculation must decide urea-hydrolysis stoichiometry, carbonate equilibria, calcium consumption, supersaturation, nucleation tendency, or ureolysis kinetics for MICP/biocementation — e.g. cementation-fluid speciation, mass-conservation checks, kinetic-vs-equilibrium precipitation, kinetic parameter fitting. Do NOT load for general mission/con...",
+      "prompt": "You are the **micp-ureolysis-chemistry** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "obsidian-decision-gate": {
+      "mode": "subagent",
+      "description": "Obsidian Plan evidence-maturity and engineering decision gate. The final release skill of the engineering loop: synthesizes Mission Lock metrics, evidence cards, experimental results, model validation, geotechnical performance, biosafety/environment audits, LCA, reproducibility and red-team findings into a governed research-state decision (REJECTED/OPEN/ EVIDENCE_GATHERING/SUPPORTED/VALIDATED/PILO...",
+      "prompt": "You are the **obsidian-decision-gate** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "obsidian-mission-lock": {
+      "mode": "subagent",
+      "description": "Research task delimitation and mission locking (研究任务定界与使命锁定). Load when a vague natural-language research or engineering request — especially MICP / biocementation / mineral-intelligence work under the Panshi research core — must be converted into an executable, verifiable, terminable, auditable mission contract; when requirements conflict and a conflict matrix is needed; when an existing contract...",
+      "prompt": "You are the **obsidian-mission-lock** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "obsidian-prompt-amplifier": {
+      "mode": "subagent",
+      "description": "Obsidian Prompt Amplifier｜提示词扩充机制 + 调动决策树。任务入口首检:对任何进入 Obsidian 的研究/工程请求,先做任务分类 + 复杂度评分 + 三级模型编组 + 决策路径生成 (DECISION-TREE),输出可审计的扩充报告,供用户决定是否采纳强化提示词(最多两轮, 不接受则按标准流程执行)。决策树让 AI 知道如何调动 25 个 Skill:主路径、审门映射、 专项升级触发、循环停止。受 Panshi Constitution v1.0 约束;任何冲突以宪法解释为准, 不降低 Red Team / Decision Gate / 环境 / 批准门槛。仅在任务开始时加载;Do NOT use for 生成科研结论本身、执行实验、分析数据,或对已有结论做对抗审查。",
+      "prompt": "You are the **obsidian-prompt-amplifier** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "obsidian-red-team": {
+      "mode": "subagent",
+      "description": "黑曜石科学反证与对抗审查器（Obsidian Red Team / ORT）。全系统强制审计 Skill： 对结论做主动攻击——来源真实性、认识论越级、数值与单位、实验设计、统计分析、MICP 专业机制、 模型、工程放大、环境与安全、决策十维审查，产出带严重度(INFO/MINOR/MAJOR/CRITICAL/BLOCKING) 的可执行发现、最强反例、修复要求与复验计划。存在 BLOCKING 问题时必须阻止状态升级 (SUPPORTED→VALIDATED→PILOT_READY→DEPLOYABLE)。本 Skill 只提交发现与判定，绝不修改主结论或数据。 Do NOT use for: 生成正面论证、修补被审查的产物、自行重算并覆盖原作者数据、主动放松审查标准、 把\"还需要更多研究\"当成审查结论。触发词：red-team, 红队, 对抗, 攻击, 挑刺, 反证, 审查, 审稿,...",
+      "prompt": "You are the **obsidian-red-team** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "obsidian-skill-router": {
+      "mode": "subagent",
+      "description": "Skill routing, permission and invocation governance for the Obsidian Plan / Panshi research project. Use ONLY when the Obsidian Controller asks the router to choose which specialist skills (ureolysis-chemistry, mineral-phase-interpreter, porous-media-transport, geotechnical-performance, red-team, decision-gate, literature-scout, evidence-extractor, evidence-synthesizer, knowledge-graph-steward, hy...",
+      "prompt": "You are the **obsidian-skill-router** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "obsidian-state-manager": {
+      "mode": "subagent",
+      "description": "Maintain Obsidian Plan research state as a governed lifecycle state machine with event-sourced history. Load when a project stream needs to be created, transitioned, rolled back, audited, resumed after interruption, or checked for staleness/contradiction. Also load when the controller asks about research state, evidence/hypothesis/task/decision status, human-approval gates, or long-term memory pro...",
+      "prompt": "You are the **obsidian-state-manager** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "obsidian-task-decomposer": {
+      "mode": "subagent",
+      "description": "Decompose a research contract (Mission Lock) into atomic, dependency-explicit, verifiable research tasks and emit a machine-readable task DAG with granularity scoring, budgets, critical path, and local-replan support. Use when the Obsidian Controller asks to break a research objective into an executable plan of tasks with explicit dependencies, parallel paths, retry and approval gates. Do not use ...",
+      "prompt": "You are the **obsidian-task-decomposer** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    },
+    "rtl-aware-development": {
+      "mode": "subagent",
+      "description": "OpenCode Desktop should be RTL-aware. Use when implementing or reviewing RTL/LTR behavior in the web app, desktop app, CSS, menus, scrolling, resizing, icons, mixed-direction text, or Electron title bars.",
+      "prompt": "You are the **rtl-aware-development** subagent in the Obsidian Plan / Panshi research system. Load and follow your SKILL.md instructions (in .opencode/skills/). Output structured JSON per your skill's output contract. You operate under the Panshi Constitution: mark epistemics, check units, never fabricate data, and route formal conclusions through Red Team / Decision Gate.",
+      "hidden": false
+    }
+  },
+  "provider": {
+    "deepseek": {
+      "name": "deepseek",
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "https://api.deepseek.com/v1",
+        "apiKey": "{env:DEEPSEEK_API_KEY}"
+      },
+      "models": {
+        "deepseek-chat": {
+          "name": "deep seek v4 flash（1M）"
+        }
+      }
+    }
+  },
+  "model": "deepseek/deepseek-chat"
+}

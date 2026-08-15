@@ -1,0 +1,27 @@
+{
+  "task_id": "boot-01", "project_id": "panshi-demo",
+  "request": "我们做了两组 MICP 砂柱处理实验，每组两根柱子，每根柱子测了三个高度位置的无侧限抗压强度。请帮我分析这批强度数据，检查有没有把同一根柱子的多个位置当成独立样本的问题，给出统计量和效应量，并判断统计显著是否等于工程显著。",
+  "skill_version": "1.0.0", "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T15:00:00Z", "risk_level": "medium",
+  "human_approval_state": "not_required", "requested_output_format": "json",
+  "data_columns": [
+    {"name": "column", "role": "id", "data_type": "string", "sampling_unit": "column"},
+    {"name": "group", "role": "treatment", "data_type": "string"},
+    {"name": "height", "role": "position", "data_type": "string"},
+    {"name": "ucs", "role": "response", "data_type": "number", "unit": "MPa"}
+  ],
+  "samples": [
+    {"column": "C1", "group": "control", "height": "top", "ucs": 0.8},
+    {"column": "C1", "group": "control", "height": "mid", "ucs": 0.9},
+    {"column": "C1", "group": "control", "height": "bot", "ucs": 1.0},
+    {"column": "C2", "group": "control", "height": "top", "ucs": 0.7},
+    {"column": "C2", "group": "control", "height": "mid", "ucs": 0.8},
+    {"column": "C2", "group": "control", "height": "bot", "ucs": 0.9},
+    {"column": "T1", "group": "treated", "height": "top", "ucs": 4.1},
+    {"column": "T1", "group": "treated", "height": "mid", "ucs": 4.5},
+    {"column": "T1", "group": "treated", "height": "bot", "ucs": 4.3},
+    {"column": "T2", "group": "treated", "height": "top", "ucs": 3.9},
+    {"column": "T2", "group": "treated", "height": "mid", "ucs": 4.2},
+    {"column": "T2", "group": "treated", "height": "bot", "ucs": 4.6}
+  ]
+}

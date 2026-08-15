@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.dev/skills/obsidian-decision-gate/gate-rule.schema.json",
+  "title": "obsidian-decision-gate state-transition rule table",
+  "description": "Data-driven rule table consumed by the gate engine. Every legal transition edge, its state-level grade, approval requirement, and irreducible/terminal flags. The whitelist: any edge not listed here is machine-rejected (ODG-E305). Versioned so rules can be audited without touching code. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "states", "edges", "dimensions", "blocking_rules", "dimension_floors"],
+  "properties": {
+    "contract_version": { "type": "string", "pattern": "^1\\.\\d+$" },
+    "states": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["REJECTED", "OPEN", "EVIDENCE_GATHERING", "SUPPORTED", "VALIDATED", "PILOT_READY", "DEPLOYABLE", "SUSPENDED", "EXPIRED"] },
+      "minItems": 9
+    },
+    "state_grades": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Maturity grade per state (higher = more mature). Used for illegal-jump detection.",
+      "properties": {
+        "REJECTED": { "const": 0 },
+        "OPEN": { "const": 1 },
+        "EVIDENCE_GATHERING": { "const": 2 },
+        "SUPPORTED": { "const": 3 },
+        "VALIDATED": { "const": 4 },
+        "PILOT_READY": { "const": 5 },
+        "DEPLOYABLE": { "const": 6 },
+        "SUSPENDED": { "const": 2 },
+        "EXPIRED": { "const": 1 }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from", "to", "grade", "min_dimension", "requires_human_approval", "irreversible", "note"],
+        "properties": {
+          "from": { "type": "string", "enum": ["REJECTED", "OPEN", "EVIDENCE_GATHERING", "SUPPORTED", "VALIDATED", "PILOT_READY", "DEPLOYABLE", "SUSPENDED", "EXPIRED"] },
+          "to": { "type": "string", "enum": ["REJECTED", "OPEN", "EVIDENCE_GATHERING", "SUPPORTED", "VALIDATED", "PILOT_READY", "DEPLOYABLE", "SUSPENDED", "EXPIRED"] },
+          "grade": { "type": "integer", "description": "Target state maturity grade (== state_grades[to])." },
+          "min_dimension": { "type": "number", "minimum": 0, "maximum": 1, "description": "Minimum floor each dimension must clear for this edge." },
+          "requires_human_approval": { "type": "boolean" },
+          "irreversible": { "type": "boolean" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "dimensions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 12,
+      "description": "The 12 decision dimensions."
+    },
+    "blocking_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["rule", "description", "severity", "when"],
+        "properties": {
+          "rule": { "type": "string", "pattern": "^B[0-9]+$" },
+          "description": { "type": "string" },
+          "severity": { "type": "string", "enum": ["BLOCKING", "HIGH", "MEDIUM"] },
+          "when": { "type": "string", "enum": ["any_upgrade", "upgrade_to_validated_plus", "upgrade_to_pilot_plus", "upgrade_to_deployable", "always"] }
+        }
+      },
+      "minItems": 13
+    },
+    "dimension_floors": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-dimension floors keyed by state grade (integer 1..6). The engine takes floor[grade][dimension].",
+      "properties": {
+        "1": { "type": "object", "additionalProperties": true, "description": "grade 1 floor map: dimension name -> 0..1 floor" },
+        "2": { "type": "object", "additionalProperties": true, "description": "grade 2 floor map" },
+        "3": { "type": "object", "additionalProperties": true, "description": "grade 3 floor map" },
+        "4": { "type": "object", "additionalProperties": true, "description": "grade 4 floor map" },
+        "5": { "type": "object", "additionalProperties": true, "description": "grade 5 floor map" },
+        "6": { "type": "object", "additionalProperties": true, "description": "grade 6 floor map" }
+      }
+    },
+    "default_review_horizon_days": { "type": "integer", "minimum": 1 },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+  }
+}

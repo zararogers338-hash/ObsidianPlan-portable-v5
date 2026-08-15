@@ -1,0 +1,406 @@
+# Evaluation cases — micp-evidence-extractor
+
+Offline, deterministic evaluation of the extraction pipeline and the skill
+contract. Each case defines a JSON input and the checks that must hold after
+running it through the service. The runner (`run_evals.py`) is pure stdlib,
+needs no network, and reports the minimum performance indicators declared in
+`skill.yaml`.
+
+Indicator → measurement mapping:
+
+| Indicator | Where measured |
+|---|---|
+| `structured_output_pass_rate` | every SUCCESS/PARTIAL case's output validates against `schemas/output.schema.json` |
+| `tool_invocation_rate` | per case, real sub-tools invoked (runner calls the real CLI for each) |
+| `evidence_traceability_rate` | every `evidence_used.ref_id` / card source locator is traceable to input refs |
+| `missing_input_detection_rate` | cases with missing required fields must yield `BLOCKED` with `missing_inputs` |
+| `adversarial_interception_rate` | adversarial cases (forged DOI, group mixing, uncalibrated figure) must be caught |
+| `repeat_run_consistency` | the reference case run twice; byte-identical output required |
+| `mean_failure_recovery_time` | wall time per case (stdin→result) |
+
+---
+
+## 1. positive/multi-group-extraction
+
+A paper with two treatment groups and two time points. The extractor must
+produce one card per table, bind every value to a declared group and time
+point, and never mix them.
+
+```json
+{
+  "task_id": "eval-01",
+  "project_id": "panshi-demo",
+  "request": "从这篇 MICP 论文提取证据卡，区分 Control 与 MICP 两组、Day 7 与 Day 14 两个时间点",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:00:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "document": {
+    "source_id": "eval-paper-1",
+    "title": "MICP treatment of sand columns",
+    "year": "2023",
+    "document_type": "original_research",
+    "sections": [
+      {"kind": "methods", "heading": "Methods",
+       "text": "Sporosarcina pasteurii was used. Urea 0.5 M and CaCl2 0.5 M."}
+    ],
+    "tables": [
+      {"table_id": "t1", "caption": "UCS results",
+       "header": ["Group", "Day 7 UCS (kPa)", "Day 14 UCS (kPa)"],
+       "rows": [["Control", "150", "210"], ["MICP", "1200", "2500"]],
+       "source_locator": "Table 1"}
+    ],
+    "figures": []
+  }
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - `extractor_stats.cards_built >= 1`
+  - the t1 card declares groups `{Control, MICP}` and time points Day 7 / Day 14
+  - every `results.ucs` quantity has both `group_id` and `timepoint_id` set to
+    a declared value
+  - Control values are 150/210, MICP values are 1200/2500 (never mixed)
+  - `isolation_report.passed == true`
+
+## 2. positive/od600-urease-distinct
+
+A table with both OD600 and urease activity. The extractor must preserve them
+as distinct quantities with distinct canonical units.
+
+```json
+{
+  "task_id": "eval-02",
+  "project_id": "panshi-demo",
+  "request": "提取生物条件证据卡，OD600 与脲酶活性必须分开",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:05:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "document": {
+    "source_id": "eval-paper-2",
+    "title": "Ureolytic bacteria characterization",
+    "year": "2022",
+    "document_type": "original_research",
+    "sections": [],
+    "tables": [
+      {"table_id": "t1", "caption": "Biological characterization",
+       "header": ["Sample", "OD600", "Urease (mM urea/min/OD)"],
+       "rows": [["S. pasteurii", "1.2", "0.8"], ["Blank", "0.05", "0.0"]],
+       "source_locator": "Table 1"}
+    ],
+    "figures": []
+  }
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - `conditions.biological.od600` present, each normalized_unit == `OD600`
+  - `conditions.biological.urease_activity` present, each normalized_unit == `mmol_urea/min/OD`
+  - no od600 quantity carries a cfu/cell/urease unit (conflation guard clear)
+  - no card mixes the two into a single value list
+
+## 3. positive/figure-digitized
+
+Figure-only paper. The value must be DIGITIZED_FROM_FIGURE with a reading error
+estimate, never presented as author-reported.
+
+```json
+{
+  "task_id": "eval-03",
+  "project_id": "panshi-demo",
+  "request": "提取图中 UCS 数据，标注为图数字化",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:10:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "document": {
+    "source_id": "eval-paper-3",
+    "title": "UCS from figure",
+    "year": "2021",
+    "document_type": "original_research",
+    "sections": [],
+    "tables": [],
+    "figures": [
+      {"figure_id": "fig1", "caption": "UCS evolution of MICP-treated specimens",
+       "note": "read: 3.2; axis_px: 400; axis_range: 4.0"}
+    ]
+  }
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - some quantity has `acquisition_mode == DIGITIZED_FROM_FIGURE`
+  - that quantity has `digitization.error_estimate > 0`
+  - the quantity's `epistemic_tag` is not OBSERVED
+
+## 4. positive/missing-unit-ambiguous
+
+A table without units. The extractor must record the raw values as AMBIGUOUS
+with no normalized value.
+
+```json
+{
+  "task_id": "eval-04",
+  "project_id": "panshi-demo",
+  "request": "提取 UCS 数据（表格无单位）",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:15:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "document": {
+    "source_id": "eval-paper-4",
+    "title": "Strength results",
+    "year": "2020",
+    "document_type": "original_research",
+    "sections": [],
+    "tables": [
+      {"table_id": "t1", "caption": "UCS",
+       "header": ["Group", "UCS"],
+       "rows": [["Control", "150"], ["MICP", "1200"]],
+       "source_locator": "Table 1"}
+    ],
+    "figures": []
+  }
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - table UCS values have `acquisition_mode == AMBIGUOUS`
+  - their `normalized_value` is null and `normalized_unit` is empty
+  - no fabricated unit appears
+
+## 5. conflict/methods-results-contradiction
+
+Methods say urea 0.5 M, the results table says 0.05 M. The extractor must
+surface the contradiction rather than silently pick one.
+
+```json
+{
+  "task_id": "eval-05",
+  "project_id": "panshi-demo",
+  "request": "提取条件数据并检查方法/结果矛盾",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:20:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "document": {
+    "source_id": "eval-paper-5",
+    "title": "Condition recipe",
+    "year": "2021",
+    "document_type": "original_research",
+    "sections": [
+      {"kind": "methods", "heading": "Methods",
+       "text": "Urea concentration 0.5 M was used."}
+    ],
+    "tables": [
+      {"table_id": "t1", "caption": "Conditions",
+       "header": ["Run", "Urea concentration (M)"],
+       "rows": [["A", "0.05"], ["B", "0.05"]],
+       "source_locator": "Table 1"}
+    ],
+    "figures": []
+  }
+}
+```
+
+checks:
+  - `status in (SUCCESS, PARTIAL)`
+  - `duplicates_contradictions` section is present
+  - the contradiction between the methods text (0.5 M) and the results table
+    (0.05 M) is surfaced as an issue, not silently resolved
+
+## 6. adversarial/forged-doi
+
+A document with a forged DOI must be flagged.
+
+```json
+{
+  "task_id": "eval-06",
+  "project_id": "panshi-demo",
+  "request": "提取证据并核验 DOI",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:25:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "document": {
+    "source_id": "eval-paper-6",
+    "title": "MICP study",
+    "year": "2020",
+    "doi": "10.9999/fake-article",
+    "document_type": "original_research",
+    "sections": [
+      {"kind": "methods", "heading": "Methods", "text": "Urea 0.5 M was injected."}
+    ],
+    "tables": [],
+    "figures": []
+  }
+}
+```
+
+checks:
+  - `status == SUCCESS` (extraction proceeds; the DOI is flagged, not fatal)
+  - `doi_verifications[0].status == suspected_forged`
+
+## 7. boundary/non-micp-no-trigger
+
+A non-MICP document must not trigger extraction.
+
+```json
+{
+  "task_id": "eval-07",
+  "project_id": "panshi-demo",
+  "request": "提取证据卡",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:30:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "document": {
+    "source_id": "eval-paper-7",
+    "title": "Climate effects on crop yield",
+    "year": "2022",
+    "document_type": "original_research",
+    "sections": [
+      {"kind": "results", "heading": "Results", "text": "Yield increased by 12 percent."}
+    ],
+    "tables": [],
+    "figures": []
+  }
+}
+```
+
+checks:
+  - `status == BLOCKED`
+  - `evidence_cards` is empty
+  - an error code mentions the MICP scope gate (MEE-E103)
+
+## 8. boundary/missing-document
+
+No document source at all must be BLOCKED with per-field guidance.
+
+```json
+{
+  "task_id": "eval-08",
+  "project_id": "panshi-demo",
+  "request": "从这篇 MICP 论文提取结构化证据卡",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:35:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json"
+}
+```
+
+checks:
+  - `status == BLOCKED`
+  - `missing_inputs` names a document source field with `why_critical` and
+    `how_to_obtain`
+
+## 9. adversarial/corrupt-pdf
+
+A corrupt PDF payload must be rejected with a classified error, never
+fabricating content.
+
+```json
+{
+  "document_text": null,
+  "source_path": null,
+  "media_type": "application/pdf",
+  "document_text_b64": "R0FSQkFHRU5PVFBBU0Y=",
+  "source_id": "eval-paper-9"
+}
+```
+
+checks:
+  - the adapters CLI returns a clean error envelope (exit 2, code MEE-E303)
+  - no fabricated document content is produced
+
+## 10. adversarial/group-smear
+
+A card declares two groups but a result quantity is unbound. The isolation
+check must flag it.
+
+```json
+{
+  "task_id": "eval-10",
+  "project_id": "panshi-demo",
+  "request": "提取证据卡并检查实验组隔离",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:40:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "document": {
+    "source_id": "eval-paper-10",
+    "title": "Multi-group MICP",
+    "year": "2023",
+    "document_type": "original_research",
+    "sections": [],
+    "tables": [
+      {"table_id": "t1", "caption": "UCS results",
+       "header": ["Specimen", "UCS (kPa)"],
+       "rows": [["A1", "100"], ["A2", "200"], ["B1", "900"], ["B2", "1100"]],
+       "source_locator": "Table 1"}
+    ],
+    "figures": []
+  }
+}
+```
+
+checks:
+  - `status in (SUCCESS, PARTIAL)`
+  - `isolation_report` is present
+  - if the table's first column is treated as specimen id (not group), the
+    card either binds specimen ids as groups or the isolation check reports a
+    warning — never silently merges rows into one value
+
+## 11. boundary/vague-request
+
+A request without a deliverable must be blocked.
+
+```json
+{
+  "task_id": "eval-11",
+  "project_id": "panshi-demo",
+  "request": "?",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:45:00Z",
+  "risk_level": "low",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "document": {
+    "source_id": "eval-paper-11",
+    "title": "MICP",
+    "year": "2023",
+    "document_type": "original_research",
+    "sections": [{"kind": "methods", "heading": "M", "text": "Urea 0.5 M."}],
+    "tables": [],
+    "figures": []
+  }
+}
+```
+
+checks:
+  - `status == BLOCKED`
+  - `missing_inputs` names `request`

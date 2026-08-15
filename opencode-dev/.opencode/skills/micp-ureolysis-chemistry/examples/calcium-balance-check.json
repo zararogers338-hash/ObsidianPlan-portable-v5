@@ -1,0 +1,21 @@
+{
+  "task_id": "ex-001",
+  "project_id": "panshi-bench",
+  "request": "检查这份钙平衡数据:注入 0.05 mol/L CaCl2,沉淀后液相剩 0.02 mol/L Ca2+,固相 0.03 mol/L CaCO3。是否守恒?",
+  "context": {
+    "pathway": "ureolysis",
+    "species": { "Ca2+": 0.02, "CaCO3(s)": 0.03 }
+  },
+  "constraints": {},
+  "evidence_refs": ["S20", "S25"],
+  "risk_level": "low",
+  "human_approval_state": "not_required",
+  "skill_version": "1.0.0",
+  "controller_version": "0.1.0",
+  "timestamp": "2026-08-06T10:00:00Z",
+  "tool": "balance",
+  "params": {
+    "species": { "Ca2+": 0.02, "CaCO3(s)": 0.03 },
+    "total_ca": 0.05
+  }
+}

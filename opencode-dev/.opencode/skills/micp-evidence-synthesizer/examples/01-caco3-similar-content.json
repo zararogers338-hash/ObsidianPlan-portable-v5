@@ -1,0 +1,83 @@
+{
+  "contract_version": "1.0",
+  "task_id": "task-caco3-001",
+  "project_id": "panshi-biocement",
+  "request": "综合两张 CaCO3 含量相似但 UCS 强度不同的研究,识别晶体位置与材料差异",
+  "action": "evidence.synthesize",
+  "skill_version": "1.0.0",
+  "controller_version": "1.0.0",
+  "timestamp": "2026-08-06T00:00:00Z",
+  "risk_level": "medium",
+  "pico": {
+    "population": "Ottawa sand, D50=0.4mm, Dr=60%",
+    "intervention": "MICP, 1M cementation solution",
+    "outcome": "UCS at 7 d, MPa",
+    "unit": "MPa"
+  },
+  "evidence_cards": [
+    {
+      "ref_id": "doi:10.1016/j.conbuildmat.2024.000001",
+      "study_id": "chen2024",
+      "study_type": "lab_experiment",
+      "layer": "engineering_performance",
+      "evidence_level": "L1_direct_observation",
+      "strain": ["Sporosarcina pasteurii"],
+      "material": {"soil_type": "Ottawa sand", "grain_size_d50_mm": 0.4, "mineralogy": "quartz"},
+      "treatment": {
+        "cementation_solution_concentration": {"value": 1.0, "unit": "mol/L"},
+        "injection_protocol": "5 injections, 1 PV each",
+        "injections": 5,
+        "retention_time_h": 24
+      },
+      "context": {"scale": "column", "saturation": "100%"},
+      "sample": {"diameter_mm": 50, "height_mm": 100, "curing_days": 7},
+      "measurement": {"method": "unconfined compression", "endpoint_timing": "7 d", "sample_size_n": 6},
+      "outcome": {"name": "UCS", "value": 3.2, "unit": "MPa", "direction": "higher_is_better", "spread": {"sd": 0.4}},
+      "reported_effect": {
+        "effect_type": "mean_difference",
+        "arms": [
+          {"name": "MICP", "n": 6, "mean": 3.2, "sd": 0.4, "unit": "MPa"},
+          {"name": "control", "n": 6, "mean": 0.4, "sd": 0.1, "unit": "MPa"}
+        ]
+      },
+      "risk_of_bias": {"overall": "low"},
+      "claims": [
+        {"statement": "CaCO3 content 12.1% measured by calcination", "label": "REPORTED"},
+        {"statement": "precipitate concentrated at particle contacts", "label": "REPORTED"}
+      ],
+      "note": "CaCO3 ~12%, UCS 3.2 MPa"
+    },
+    {
+      "ref_id": "doi:10.1016/j.soildyn.2024.000002",
+      "study_id": "li2023",
+      "study_type": "lab_experiment",
+      "layer": "engineering_performance",
+      "evidence_level": "L1_direct_observation",
+      "strain": ["Sporosarcina pasteurii"],
+      "material": {"soil_type": "Ottawa sand", "grain_size_d50_mm": 0.4, "mineralogy": "quartz"},
+      "treatment": {
+        "cementation_solution_concentration": {"value": 1.0, "unit": "mol/L"},
+        "injection_protocol": "5 injections, 1 PV each",
+        "injections": 5,
+        "retention_time_h": 24
+      },
+      "context": {"scale": "column", "saturation": "100%"},
+      "sample": {"diameter_mm": 50, "height_mm": 100, "curing_days": 7},
+      "measurement": {"method": "unconfined compression", "endpoint_timing": "7 d", "sample_size_n": 6},
+      "outcome": {"name": "UCS", "value": 1.9, "unit": "MPa", "direction": "higher_is_better", "spread": {"sd": 0.3}},
+      "reported_effect": {
+        "effect_type": "mean_difference",
+        "arms": [
+          {"name": "MICP", "n": 6, "mean": 1.9, "sd": 0.3, "unit": "MPa"},
+          {"name": "control", "n": 6, "mean": 0.4, "sd": 0.1, "unit": "MPa"}
+        ]
+      },
+      "risk_of_bias": {"overall": "moderate"},
+      "claims": [
+        {"statement": "CaCO3 content 11.8% measured by calcination", "label": "REPORTED"},
+        {"statement": "precipitate largely in pore space, not at contacts", "label": "REPORTED"}
+      ],
+      "note": "CaCO3 ~12% but UCS lower; crystal location differs"
+    }
+  ]
+}

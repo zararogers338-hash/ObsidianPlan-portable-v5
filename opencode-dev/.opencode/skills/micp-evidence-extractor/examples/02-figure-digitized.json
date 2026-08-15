@@ -1,0 +1,36 @@
+{
+  "task_id": "ex-02",
+  "project_id": "panshi-demo",
+  "request": "提取仅含图形（无数据表）的 UCS 数据，标注为图数字化，并给出估读误差。",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T10:05:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "constraints": {
+    "offline": true,
+    "allow_figure_digitization": true
+  },
+  "document": {
+    "source_id": "ex-paper-fig",
+    "title": "UCS evolution of MICP-treated specimens",
+    "year": "2022",
+    "document_type": "original_research",
+    "sections": [
+      {
+        "kind": "methods",
+        "heading": "Methods",
+        "text": "Specimens were treated with 0.5 M urea and 0.5 M CaCl2 for 28 days."
+      }
+    ],
+    "tables": [],
+    "figures": [
+      {
+        "figure_id": "fig1",
+        "caption": "UCS evolution of MICP-treated specimens",
+        "note": "read: 3.2; axis_px: 400; axis_range: 4.0"
+      }
+    ]
+  }
+}

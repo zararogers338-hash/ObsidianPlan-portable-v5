@@ -1,0 +1,90 @@
+{
+  "name": "micp-reproducibility-versioning",
+  "version": "1.0.0",
+  "display_name": "MICP 可复现性、数据溯源与版本治理器",
+  "description": "确保 MICP 研究中的原始/派生数据、实验参数、仪器配置、代码、模型、随机种子、软件依赖、Skill/Prompt/宪法版本、各类卡片与报告可追溯、可重建、可比较、可回滚。",
+  "license": "MIT",
+  "compatibility": {
+    "opencode": ">= 1.18",
+    "python": ">= 3.10"
+  },
+  "entry": "tools/mrv/cli.py",
+  "capabilities": [
+    "reproducibility",
+    "data_lineage",
+    "version_governance",
+    "dependency_locking",
+    "seed_management",
+    "provenance_recording",
+    "artifact_integrity",
+    "result_diffing"
+  ],
+  "error_code_prefix": "MRV",
+  "actions": [
+    "reproduce",
+    "manifest",
+    "env",
+    "lock",
+    "seed",
+    "record",
+    "diff",
+    "compat",
+    "migrate",
+    "check-raw",
+    "check-pollution",
+    "validate",
+    "service"
+  ],
+  "subcommands": [
+    "service",
+    "reproduce",
+    "manifest",
+    "env",
+    "lock",
+    "seed",
+    "record",
+    "diff",
+    "compat",
+    "migrate",
+    "check-raw",
+    "check-pollution",
+    "validate"
+  ],
+  "data_layers": [
+    "data/raw",
+    "data/interim",
+    "data/processed",
+    "data/external",
+    "artifacts",
+    "models",
+    "experiments",
+    "evidence",
+    "failures",
+    "reports",
+    "provenance"
+  ],
+  "epistemic_tags": [
+    "OBSERVED",
+    "REPORTED",
+    "CALCULATED",
+    "INFERRED",
+    "HYPOTHESIS",
+    "RECOMMENDATION"
+  ],
+  "statuses": [
+    "SUCCESS",
+    "PARTIAL",
+    "BLOCKED",
+    "FAILED",
+    "NEED_ADDITIONAL_SKILL",
+    "HUMAN_APPROVAL_REQUIRED"
+  ],
+  "minimum_performance": {
+    "structured_output_pass_rate": 0.95,
+    "tool_invocation_rate": 1.0,
+    "evidence_traceability_rate": 0.9,
+    "missing_input_detection_rate": 1.0,
+    "adversarial_interception_rate": 1.0,
+    "repeat_run_consistency": 1.0
+  }
+}

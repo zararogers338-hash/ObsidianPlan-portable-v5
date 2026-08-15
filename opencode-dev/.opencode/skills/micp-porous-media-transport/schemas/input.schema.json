@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-porous-media-transport.input.json",
+  "title": "micp-porous-media-transport — Input Contract",
+  "description": "Strict input contract for the MICP porous-media transport skill. Every required field is mandatory; missing required fields MUST be reported with explicit field names and acquisition paths (never a generic '信息不足').",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "project_id",
+    "request",
+    "action",
+    "skill_version",
+    "controller_version",
+    "timestamp"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "pattern": "^1\\.\\d+$",
+      "description": "Contract version. Major 1 is supported; other majors are rejected with OPM-E801."
+    },
+    "task_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "project_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "request": { "type": "string", "minLength": 1, "maxLength": 20000 },
+    "action": {
+      "type": "string",
+      "enum": ["analyze", "dimensionless", "validate", "clogging"]
+    },
+    "scenario": {
+      "type": "object",
+      "description": "Domain payload: geometry, porosity, particle size, saturation, flow/pressure boundary, initial permeability, scale.",
+      "additionalProperties": false,
+      "properties": {
+        "geometry": {
+          "type": "object",
+          "properties": {
+            "length": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "object", "additionalProperties": false, "required": ["value", "unit"],
+                  "properties": { "value": { "type": "number" }, "unit": { "type": "string" } } }
+              ]
+            },
+            "diameter": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "object", "additionalProperties": false, "required": ["value", "unit"],
+                  "properties": { "value": { "type": "number" }, "unit": { "type": "string" } } }
+              ]
+            },
+            "nx": { "type": "integer", "minimum": 8, "maximum": 4096 }
+          },
+          "additionalProperties": true
+        },
+        "porosity": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "object", "additionalProperties": false, "required": ["value", "unit"],
+              "properties": { "value": { "type": "number" }, "unit": { "type": "string" } } }
+          ]
+        },
+        "permeability": {
+          "oneOf": [
+            { "type": "number" },
+            { "type": "object", "additionalProperties": false, "required": ["value", "unit"],
+              "properties": { "value": { "type": "number" }, "unit": { "type": "string" } } }
+          ]
+        },
+        "flow": {
+          "type": "object",
+          "properties": {
+            "mode": { "type": "string", "enum": ["flux", "head"] },
+            "velocity": { "type": "number" },
+            "flux": { "type": "number" },
+            "p_in": { "type": "number" },
+            "p_out": { "type": "number" },
+            "mu": { "type": "number" }
+          },
+          "additionalProperties": true
+        },
+        "species": {
+          "type": "object",
+          "properties": {
+            "c_urea_in": { "type": "number" },
+            "c_ca_in": { "type": "number" },
+            "c_urea0": { "type": "number" },
+            "c_ca0": { "type": "number" },
+            "c_biomass": { "type": "number" }
+          },
+          "additionalProperties": true
+        },
+        "scale": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "context": { "type": "object", "description": "Controller-supplied working context (ephemeral tier)." },
+    "constraints": { "type": "object" },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } },
+    "data_refs": { "type": "array", "items": { "type": "string" } },
+    "upstream_outputs": { "type": "array", "items": { "type": "object" } },
+    "requested_output_format": { "type": "string", "enum": ["json", "summary"], "default": "json" },
+    "risk_level": { "type": "string", "enum": ["low", "medium", "high", "critical"], "default": "medium" },
+    "human_approval_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "granted": { "type": "boolean" },
+        "approver": { "type": "string" },
+        "revision": { "type": "integer" },
+        "scope": { "type": "string" }
+      }
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role"],
+      "properties": {
+        "role": { "type": "string", "enum": ["controller", "skill", "human", "auditor"] },
+        "id": { "type": "string" }
+      }
+    },
+    "skill_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "controller_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+
+    "k_ure": { "type": "number", "minimum": 0, "description": "ureolysis rate constant [1/s] (per unit biomass scale)" },
+    "k_pre": { "type": "number", "minimum": 0, "description": "precipitation rate constant [1/s]" },
+    "k_half": { "type": "number", "minimum": 0, "description": "urea half-saturation [mol/m3]" },
+    "t_end": { "type": "number", "minimum": 0, "description": "simulation time [s]; omitted => run until clog threshold" },
+    "clog_threshold": { "type": "number", "exclusiveMinimum": 0, "maximum": 1, "default": 0.02 },
+    "permeability_ratio": { "type": "number", "exclusiveMinimum": 0, "maximum": 1, "default": 0.01 },
+    "dt": { "type": "number", "exclusiveMinimum": 0, "description": "fixed time step [s]; omitted => CFL-limited" },
+    "dry_run": { "type": "boolean", "default": false, "description": "validate + report only; no solve" },
+    "profiles": {
+      "type": "object",
+      "description": "For action=clogging: caller-provided final-state arrays.",
+      "properties": {
+        "porosity": { "type": "array", "items": { "type": "number" } },
+        "permeability": { "type": "array", "items": { "type": "number" } },
+        "permeability0": { "type": "number" }
+      }
+    },
+    "porosity_min": { "type": "number", "exclusiveMinimum": 0, "maximum": 1, "default": 0.02 }
+  }
+}

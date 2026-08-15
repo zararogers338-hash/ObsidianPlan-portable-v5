@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-biosafety-environment-auditor/risk-assessment.schema.json",
+  "title": "micp-biosafety-environment-auditor risk-assessment model",
+  "description": "Risk model for the auditor: HAZARD · EXPOSURE · LIKELIHOOD · SEVERITY · CONTROL · RESIDUAL_RISK. Levels LOW/MODERATE/HIGH/CRITICAL. A strain commonly used in MICP is NEVER defaulted to safe for every environment and site.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["hazard_id", "hazard", "exposure", "likelihood", "severity", "inherent_risk", "controls", "residual_risk"],
+  "properties": {
+    "hazard_id": {"type": "string"},
+    "hazard": {
+      "type": "string",
+      "enum": [
+        "strain_pathogenicity", "environmental_release", "aerosolization",
+        "waterborne_transport", "ammonia_toxicity", "nitrogen_loading",
+        "salt_load", "calcium_salt_scale", "antibiotic_resistance_mobilization",
+        "soil_ecology_disruption", "odour", "confined_space_exposure"
+      ]
+    },
+    "hazard_label": {"type": "string"},
+    "exposure": {
+      "type": "string",
+      "enum": [
+        "inhalation_of_aerosols", "dermal_contact", "ingestion_of_contaminated_water",
+        "groundwater_migration", "surface_water_runoff", "soil_exposure_at_release_point",
+        "equipment_personnel_contact", "downwind_ammonia_plume",
+        "sewage_wastewater_transport", "food_chain_accumulation"
+      ]
+    },
+    "likelihood": {
+      "type": "string",
+      "enum": ["RARE", "UNLIKELY", "POSSIBLE", "LIKELY", "ALMOST_CERTAIN"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["NEGLIGIBLE", "MINOR", "MODERATE", "MAJOR", "SEVERE"]
+    },
+    "inherent_risk": {
+      "type": "string",
+      "enum": ["LOW", "MODERATE", "HIGH", "CRITICAL"],
+      "description": "Risk from the 5x5 matrix before controls."
+    },
+    "controls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["measure", "effectiveness"],
+        "properties": {
+          "measure": {"type": "string"},
+          "effectiveness": {"type": "string", "enum": ["none", "low", "moderate", "high"]}
+        }
+      }
+    },
+    "residual_risk": {
+      "type": "string",
+      "enum": ["LOW", "MODERATE", "HIGH", "CRITICAL"],
+      "description": "Risk after controls. Never LOW without site-specific evidence."
+    },
+    "risk_justification": {"type": "string"},
+    "evidence_labels": {
+      "type": "array",
+      "items": {"type": "string", "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]}
+    }
+  }
+}

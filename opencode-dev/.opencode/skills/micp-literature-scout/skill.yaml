@@ -1,0 +1,112 @@
+# micp-literature-scout skill manifest
+
+# OpenCode loader contract (native): the loader reads frontmatter from
+# SKILL.md (name + description). This YAML is the project-extension manifest
+# consumed by obsidian-skill-router's registry indexer (validateManifest in
+# tools/osr/registry.ts) — see README.md §标准识别.
+
+name: micp-literature-scout
+display_name: MICP Literature Scout｜文献、标准、专利与工程案例检索
+version: 1.0.0
+description: >-
+  MICP Literature Scout｜文献、标准、专利与工程案例检索。可复现检索
+  MICP/EICP/生物矿化/尿素水解/非尿素路径/岩土加固/环境影响证据；核验
+  DOI 与元数据一致性；分层与证据质量初筛；导出 BibTeX/CSV/JSON；输出
+  认识论标签化的机器可读结果。
+
+contract_version: "1.0"        # input/output schema contract (semver; major 1)
+entry:
+  cli: tools/literature_scout.py
+  mode: stdin_stdout
+
+# Router contract: matchSkill scores capability coverage + input coverage +
+# domain-keyword overlap. The router infers bare capability tokens from the
+# request text (literature / evidence / synthesis / ...), so the primary
+# capabilities MUST include the bare tokens; the dotted names are refinements
+# the router can use for scoring.
+risk_tier: low
+capabilities:
+  - literature
+  - evidence
+  - literature.search
+  - evidence.verify_doi
+  - evidence.dedup
+  - evidence.triage
+  - cite.export
+  - sources.register
+  - repro.trace
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - context
+  - evidence_refs
+  - data_refs
+  - upstream_outputs
+outputs:
+  - unified_output_envelope
+  - search_results
+  - doi_verifications
+  - dedup_report
+  - triage_report
+  - citation_exports
+units:
+  time: ISO-8601
+  relevance_score: 0..1
+  cost: USD (estimate only)
+tool_permissions:
+  - read_stdin
+  - write_trace_log
+  - network_crossref
+  - network_openalex
+  - network_pubmed
+  - write_export_file
+  - read_fixtures
+writes:
+  - traces/
+  - exports/
+stop_conditions:
+  - all_actions_done_self_check_passed
+  - blocked_missing_required_input
+  - blocked_contract_version_major_mismatch
+  - failed_self_check
+  - human_approval_required
+  - need_additional_skill
+compatible_controller: obsidian-controller >=1.0
+domain_keywords:
+  - MICP
+  - micp
+  - EICP
+  - eicp
+  - biomineralization
+  - 生物矿化
+  - ureolysis
+  - 尿素水解
+  - urease
+  - 脲酶
+  - non-ureolytic
+  - 非尿素路径
+  - soil improvement
+  - 岩土加固
+  - biocementation
+  - 生物胶结
+  - ammonium byproduct
+  - 铵态氮
+  - geotechnical
+  - 环境岩土
+  - evidence review
+  - 文献综述
+  - DOI verification
+  - 引用核验
+  - 专利检索
+  - patent search
+dependencies:
+  - "python3 >= 3.10"
+  - "jsonschema>=4.0"   # optional: builtin fallback validator used when absent
+  - "requests"          # optional: used for live Crossref/OpenAlex/PubMed
+  - "pyyaml"            # evals runner only
+  - "pytest"            # test runner only
+network: true
+cost_estimate:
+  tokens: 12000
+  usd: 0.01

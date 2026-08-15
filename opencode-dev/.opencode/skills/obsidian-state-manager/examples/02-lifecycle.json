@@ -1,0 +1,10 @@
+{
+  "contract_version": "1.0",
+  "task_id": "eval-demo-lifecycle",
+  "project_id": "demo-micp-02",
+  "request": "推进研究流到假设构建阶段",
+  "action": "project.init",
+  "title": "MICP 尿素水解研究流（推进示例）",
+  "skill_version": "1.0.0",
+  "timestamp": "2026-08-06T00:00:00Z"
+}

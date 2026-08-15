@@ -1,0 +1,31 @@
+{
+  "contract_version": "1.0",
+  "task_id": "exp-001",
+  "project_id": "pasteurii-batch-screen",
+  "request": "两个批次 OD600 相同，脲酶活性不同，解释机制并给出活性比较",
+  "action": "compare",
+  "skill_version": "0.1.0",
+  "controller_version": "1.4.2",
+  "timestamp": "2026-08-06T09:30:00Z",
+  "risk_level": "low",
+  "culture": {
+    "name": "Sporosarcina pasteurii ATCC 11859",
+    "media": "YE-urea medium",
+    "growth_phase": "late_exponential",
+    "od600": 1.2,
+    "urease_activity": 5.0,
+    "urease_activity_unit": "U/mL"
+  },
+  "baseline": {
+    "culture": {
+      "id": "batch-B",
+      "name": "Sporosarcina pasteurii ATCC 11859",
+      "media": "YE-urea medium",
+      "growth_phase": "late_exponential",
+      "od600": 1.2,
+      "urease_activity": 8.0,
+      "urease_activity_unit": "U/mL"
+    }
+  },
+  "evidence_refs": ["exp-001/plate/od600.txt", "exp-001/conductivity/urease.txt"]
+}

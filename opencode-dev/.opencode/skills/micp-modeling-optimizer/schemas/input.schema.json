@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-modeling-optimizer.input.json",
+  "title": "micp-modeling-optimizer — Input Contract",
+  "description": "Strict input contract for the micp-modeling-optimizer skill (MMO). Required fields mirror the sibling OPM/MDA skills plus an action and the domain payload. Missing required fields MUST be reported with explicit field names and acquisition paths (never a generic '信息不足').",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "task_id",
+    "project_id",
+    "request",
+    "action",
+    "skill_version",
+    "controller_version",
+    "timestamp"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "pattern": "^1\\.\\d+$",
+      "description": "Contract version. Major 1 is supported; other majors are rejected with MMO-E801."
+    },
+    "task_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "project_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "request": { "type": "string", "minLength": 1, "maxLength": 20000 },
+    "action": {
+      "type": "string",
+      "enum": ["solve", "fit", "analyze", "optimize", "multiobjective", "sensitivity", "uq", "doe", "validate"]
+    },
+    "model_specification": {
+      "type": "object",
+      "description": "The mechanistic model specification (validated by validate_model_spec; see schemas/model-spec.schema.json)."
+    },
+    "calibration": {
+      "type": "object",
+      "description": "Data + fitting-parameter block for action=fit.",
+      "additionalProperties": true
+    },
+    "optimization": {
+      "type": "object",
+      "description": "Single/multi-objective optimization block (see schemas/optimization-result.schema.json).",
+      "additionalProperties": true
+    },
+    "sensitivity": {
+      "type": "object",
+      "description": "Global sensitivity block: parameters, bounds, target, method, N.",
+      "additionalProperties": true
+    },
+    "uncertainty": {
+      "type": "object",
+      "description": "Monte-Carlo UQ block: parameters with distributions, target, n_samples.",
+      "additionalProperties": true
+    },
+    "doe": {
+      "type": "object",
+      "description": "DOE / response-surface block.",
+      "additionalProperties": true
+    },
+    "context": { "type": "object", "description": "Controller-supplied working context (ephemeral tier)." },
+    "constraints": {
+      "type": "object",
+      "description": "Bounds, seed, iterations, population sizes.",
+      "additionalProperties": true,
+      "properties": {
+        "random_seed": { "type": "integer" },
+        "n_starts": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "n_init": { "type": "integer", "minimum": 2, "maximum": 100 },
+        "n_iter": { "type": "integer", "minimum": 0, "maximum": 10000 },
+        "max_iter": { "type": "integer", "minimum": 1, "maximum": 1000000 },
+        "pop_size": { "type": "integer", "minimum": 4, "maximum": 500 },
+        "n_gen": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "robustness_samples": { "type": "integer", "minimum": 0, "maximum": 100000 },
+        "dt": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } },
+    "data_refs": { "type": "array", "items": { "type": "string" } },
+    "upstream_outputs": { "type": "array", "items": { "type": "object" } },
+    "requested_output_format": { "type": "string", "enum": ["json", "markdown+json"] },
+    "risk_level": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+    "human_approval_state": {
+      "type": "string",
+      "enum": ["not_required", "pending", "approved", "rejected"]
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role"],
+      "properties": {
+        "role": { "type": "string", "enum": ["controller", "skill", "human", "auditor"] },
+        "id": { "type": "string" }
+      }
+    },
+    "skill_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "controller_version": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:\\-]*$" },
+    "timestamp": { "type": "string", "format": "date-time" }
+  }
+}

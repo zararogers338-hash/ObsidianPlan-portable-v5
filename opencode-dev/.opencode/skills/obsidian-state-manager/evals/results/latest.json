@@ -1,0 +1,278 @@
+{
+  "cases": [
+    {
+      "id": "eval-01",
+      "description": "Normal: initialize a stream and verify it lands in OPEN with a valid output envelope.",
+      "action": "project.init",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "state==OPEN",
+          "pass": true,
+          "detail": "got OPEN"
+        },
+        {
+          "name": "findings>=min",
+          "pass": true,
+          "detail": "got 1"
+        },
+        {
+          "name": "events==n",
+          "pass": true,
+          "detail": "got 1"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 1
+    },
+    {
+      "id": "eval-02",
+      "description": "Normal: forward lifecycle EVIDENCE_GATHERING -> HYPOTHESIS_BUILDING once evidence exists.",
+      "action": "state.transition",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "state==HYPOTHESIS_BUILDING",
+          "pass": true,
+          "detail": "got HYPOTHESIS_BUILDING"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 2
+    },
+    {
+      "id": "eval-03",
+      "description": "Missing: transition to HYPOTHESIS_BUILDING with zero evidence must be blocked as GUARD_UNSATISFIED, not fabricated.",
+      "action": "state.transition",
+      "status": "FAILED",
+      "error_code": "OSM-E306",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==FAILED",
+          "pass": true,
+          "detail": "got FAILED"
+        },
+        {
+          "name": "error==OSM-E306",
+          "pass": true,
+          "detail": "got OSM-E306"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 1
+    },
+    {
+      "id": "eval-04",
+      "description": "Conflict: contradictory evidence auto-downgrades the stream out of AWAITING_DATA.",
+      "action": "evidence.attach",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "state==DESIGNING",
+          "pass": true,
+          "detail": "got DESIGNING"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 3
+    },
+    {
+      "id": "eval-05",
+      "description": "Adversarial: hard-block OPEN -> DEPLOYABLE even with human approval present.",
+      "action": "state.transition",
+      "status": "FAILED",
+      "error_code": "OSM-E305",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==FAILED",
+          "pass": true,
+          "detail": "got FAILED"
+        },
+        {
+          "name": "error==OSM-E305",
+          "pass": true,
+          "detail": "got OSM-E305"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 1
+    },
+    {
+      "id": "eval-06",
+      "description": "Boundary: rollback from DEPLOYABLE is refused as irreversible.",
+      "action": "state.rollback",
+      "status": "FAILED",
+      "error_code": "OSM-E307",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==FAILED",
+          "pass": true,
+          "detail": "got FAILED"
+        },
+        {
+          "name": "error==OSM-E307",
+          "pass": true,
+          "detail": "got OSM-E307"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 0
+    },
+    {
+      "id": "eval-07",
+      "description": "Missing: contract_version 2.0 must be rejected with OSM-E801 (compat policy).",
+      "action": "state.get",
+      "status": "FAILED",
+      "error_code": "OSM-E801",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==FAILED",
+          "pass": true,
+          "detail": "got FAILED"
+        },
+        {
+          "name": "error==OSM-E801",
+          "pass": true,
+          "detail": "got OSM-E801"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 0
+    },
+    {
+      "id": "eval-08",
+      "description": "Boundary: dry_run must not append any event to the store.",
+      "action": "state.transition",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "state==SCOPED",
+          "pass": true,
+          "detail": "got SCOPED"
+        },
+        {
+          "name": "dry_run_no_store_mutation",
+          "pass": true,
+          "detail": "real appends: 0"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "events_appended": 2
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "total": 8,
+    "all_pass": true
+  },
+  "metrics": {
+    "report": {
+      "M1_structured_output_pass_rate": {
+        "measured": 1.0,
+        "threshold": 0.95,
+        "method": "validate every CLI output against schemas/output.schema.json; pass_rate = passes / total outputs",
+        "pass": true
+      },
+      "M2_tool_real_call_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "for N mutating actions, count events appended to the on-disk events.jsonl; rate = projects_with_events / actions_that_should_append",
+        "pass": true
+      },
+      "M3_traceability_rate": {
+        "measured": 1.0,
+        "threshold": 0.9,
+        "method": "evidence.attach with sha256 over all attaches; conclusions that cite evidence refs that exist in the stream / total citations",
+        "pass": true
+      },
+      "M4_missing_input_recognition_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "for each of K required fields, submit a payload missing exactly it and require BLOCKED with the field named in the violation",
+        "pass": true
+      },
+      "M5_adversarial_interception_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "adversarial cases (illegal transition, contract_version 2, path traversal, non-JSON stdin, unknown action) that were blocked / total",
+        "pass": true
+      },
+      "M6_repeated_run_consistency": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "run the same event sequence twice in two stores; projection snapshots must be byte-identical",
+        "pass": true
+      },
+      "M7_mean_recovery_time_ms": {
+        "measured": 274.46313999994345,
+        "threshold": 5000.0,
+        "method": "recovery.recover over a 50-event stream, 5 runs, mean wall-clock ms",
+        "pass": true
+      }
+    }
+  }
+}

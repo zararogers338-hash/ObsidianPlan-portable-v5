@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.dev/skills/micp-hypothesis-forge/schemas/card-set.schema.json",
+  "title": "Hypothesis Card Set",
+  "description": "One main hypothesis plus at least two competing hypotheses explaining the same phenomenon via different mechanisms. Self-contained (no cross-file $ref) so the subset validator can resolve it offline.",
+  "type": "object",
+  "required": ["kind", "phenomenon", "cards"],
+  "properties": {
+    "kind": { "const": "hypothesis_card_set" },
+    "phenomenon": { "type": "string", "minLength": 1 },
+    "statement_under_test": { "type": "string", "minLength": 1 },
+    "cards": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/hypothesis_card" }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "hypothesis_card": {
+      "type": "object",
+      "required": [
+        "id", "kind", "statement", "mechanism_chain", "prediction_direction",
+        "observables", "refutation", "time_scale", "scope", "epistemic_label",
+        "evidence_for", "evidence_against"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "const": "hypothesis_card" },
+        "role": { "type": "string", "enum": ["main", "competing_1", "competing_2"] },
+        "statement": { "type": "string", "minLength": 10 },
+        "premise": { "type": "string", "minLength": 1 },
+        "mechanism_chain": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "prediction_direction": {
+          "type": "string",
+          "enum": ["increase", "decrease", "no_change", "non_monotonic", "null"]
+        },
+        "observables": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "refutation": { "type": "string", "minLength": 1 },
+        "supports": { "type": "array", "items": { "type": "string" } },
+        "weakens": { "type": "array", "items": { "type": "string" } },
+        "time_scale": { "type": "string", "minLength": 1 },
+        "scope": { "type": "string", "minLength": 1 },
+        "epistemic_label": {
+          "type": "string",
+          "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+        },
+        "evidence_for": { "type": "array", "items": { "type": "object" } },
+        "evidence_against": { "type": "array", "items": { "type": "object" } },
+        "discriminating_experiments": { "type": "array", "items": { "type": "object" } },
+        "falsifiability": { "type": "object" },
+        "scores": { "type": "object" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

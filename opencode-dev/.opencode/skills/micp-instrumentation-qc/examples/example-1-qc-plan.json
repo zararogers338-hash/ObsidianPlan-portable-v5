@@ -1,0 +1,24 @@
+{
+  "task_id": "ex-01",
+  "project_id": "proj-micp-01",
+  "request": "为本次 MICP 实验的 pH / EC / NH4+ 测量建立 QC 计划与质控判据。",
+  "skill_version": "1.0.0",
+  "controller_version": "1.0.0",
+  "timestamp": "2026-08-06T12:00:00+00:00",
+  "requested_output_format": "qc_plan",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "qc_input": {
+    "instruments": [
+      {"instrument_id": "pH-1", "kind": "pH", "model": "Mettler S220", "serial": "SN-001",
+       "software_version": "2.1", "calibration_ref": "cal-pH-2026-08",
+       "detection_limit": 0.01, "quantification_limit": 0.03,
+       "expanded_uncertainty": 0.05, "unit": "pH",
+       "measurement_range": [0, 14], "saturation_threshold": 14.0},
+      {"instrument_id": "EC-1", "kind": "EC", "model": "Hanna HI9835", "serial": "SN-002",
+       "unit": "mS/cm", "measurement_range": [0, 200], "saturation_threshold": 190},
+      {"instrument_id": "nh4-1", "kind": "NH4", "model": "Thermo Orion ISE", "serial": "SN-003",
+       "unit": "mg/L", "measurement_range": [0, 1000], "saturation_threshold": 950}
+    ]
+  }
+}

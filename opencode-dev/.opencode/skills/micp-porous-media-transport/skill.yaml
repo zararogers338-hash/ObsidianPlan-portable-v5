@@ -1,0 +1,43 @@
+name: micp-porous-media-transport
+display_name: MICP Porous Media Transport｜菌液、溶质、沉淀与堵塞耦合
+version: 1.0.0
+description: "Model MICP bacteria/urea/calcium/precipitate transport through porous media — advection, dispersion, ureolysis, precipitation and the clogging feedback on porosity and permeability — with scale analysis, conservation and grid- sensitivity checks."
+contract_version: 1.0
+entry:
+  cli: tools/transport.py
+  mode: stdin_stdout
+dependencies:
+  - "runtime: python3 (>= 3.10)"
+  - "libs: jsonschema>=4.0"
+  - "libs: pyyaml"
+  - "libs: pytest"
+  - "network: none"
+permissions:
+  filesystem:
+    - "write: {artifact_dir}/**"
+  approvals_required:
+    - field_deployment
+    - live_biological_experiment
+    - dangerous_chemical_handling
+    - long_term_knowledge_write
+  dry_run: true
+compatibility:
+  opencode_loader: "discovery pattern {skill,skills}/**/SKILL.md; frontmatter name+description (verified in packages/opencode/src/skill/index.ts)"
+  contract_major: 1
+  schema_breaking_bump: major
+  optional_field_bump: minor
+  implementation_fix_bump: patch
+  migrate_or_reject: Outputs written under an older major contract are either migrated by an explicit migration step or rejected with OPM-E801; never silently reinterpreted.
+maintainer: Panshi / Obsidian Plan
+license: MIT (project convention; repo root LICENSE)
+cost_estimate:
+  tokens: 3000
+  usd: 0.03
+risk_tier: medium
+dependencies_detail:
+  runtime: "python3 (>= 3.10)"
+  libs:
+    - "jsonschema>=4.0"
+    - pyyaml
+    - pytest
+  network: none

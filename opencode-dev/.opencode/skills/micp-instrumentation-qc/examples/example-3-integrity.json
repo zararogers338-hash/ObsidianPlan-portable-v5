@@ -1,0 +1,22 @@
+{
+  "task_id": "ex-03",
+  "project_id": "proj-micp-01",
+  "request": "验证原始数据处理后的数据没被覆盖,并生成审计日志。",
+  "skill_version": "1.0.0",
+  "controller_version": "1.0.0",
+  "timestamp": "2026-08-06T12:00:00+00:00",
+  "requested_output_format": "integrity_report",
+  "risk_level": "high",
+  "human_approval_state": "approved",
+  "constraints": {"dry_run": false, "allow_derived_write": true, "audit_log": "audit/integrity-example.jsonl"},
+  "qc_input": {
+    "raw": [
+      {"sample": "s1", "value": 7.02, "unit": "pH"},
+      {"sample": "s2", "value": 7.11, "unit": "pH"}
+    ],
+    "derived": [
+      {"sample": "s1", "value": 7.02, "unit": "pH", "raw_sha256": null, "note": "placeholder"},
+      {"sample": "s2", "value": 7.11, "unit": "pH", "raw_sha256": null, "note": "placeholder"}
+    ]
+  }
+}

@@ -1,0 +1,259 @@
+{
+  "skill": "obsidian-task-decomposer",
+  "version": "1.0.0",
+  "generated_at": "2026-08-06T00:00:00Z",
+  "indicators": {
+    "structured_output_pass_rate": 1.0,
+    "tool_invocation_rate": 1.0,
+    "evidence_traceability_rate": 1.0,
+    "missing_input_detection_rate": 1.0,
+    "adversarial_interception_rate": 1.0,
+    "repeat_run_consistency": 1.0,
+    "mean_failure_recovery_time_s": 0.045
+  },
+  "cases": [
+    {
+      "case": "eval-01",
+      "group": "positive",
+      "title": "basic-micp-uniformity",
+      "all_passed": true,
+      "checks": [
+        [
+          "input_schema",
+          true
+        ],
+        [
+          "dag_acyclic",
+          true
+        ],
+        [
+          "granularity_all_ok",
+          true
+        ],
+        [
+          "critical_path_present",
+          true
+        ],
+        [
+          "budget_computed",
+          true
+        ],
+        [
+          "audit_all_gates",
+          true
+        ],
+        [
+          "output_schema",
+          true
+        ]
+      ],
+      "evidence_refs": [
+        "whiffin2007",
+        "biogrout2011"
+      ],
+      "elapsed_s": 0.051
+    },
+    {
+      "case": "eval-02",
+      "group": "positive",
+      "title": "ureolysis-with-ammonium",
+      "all_passed": true,
+      "checks": [
+        [
+          "gate_not_granted",
+          true
+        ],
+        [
+          "contract_demands_human_approval",
+          true
+        ]
+      ],
+      "evidence_refs": [],
+      "elapsed_s": 0.0
+    },
+    {
+      "case": "eval-03",
+      "group": "positive",
+      "title": "geotechnical-audit-decomposition",
+      "all_passed": true,
+      "checks": [
+        [
+          "input_schema",
+          true
+        ],
+        [
+          "dag_acyclic",
+          true
+        ],
+        [
+          "granularity_all_ok",
+          true
+        ],
+        [
+          "critical_path_present",
+          true
+        ],
+        [
+          "budget_computed",
+          true
+        ],
+        [
+          "audit_all_gates",
+          true
+        ],
+        [
+          "output_schema",
+          true
+        ]
+      ],
+      "evidence_refs": [],
+      "elapsed_s": 0.053
+    },
+    {
+      "case": "eval-04",
+      "group": "conflict",
+      "title": "deadline-vs-effort",
+      "all_passed": true,
+      "checks": [
+        [
+          "budget_total_hours",
+          39.11
+        ],
+        [
+          "deadline_hours",
+          4
+        ],
+        [
+          "conflict_detected",
+          true
+        ]
+      ],
+      "evidence_refs": [],
+      "elapsed_s": 0.048
+    },
+    {
+      "case": "eval-05",
+      "group": "adversarial",
+      "title": "cycle-in-request",
+      "all_passed": true,
+      "checks": [
+        [
+          "cycle_reported",
+          true
+        ],
+        [
+          "critical_path_exit3",
+          true
+        ]
+      ],
+      "evidence_refs": [],
+      "elapsed_s": 0.052
+    },
+    {
+      "case": "eval-06",
+      "group": "adversarial",
+      "title": "implicit-dependency",
+      "all_passed": true,
+      "checks": [
+        [
+          "G1_rejects_implicit",
+          true
+        ],
+        [
+          "audit_overall_fail",
+          true
+        ]
+      ],
+      "evidence_refs": [],
+      "elapsed_s": 0.051
+    },
+    {
+      "case": "eval-07",
+      "group": "adversarial",
+      "title": "fabricated-evidence-ref",
+      "all_passed": true,
+      "checks": [
+        [
+          "no_fabricated_refs_allowed",
+          true
+        ]
+      ],
+      "evidence_refs": [
+        "real-paper-1"
+      ],
+      "elapsed_s": 0.0
+    },
+    {
+      "case": "eval-08",
+      "group": "boundary",
+      "title": "missing-required-field",
+      "all_passed": true,
+      "checks": [
+        [
+          "input_schema_invalid",
+          true
+        ],
+        [
+          "request_flagged_missing",
+          true
+        ],
+        [
+          "contract_demands_blocked",
+          true
+        ]
+      ],
+      "evidence_refs": [],
+      "elapsed_s": 0.051
+    },
+    {
+      "case": "eval-09",
+      "group": "boundary",
+      "title": "malformed-tool-input",
+      "all_passed": true,
+      "checks": [
+        [
+          "nan_rejected",
+          true
+        ],
+        [
+          "malformed_json_rejected",
+          true
+        ]
+      ],
+      "evidence_refs": [],
+      "elapsed_s": 0.099
+    },
+    {
+      "case": "eval-10",
+      "group": "boundary",
+      "title": "replan-of-prior-plan",
+      "all_passed": true,
+      "checks": [
+        [
+          "preserved",
+          true
+        ],
+        [
+          "rework",
+          true
+        ],
+        [
+          "invalidated",
+          true
+        ],
+        [
+          "merged_drops_invalidated",
+          true
+        ],
+        [
+          "merged_acyclic",
+          true
+        ]
+      ],
+      "evidence_refs": [],
+      "elapsed_s": 0.05
+    }
+  ],
+  "repeat_run_consistent": true,
+  "note": "Tool-layer mechanical eval (offline, deterministic). Agent-planning quality is covered by bootstrap tests, not this runner."
+}

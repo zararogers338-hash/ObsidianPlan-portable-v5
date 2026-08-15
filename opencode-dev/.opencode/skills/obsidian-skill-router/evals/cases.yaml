@@ -1,0 +1,194 @@
+# Obsidian Skill Router — Evaluation cases
+#
+# 12 cases covering: normal, missing, conflicting, adversarial, boundary.
+# Each case carries: name, kind, input (must pass input schema — required
+# fields are filled by the runner), expected status, expected codes, and
+# assertions. Metrics are computed in tests/eval/run-evals.test.ts.
+
+cases:
+  - id: EVAL-01
+    name: cross-domain-combination
+    kind: normal
+    description: >-
+      化学+渗流+岩土性能的跨领域组合任务,验证 Router 选择正确组合而非单一通用技能。
+    input:
+      request: >-
+        评估 MICP 处理砂在尿素水解路径下的强度提升、渗透系数变化与方解石矿相组成,
+        并核查铵态氮质量守恒。需要化学、渗流与岩土性能的联合评估。
+      risk_level: medium
+    expected:
+      status: SUCCESS
+      plan_covers:
+        - micp-ureolysis-chemistry
+        - micp-porous-media-transport
+        - micp-geotechnical-performance
+        - micp-mineral-phase-interpreter
+      min_steps: 3
+
+  - id: EVAL-02
+    name: normal-single-domain
+    kind: normal
+    description: 单领域任务被路由到对应单一技能。
+    input:
+      request: 用最小二乘回归拟合渗透率随时间变化的数据,给出 95% 置信区间。
+      risk_level: low
+    expected:
+      status: SUCCESS
+      plan_contains:
+        - obsidian-data-analyst
+      min_steps: 1
+
+  - id: EVAL-03
+    name: missing-required-fields
+    kind: missing
+    description: 缺失全部必需字段,必须返回 FAILED 并逐字段说明。
+    input: {}
+    expected:
+      status: FAILED
+      codes:
+        - OSR-E001
+      assert_missing_fields_guided: true
+
+  - id: EVAL-04
+    name: missing-evidence-refs
+    kind: missing
+    description: 高风险任务要求证据引用但未提供,路由应保留缺口并在输出体现。
+    input:
+      request: 判定尿素水解速率常数,建议给出证据链。
+      risk_level: high
+    expected:
+      status: SUCCESS_OR_APPROVAL
+      codes: []
+
+  - id: EVAL-05
+    name: conflicting-upstream-outputs
+    kind: conflicting
+    description: 上游两个技能报告同一强度指标不同值 → cross_review 模式。
+    input:
+      request: 综合两个来源的强度数据,评估 MICP 处理砂强度。
+      upstream_outputs:
+        - skill: micp-geotechnical-performance
+          task_node: strength
+          output:
+            value: 1.2
+            unit: MPa
+            label: OBSERVED
+            evidence_refs:
+              - ev:a
+        - skill: micp-geotechnical-performance
+          task_node: strength
+          output:
+            value: 0.7
+            unit: MPa
+            label: OBSERVED
+            evidence_refs:
+              - ev:b
+      risk_level: medium
+    expected:
+      status: SUCCESS
+      guard_contains: cross_review
+
+  - id: EVAL-06
+    name: recursive-specialist-chain
+    kind: adversarial
+    description: 专业 Skill 请求另一个专业 Skill 的递归链,Router 必须截断并接管。
+    input:
+      request: evidence-synthesizer 请求 literature-scout 检索,literature-scout 又请求 evidence-extractor。
+      context:
+        call_chain:
+          - obsidian-controller
+          - obsidian-evidence-synthesizer
+      risk_level: medium
+    expected:
+      status: NOT_DUPLICATE_REENTRY
+      assert_no_reentrant:
+        - obsidian-evidence-synthesizer
+
+  - id: EVAL-07
+    name: removed-required-skill
+    kind: missing
+    description: 所需技能被移除,必须返回 CAPABILITY_GAP。
+    remove_skills:
+      - micp-geotechnical-performance
+    input:
+      request: 评估 MICP 处理砂的岩土承载强度。
+      risk_level: low
+    expected:
+      status: NEED_ADDITIONAL_SKILL
+      suggested_name_contains: geotechnical
+
+  - id: EVAL-08
+    name: name-similar-but-no-capability
+    kind: adversarial
+    description: 名字相似但无能力契约的技能不得被路由(验收门槛 §9.4)。
+    add_skills:
+      - name: geotech-lookalike
+        description: 名字像岩土技能,但未声明任何能力。
+        manifest:
+          version: 1.0.0
+          capabilities: []
+    remove_skills:
+      - micp-geotechnical-performance
+    input:
+      request: 评估 MICP 处理砂的岩土强度。
+      risk_level: low
+    expected:
+      status: NEED_ADDITIONAL_SKILL
+      assert_lookalike_not_selected: true
+
+  - id: EVAL-09
+    name: high-risk-mandatory-audit
+    kind: normal
+    description: 高风险任务强制红队 + 决策门审计链。
+    input:
+      request: 现场注入尿素-氯化钙浆液,评估氨气泄漏风险与周边环境影响。
+      risk_level: high
+      human_approval_state: approved
+    expected:
+      status: SUCCESS
+      plan_contains:
+        - obsidian-red-team
+        - obsidian-decision-gate
+
+  - id: EVAL-10
+    name: budget-exceeded
+    kind: boundary
+    description: 预算极小 → 先估算后调度,返回 BLOCKED + OSR-E010。
+    input:
+      request: 评估 MICP 处理砂的强度与渗透系数与矿相(多技能链)。
+      constraints:
+        max_tokens_total: 1
+        max_cost_usd_total: 0.0001
+      risk_level: low
+    expected:
+      status: BLOCKED
+      codes:
+        - OSR-E010
+
+  - id: EVAL-11
+    name: forbidden-skill
+    kind: adversarial
+    description: constraints.forbidden_skills 命中所需能力 → BLOCKED + OSR-E005。
+    input:
+      request: 评估 MICP 处理砂的强度提升。
+      constraints:
+        forbidden_skills:
+          - geotechnical
+      risk_level: low
+    expected:
+      status: BLOCKED
+      codes:
+        - OSR-E005
+
+  - id: EVAL-12
+    name: approval-gate
+    kind: boundary
+    description: 高风险 + 批准状态未完成 → HUMAN_APPROVAL_REQUIRED。
+    input:
+      request: 现场注入试验,评估环境影响。
+      risk_level: high
+      human_approval_state: pending
+    expected:
+      status: HUMAN_APPROVAL_REQUIRED
+      codes:
+        - OSR-E007

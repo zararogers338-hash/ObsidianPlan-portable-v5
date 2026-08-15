@@ -1,0 +1,43 @@
+{
+  "scenarios": [
+    {
+      "scenario": "S1 calcium mass conservation gate",
+      "passed": true,
+      "code": 0,
+      "problems": [],
+      "evidence": {
+        "ca_passed": false,
+        "envelope_status": "SUCCESS"
+      }
+    },
+    {
+      "scenario": "S2 same Ca, different pH → different SI",
+      "passed": true,
+      "code": 0,
+      "evidence": {
+        "si_ph7.5": 2.067,
+        "si_ph9.0": 3.57
+      }
+    },
+    {
+      "scenario": "S3 kinetic ≠ equilibrium",
+      "passed": true,
+      "code": 0,
+      "evidence": {
+        "kinetic_precipitated": 0.475507,
+        "equilibrium_bound": 0.5
+      }
+    },
+    {
+      "scenario": "S4 calculate + reverse conservation check",
+      "passed": true,
+      "code": 0,
+      "evidence": {
+        "N residual": 0.0,
+        "Ca residual": 0.0,
+        "stoich_passed": true
+      }
+    }
+  ],
+  "all_passed": true
+}

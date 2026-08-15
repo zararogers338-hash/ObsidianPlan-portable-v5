@@ -1,0 +1,24 @@
+{
+  "task_id": "ex-002-audit-existing",
+  "project_id": "obsidian-plan",
+  "request": "审计这个实验方案是否可复现:三组浓度梯度但没有阴性对照,重复只有 1,强度端点没写单位。",
+  "context": {
+    "draft_design": {
+      "objective": "比较三组胶结液浓度的强度差异",
+      "pathway": "urea",
+      "replicates": 1,
+      "groups": ["low", "mid", "high"],
+      "endpoints": [{"name": "strength"}]
+    }
+  },
+  "constraints": {
+    "require_negative_control": true,
+    "require_replicates": 2
+  },
+  "requested_output_format": "json",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "skill_version": "1.0.0",
+  "controller_version": "0.1.0",
+  "timestamp": "2026-08-06T00:00:00Z"
+}

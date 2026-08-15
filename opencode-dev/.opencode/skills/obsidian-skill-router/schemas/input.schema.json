@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/obsidian-skill-router.input.json",
+  "title": "Obsidian Skill Router — Input Contract",
+  "description": "Strict input contract for the obsidian-skill-router skill (OSR). Every required field is mandatory; missing required fields MUST be reported with explicit field names and acquisition paths (never a generic '信息不足').",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "project_id",
+    "request",
+    "skill_version",
+    "controller_version",
+    "timestamp"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Task node identifier. Required: it is the anchor for the decision log and for budget/recursion accounting."
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Project/experiment identifier. Required: it selects the decision log file."
+    },
+    "request": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000,
+      "description": "The natural-language task or request to route. Required: it is the primary signal for capability and domain matching."
+    },
+    "context": {
+      "type": "object",
+      "description": "Execution context: task graph, memory refs, current call chain, prior completed calls, environment snapshot.",
+      "properties": {
+        "task_graph": { "type": "object" },
+        "memory_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "call_chain": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "completed_calls": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/completedCall" }
+        },
+        "prior_decisions": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "environment": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Budgets, depth limits, and forbidden/required skills. Invalid numeric values are ignored (see skill docs); missing values fall back to skill defaults.",
+      "properties": {
+        "max_depth": { "type": "integer", "minimum": 1, "maximum": 16 },
+        "max_total_calls": { "type": "integer", "minimum": 1, "maximum": 1024 },
+        "max_retries_per_skill": { "type": "integer", "minimum": 0, "maximum": 16 },
+        "max_parallel": { "type": "integer", "minimum": 1, "maximum": 64 },
+        "max_tokens_total": { "type": "integer", "minimum": 1 },
+        "max_cost_usd_total": { "type": "number", "minimum": 0 },
+        "max_wall_time_sec": { "type": "integer", "minimum": 1 },
+        "forbidden_skills": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "required_skills": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "deadline": { "type": "string", "format": "date-time" },
+        "budget": {
+          "type": "object",
+          "properties": {
+            "max_depth": { "type": "integer", "minimum": 1 },
+            "max_total_calls": { "type": "integer", "minimum": 1 },
+            "max_retries_per_skill": { "type": "integer", "minimum": 0 },
+            "max_parallel": { "type": "integer", "minimum": 1 },
+            "max_tokens_total": { "type": "integer", "minimum": 1 },
+            "max_cost_usd_total": { "type": "number", "minimum": 0 },
+            "max_wall_time_sec": { "type": "integer", "minimum": 1 }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ref" }
+    },
+    "data_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ref" }
+    },
+    "upstream_outputs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/upstreamOutput" }
+    },
+    "requested_output_format": {
+      "type": "string",
+      "enum": ["route_plan", "capability_gap_spec", "conflict_report", "audit_report"],
+      "description": "Default 'route_plan'. Other formats allow the controller to ask for a targeted deliverable."
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "description": "Default 'medium'. Drives mandatory red-team/decision-gate chaining."
+    },
+    "human_approval_state": {
+      "type": "string",
+      "enum": ["not_required", "pending", "approved", "rejected"],
+      "description": "Default 'not_required'. If a step needs approval and this is not 'approved', the router returns HUMAN_APPROVAL_REQUIRED (OSR-E007)."
+    },
+    "skill_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version of THIS skill (obsidian-skill-router). Required: routing rejects unsupported versions per the compatibility policy."
+    },
+    "controller_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version of the calling Obsidian Controller. Required: the router's permission model is controller-version-gated."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of the request."
+    }
+  },
+  "$defs": {
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref_id"],
+      "properties": {
+        "ref_id": { "type": "string", "minLength": 1 },
+        "uri": { "type": "string" },
+        "media_type": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+    "upstreamOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill", "task_node"],
+      "properties": {
+        "skill": { "type": "string", "minLength": 1 },
+        "task_node": { "type": "string", "minLength": 1 },
+        "output_ref": { "$ref": "#/$defs/ref" },
+        "output": { "type": "object" },
+        "summary": { "type": "string" }
+      }
+    },
+    "completedCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill", "input_digest", "status"],
+      "properties": {
+        "skill": { "type": "string" },
+        "input_digest": { "type": "string" },
+        "status": { "type": "string" },
+        "tokens_used": { "type": "number", "minimum": 0 },
+        "cost_usd_used": { "type": "number", "minimum": 0 },
+        "retries_used": { "type": "integer", "minimum": 0 },
+        "depth": { "type": "integer", "minimum": 0 },
+        "output_summary": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,228 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.dev/skills/micp-experiment-designer/output.schema.json",
+  "title": "micp-experiment-designer output envelope",
+  "description": "Machine-readable result envelope emitted by the skill. Custom project convention (Obsidian Plan), version 1.0.0. Downstream skills (Router, State Manager) parse status/summary/design/sop/artifacts without ambiguity.",
+  "type": "object",
+  "required": ["status", "summary", "validation", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+    },
+    "summary": { "type": "string", "minLength": 1 },
+    "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "evidence_used": { "type": "array", "items": { "type": "string" } },
+    "uncertainty": {
+      "type": "object",
+      "properties": {
+        "level": { "type": "string", "enum": ["low", "medium", "high"] },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "risks": { "type": "array", "items": { "$ref": "#/$defs/risk" } },
+    "artifacts": { "type": "array", "items": { "type": "string" } },
+    "requested_next_skills": { "type": "array", "items": { "$ref": "#/$defs/next_skill" } },
+    "design": { "$ref": "#/$defs/design", "description": "The validated experiment design (present on SUCCESS/PARTIAL)" },
+    "sop": { "$ref": "#/$defs/sop", "description": "Generated SOP (present on SUCCESS/PARTIAL)" },
+    "preregistration": { "$ref": "#/$defs/preregistration" },
+    "missing_inputs": { "type": "array", "items": { "$ref": "#/$defs/missing" } },
+    "validation": { "$ref": "#/$defs/validation" },
+    "provenance": { "$ref": "#/$defs/provenance" },
+    "errors": { "type": "array", "items": { "$ref": "#/$defs/error" } }
+  },
+  "$defs": {
+    "label": {
+      "type": "string",
+      "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+    },
+    "finding": {
+      "type": "object",
+      "required": ["text", "label"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1 },
+        "label": { "$ref": "#/$defs/label" },
+        "source": { "type": "string", "description": "Required when label is OBSERVED or REPORTED" }
+      },
+      "additionalProperties": false
+    },
+    "risk": {
+      "type": "object",
+      "required": ["description"],
+      "properties": {
+        "description": { "type": "string", "minLength": 1 },
+        "level": { "type": "string", "enum": ["low", "medium", "high"] },
+        "mitigation": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "next_skill": {
+      "type": "object",
+      "required": ["skill", "why"],
+      "properties": {
+        "skill": { "type": "string", "minLength": 1 },
+        "why": { "type": "string", "minLength": 1 },
+        "required_inputs": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "design": {
+      "type": "object",
+      "required": ["objective", "primary_hypothesis", "groups", "endpoints", "statistical_analysis"],
+      "properties": {
+        "objective": { "type": "string", "minLength": 1 },
+        "primary_hypothesis": { "type": "string", "minLength": 1 },
+        "alternative_hypothesis": { "type": "string" },
+        "competing_hypotheses": { "type": "array", "items": { "type": "string" } },
+        "groups": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
+        "negative_control": { "type": "boolean", "const": true },
+        "positive_control": { "type": "boolean" },
+        "replicates": { "type": "integer", "minimum": 2 },
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "unit"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "unit": { "type": "string", "minLength": 1 },
+              "direction": { "type": "string", "enum": ["maximize", "minimize", "report"] }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "pathway": { "type": "string", "enum": ["urea", "non-urea", "unknown"] },
+        "randomization": { "type": "string" },
+        "blinding": { "type": "string" },
+        "sample_size": { "type": "integer", "minimum": 1 },
+        "sample_size_justification": { "type": "string" },
+        "data_exclusion": { "type": "string", "minLength": 1 },
+        "stop_condition": { "type": "string", "minLength": 1 },
+        "statistical_analysis": {
+          "type": "object",
+          "required": ["test", "alpha"],
+          "properties": {
+            "test": { "type": "string", "minLength": 1 },
+            "alpha": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+            "two_sided": { "type": "boolean" },
+            "multiplicity_correction": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "ammonium_accounting": { "type": "boolean" },
+        "nitrogen_mass_balance": { "type": "boolean" },
+        "materials": { "type": "array", "items": { "type": "object" } },
+        "injection": { "type": "object" },
+        "equipment": { "type": "array", "items": { "type": "string" } },
+        "safety": { "type": "array", "items": { "type": "string" } },
+        "data_template": { "type": "array", "items": { "type": "object" } }
+      },
+      "additionalProperties": true
+    },
+    "sop": {
+      "type": "object",
+      "required": ["title", "steps"],
+      "properties": {
+        "title": { "type": "string" },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["step_id", "action", "detail"],
+            "properties": {
+              "step_id": { "type": "string", "pattern": "^STEP-\\d{2}$" },
+              "action": { "type": "string" },
+              "detail": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "preregistration": {
+      "type": "object",
+      "required": ["title", "primary_hypothesis", "sample_size", "status"],
+      "properties": {
+        "title": { "type": "string" },
+        "primary_hypothesis": { "type": "string" },
+        "alternative_hypothesis": { "type": "string" },
+        "endpoints": { "type": "array", "items": { "type": "string" } },
+        "groups": { "type": "array", "items": { "type": "string" } },
+        "randomization": { "type": "string" },
+        "blinding": { "type": "string" },
+        "sample_size": { "type": [ "integer", "string" ], "description": "Integer when computed; 'TBD' when power analysis not yet run" },
+        "sample_size_justification": { "type": "string" },
+        "exclusion_rules": { "type": "string" },
+        "stopping_rules": { "type": "string" },
+        "analysis_plan": { "type": "object" },
+        "human_approval_required": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["PREREGISTERED-DRAFT"] },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "template_version": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "missing": {
+      "type": "object",
+      "required": ["field", "criticality", "reason", "how_to_obtain"],
+      "properties": {
+        "field": { "type": "string", "minLength": 1 },
+        "criticality": { "type": "string", "enum": ["blocking", "non-blocking"] },
+        "reason": { "type": "string", "minLength": 1 },
+        "how_to_obtain": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "validation": {
+      "type": "object",
+      "required": ["schema_passed", "self_check_passed", "tool_calls"],
+      "properties": {
+        "schema_passed": { "type": "boolean" },
+        "self_check_passed": { "type": "boolean" },
+        "tool_calls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["tool", "ok"],
+            "properties": {
+              "tool": { "type": "string" },
+              "ok": { "type": "boolean" },
+              "note": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["skill", "skill_version", "contract_version", "timestamp", "tools_used"],
+      "properties": {
+        "skill": { "type": "string" },
+        "skill_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "contract_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "tools_used": { "type": "array", "items": { "type": "string" } },
+        "source_input": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^OED-E1\\d{3}$" },
+        "message": { "type": "string" },
+        "retryable": { "type": "boolean" },
+        "details": { "type": "object" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,29 @@
+============================================================
+ obsidian-skill-router — Skill 工程包清单 (v1.0.0, 2026-08-06)
+============================================================
+
+用途: Obsidian Plan / Panshi 项目的 Skill 路由、权限与调用治理。
+      依据任务节点/上下文/证据状态/风险等级选择专业 Skill,控制
+      调用顺序/深度/预算/权限,防止递归失控与职责越界。
+
+格式: OpenCode 原生 Skill 标准 (SKILL.md + frontmatter)。
+      自研 skill.yaml 为 Router 注册表索引器的机器元数据。
+
+验证状态(全部真实执行):
+  - TypeScript 类型检查: bunx tsc --noEmit  → 0 错误
+  - 测试: bun test → 85 pass / 0 fail (5 文件)
+  - 评测: 12/12 用例通过; 7 项性能指标全部达标
+    (结构化输出通过率=1.0, 工具真实调用率=1.0, 引用可追溯率=0.917,
+     缺失输入识别率=1.0, 对抗拦截率=1.0, 重复一致性=1.0, 恢复轮次=0)
+
+目录:
+  SKILL.md / skill.yaml / ZIP-README.md / MANIFEST.txt
+  schemas/  prompts/  tools/  tests/  evals/  examples/  references/  CHANGELOG.md
+
+运行(需 Bun):
+  bun test                                    # 全部测试
+  bun tools/bin/osr.ts route --input examples/route-micp-biocementation.json
+  bun tools/bin/osr.ts registry --roots <skills目录...>
+
+文件数: 40 (不含 node_modules 与运行时日志)
+============================================================

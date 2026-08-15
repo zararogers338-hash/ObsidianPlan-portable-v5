@@ -1,0 +1,62 @@
+{
+  "contract_version": "1.0",
+  "task_id": "T-FIELD-GATE",
+  "project_id": "PRJ-SCALE-03",
+  "request": "场地试验通过后编制现场施工方案。注意：这是真实施工建议，应触发人工批准门",
+  "action": "scaleup",
+  "skill_version": "1.0.0",
+  "controller_version": "1.4.2",
+  "timestamp": "2026-08-07T10:00:00Z",
+  "risk_level": "critical",
+  "lab": {
+    "recipe": {
+      "urea_conc": {"value": 500, "unit": "mol/m3"},
+      "ca_conc": {"value": 500, "unit": "mol/m3"},
+      "pore_volumes_per_treatment": 1.0,
+      "rounds": 6,
+      "flow_mode": "constant_head",
+      "flow_rate": {"value": 0.001, "unit": "m3/s"}
+    }
+  },
+  "target": {
+    "scale_level": "field",
+    "geometry": {
+      "volume": {"value": 1000, "unit": "m3"},
+      "depth": {"value": 3.0, "unit": "m"},
+      "radius": {"value": 10.0, "unit": "m"}
+    },
+    "objective": "foundation_improvement",
+    "duration_days": 45
+  },
+  "site": {
+    "layers": [
+      {"name": "SAND", "thickness": {"value": 3.0, "unit": "m"},
+       "d50": {"value": 0.25, "unit": "mm"},
+       "fines_content": 0.04,
+       "porosity": 0.38,
+       "permeability": {"value": 8e-12, "unit": "m2"},
+       "saturation": 1.0}
+    ],
+    "groundwater_level": {"value": 0.8, "unit": "m"},
+    "anisotropy": 1.2
+  },
+  "wells": {
+    "pattern": "five_spot",
+    "spacing": {"value": 3.0, "unit": "m"}
+  },
+  "constraints": {
+    "allowed_injection_pressure": {"value": 200000, "unit": "Pa"},
+    "target_caco3_content_kg_m3": 60,
+    "ammonia_limit_mg_L": 50,
+    "conversion_efficiency": 0.4,
+    "pulse_strategy": "alternating",
+    "retention_time": {"value": 14400, "unit": "s"},
+    "flushing_pv": 2.0
+  },
+  "human_approval_state": {
+    "granted": false,
+    "approver": "",
+    "revision": 0,
+    "scope": ""
+  }
+}

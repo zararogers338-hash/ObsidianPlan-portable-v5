@@ -1,0 +1,28 @@
+{
+  "contract_version": "1.0",
+  "task_id": "ex-03",
+  "project_id": "demo-single-sem",
+  "request": "根据这张 SEM 图判断整体样品是否均匀成桥",
+  "action": "interpret.phases",
+  "skill_version": "1.0.0",
+  "controller_version": "0.1.0",
+  "timestamp": "2026-08-06T00:00:00Z",
+  "risk_level": "medium",
+  "samples": [
+    {
+      "id": "s1",
+      "data_type": "sem_particle_list",
+      "source": "SEM(单张图像)",
+      "particle_units": "um",
+      "unit_scale": 0.1,
+      "particles": [
+        [10, 20, 4.5], [12, 24, 3.2], [15, 22, 5.1], [18, 26, 2.8],
+        [20, 18, 6.0], [22, 30, 3.9], [25, 25, 4.1], [28, 20, 5.5],
+        [30, 28, 3.0], [32, 22, 4.8], [35, 30, 2.5], [38, 24, 5.9]
+      ]
+    }
+  ],
+  "thresholds": {
+    "sem_min_particles": 30
+  }
+}

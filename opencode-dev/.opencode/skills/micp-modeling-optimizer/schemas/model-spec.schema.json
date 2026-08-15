@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-modeling-optimizer.model-spec.json",
+  "title": "micp-modeling-optimizer — Model Specification",
+  "description": "Mechanistic model specification. A spec missing a key boundary condition / unit / parameter source returns MODEL_BLOCKED (MMO-E102) with per-field guidance. Fields marked required in the description are mandatory for any non-trivial model.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["purpose"],
+  "properties": {
+    "purpose": {
+      "oneOf": [
+        { "type": "string", "enum": ["EXPLANATION", "PREDICTION", "CONTROL", "OPTIMIZATION", "SCALE_UP", "PARAMETER_INFERENCE"] },
+        { "type": "array", "items": { "type": "string", "enum": ["EXPLANATION", "PREDICTION", "CONTROL", "OPTIMIZATION", "SCALE_UP", "PARAMETER_INFERENCE"] } }
+      ],
+      "description": "Locked model purpose (spec §二). An explanation model must not be presented as predictive."
+    },
+    "model_kind": {
+      "type": "string",
+      "enum": ["ode", "pde", "reactive_transport", "advection_diffusion", "algebraic"]
+    },
+    "state_variables": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "State variables (must be present; missing => MODEL_BLOCKED)."
+    },
+    "parameters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["name", "role", "unit"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "role": {
+            "type": "string",
+            "enum": ["fixed", "literature_prior", "calibration", "identifiable", "weakly_identifiable", "non_identifiable"]
+          },
+          "unit": { "type": "string", "minLength": 1 },
+          "value": { "type": "number" },
+          "source": { "type": "string" },
+          "bounds": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": { "type": "number" }
+          }
+        }
+      },
+      "description": "Parameters with role/unit/source. Missing unit => MODEL_BLOCKED."
+    },
+    "equations": {
+      "type": ["object", "string"],
+      "description": "Governing equations (differential + algebraic). Required.",
+      "properties": {
+        "kind": { "type": "string" },
+        "ureolysis": { "type": "string" },
+        "precipitation": { "type": "string" },
+        "porosity_permeability": { "type": "string" }
+      }
+    },
+    "initial_conditions": {
+      "type": "object",
+      "description": "State at t0 for every variable. Required.",
+      "additionalProperties": { "type": "number" }
+    },
+    "boundary_conditions": {
+      "type": "object",
+      "description": "Boundary conditions for spatial (PDE / reactive transport) models. Required for spatial models; missing => MODEL_BLOCKED."
+    },
+    "observations": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Observation equation outputs (which quantities are measured). Required."
+    },
+    "error_model": {
+      "type": "string",
+      "description": "Error / measurement-noise model (additive_gaussian, multiplicative, ...). Required."
+    },
+    "parameter_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["parameter", "source"],
+        "properties": {
+          "parameter": { "type": "string" },
+          "source": { "type": "string" },
+          "evidence_ref": { "type": "string" }
+        }
+      },
+      "description": "Provenance of every parameter (literature citation, experiment, or assumed)."
+    },
+    "space_scale": { "type": "string", "description": "Spatial scale (lab column / sand-pack / field pilot / ...). Required." },
+    "time_scale": { "type": "string", "description": "Time scale (hours / days / weeks). Required." },
+    "numerical_method": { "type": "string" },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "applicability": { "type": "string" },
+    "validation_data": { "type": "string", "description": "Data set the model was validated against." },
+    "failure_conditions": { "type": "array", "items": { "type": "string" } },
+    "kinetics": {
+      "type": "object",
+      "properties": {
+        "ureolysis": { "type": "string", "enum": ["michaelis_menten", "first_order"] },
+        "precipitation": { "type": "string", "enum": ["first_order_min", "saturation_driven"] },
+        "porosity_permeability": { "type": "string", "enum": ["kozeny_carman", "verma_pruess", "power_law"] },
+        "k_ure": { "type": "number", "minimum": 0 },
+        "k_pre": { "type": "number", "minimum": 0 },
+        "k_half": { "type": "number", "minimum": 0 },
+        "kd": { "type": "number", "minimum": 0 },
+        "c_biomass": { "type": "number", "minimum": 0 },
+        "ksp": { "type": "number", "minimum": 0 },
+        "surface_area": { "type": "number", "minimum": 0 },
+        "phi_crit": { "type": "number", "minimum": 0, "maximum": 1 },
+        "eta": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

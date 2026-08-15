@@ -1,0 +1,319 @@
+# Eval cases for micp-scaleup-injection-engineer.
+# The runner drives the real CLI (tools/scaleup.py) with these payloads and
+# checks expectations. Every case must exercise a real tool call.
+
+base:
+  contract_version: "1.0"
+  task_id: "T-EVAL"
+  request: "MICP scale-up injection design"
+  action: "scaleup"
+  skill_version: "1.0.0"
+  controller_version: "1.4.2"
+  timestamp: "2026-08-07T00:00:00Z"
+  risk_level: "medium"
+
+cases:
+  - id: eval-01
+    description: 5cm sand column -> 1m metre column (pipeline success + similarity)
+    scenario:
+      lab:
+        recipe:
+          urea_conc: {value: 500, unit: "mol/m3"}
+          ca_conc: {value: 500, unit: "mol/m3"}
+          pore_volumes_per_treatment: 1.0
+          rounds: 5
+          flow_mode: constant_flux
+          flow_rate: {value: 5e-5, unit: "m3/s"}
+          treatment_length: {value: 0.05, unit: "m"}
+      target:
+        scale_level: metre
+        geometry:
+          volume: {value: 0.05, unit: "m3"}
+          length: {value: 1.0, unit: "m"}
+          radius: {value: 0.13, unit: "m"}
+      site:
+        layers:
+          - name: A
+            thickness: {value: 1.0, unit: "m"}
+            porosity: 0.4
+            permeability: {value: 1e-11, unit: "m2"}
+      constraints:
+        allowed_injection_pressure: {value: 2000000, unit: "Pa"}
+        target_caco3_content_kg_m3: 60
+        ammonia_limit_mg_L: 200000
+        conversion_efficiency: 0.5
+    expect:
+      status: SUCCESS
+      self_check: true
+      artifacts_include: [similarity_matrix, material_balance, pressure_constraints,
+                          injection_layout, injection_schedule, monitoring_plan,
+                          clogging_risk, stage_gate]
+      scale_level: metre
+
+  - id: eval-02
+    description: metre -> site requires permeability per layer
+    scenario:
+      lab:
+        recipe:
+          urea_conc: {value: 500, unit: "mol/m3"}
+          ca_conc: {value: 500, unit: "mol/m3"}
+          pore_volumes_per_treatment: 1.0
+          rounds: 5
+      target:
+        scale_level: site
+        geometry:
+          volume: {value: 100, unit: "m3"}
+          depth: {value: 3, unit: "m"}
+          radius: {value: 3, unit: "m"}
+      site:
+        layers:
+          - name: A
+            thickness: {value: 3, unit: "m"}
+            porosity: 0.35
+            # no permeability -> BLOCKED
+      constraints:
+        target_caco3_content_kg_m3: 60
+    expect:
+      status: BLOCKED
+      error_code: MSI-E102
+      missing_field: permeability
+
+  - id: eval-03
+    description: constant-flux vs constant-head boundary comparison
+    scenario:
+      lab:
+        recipe:
+          urea_conc: {value: 500, unit: "mol/m3"}
+          ca_conc: {value: 500, unit: "mol/m3"}
+          pore_volumes_per_treatment: 1.0
+          rounds: 5
+          flow_mode: constant_flux
+          flow_rate: {value: 0.001, unit: "m3/s"}
+      target:
+        scale_level: metre
+        geometry:
+          volume: {value: 0.05, unit: "m3"}
+          length: {value: 1.0, unit: "m"}
+          radius: {value: 0.13, unit: "m"}
+      site:
+        layers:
+          - name: A
+            thickness: {value: 1.0, unit: "m"}
+            porosity: 0.4
+            permeability: {value: 1e-11, unit: "m2"}
+      constraints:
+        allowed_injection_pressure: {value: 500000, unit: "Pa"}
+        target_caco3_content_kg_m3: 60
+        conversion_efficiency: 0.5
+    expect:
+      status: [SUCCESS, PARTIAL]
+      boundary_flux_notes: true
+
+  - id: eval-04
+    description: heterogeneous two-layer soil with 100x permeability contrast
+    scenario:
+      lab:
+        recipe:
+          urea_conc: {value: 500, unit: "mol/m3"}
+          ca_conc: {value: 500, unit: "mol/m3"}
+          pore_volumes_per_treatment: 1.0
+          rounds: 5
+      target:
+        scale_level: site
+        geometry:
+          volume: {value: 100, unit: "m3"}
+          depth: {value: 2, unit: "m"}
+          radius: {value: 3, unit: "m"}
+      site:
+        layers:
+          - name: SAND
+            thickness: {value: 1.0, unit: "m"}
+            porosity: 0.4
+            permeability: {value: 1e-11, unit: "m2"}
+          - name: GRAVEL
+            thickness: {value: 1.0, unit: "m"}
+            porosity: 0.3
+            permeability: {value: 1e-9, unit: "m2"}
+      constraints:
+        target_caco3_content_kg_m3: 60
+        conversion_efficiency: 0.4
+    expect:
+      status: [SUCCESS, PARTIAL]
+      preferential_flow: [MEDIUM, HIGH]
+      uniformity_lt: 0.9
+
+  - id: eval-05
+    description: injection-point clogging via high concentration (1.5 M)
+    scenario:
+      lab:
+        recipe:
+          urea_conc: {value: 1500, unit: "mol/m3"}
+          ca_conc: {value: 1500, unit: "mol/m3"}
+          pore_volumes_per_treatment: 1.0
+          rounds: 3
+      target:
+        scale_level: metre
+        geometry:
+          volume: {value: 0.05, unit: "m3"}
+          length: {value: 1.0, unit: "m"}
+          radius: {value: 0.13, unit: "m"}
+      site:
+        layers:
+          - name: A
+            thickness: {value: 1.0, unit: "m"}
+            porosity: 0.4
+            permeability: {value: 1e-11, unit: "m2"}
+      constraints:
+        allowed_injection_pressure: {value: 500000, unit: "Pa"}
+        target_caco3_content_kg_m3: 60
+        conversion_efficiency: 0.5
+    expect:
+      status: [SUCCESS, PARTIAL]
+      inlet_clogging: HIGH
+
+  - id: eval-06
+    description: pressure exceeds formation allowable -> EXCEEDS + gate block
+    scenario:
+      lab:
+        recipe:
+          urea_conc: {value: 500, unit: "mol/m3"}
+          ca_conc: {value: 500, unit: "mol/m3"}
+          pore_volumes_per_treatment: 1.0
+          rounds: 5
+          flow_mode: constant_flux
+          flow_rate: {value: 0.1, unit: "m3/s"}
+      target:
+        scale_level: metre
+        geometry:
+          volume: {value: 0.05, unit: "m3"}
+          length: {value: 1.0, unit: "m"}
+          radius: {value: 0.13, unit: "m"}
+      site:
+        layers:
+          - name: A
+            thickness: {value: 1.0, unit: "m"}
+            porosity: 0.4
+            permeability: {value: 1e-11, unit: "m2"}
+      constraints:
+        allowed_injection_pressure: {value: 50000, unit: "Pa"}
+        target_caco3_content_kg_m3: 60
+        conversion_efficiency: 0.5
+    expect:
+      status: [SUCCESS, PARTIAL]
+      pressure_verdict: EXCEEDS
+
+  - id: eval-07
+    description: ammonia-N production exceeds site limit -> over_limit
+    scenario:
+      lab:
+        recipe:
+          urea_conc: {value: 500, unit: "mol/m3"}
+          ca_conc: {value: 500, unit: "mol/m3"}
+          pore_volumes_per_treatment: 1.0
+          rounds: 5
+      target:
+        scale_level: metre
+        geometry:
+          volume: {value: 0.05, unit: "m3"}
+          length: {value: 1.0, unit: "m"}
+          radius: {value: 0.13, unit: "m"}
+      site:
+        layers:
+          - name: A
+            thickness: {value: 1.0, unit: "m"}
+            porosity: 0.4
+            permeability: {value: 1e-11, unit: "m2"}
+      constraints:
+        allowed_injection_pressure: {value: 500000, unit: "Pa"}
+        target_caco3_content_kg_m3: 60
+        ammonia_limit_mg_L: 5
+        conversion_efficiency: 0.5
+    expect:
+      status: [SUCCESS, PARTIAL]
+      ammonia_over: true
+
+  - id: eval-08
+    description: preferential flow bypass flagged
+    scenario:
+      lab:
+        recipe:
+          urea_conc: {value: 500, unit: "mol/m3"}
+          ca_conc: {value: 500, unit: "mol/m3"}
+          pore_volumes_per_treatment: 1.0
+          rounds: 5
+      target:
+        scale_level: site
+        geometry:
+          volume: {value: 100, unit: "m3"}
+          depth: {value: 2, unit: "m"}
+          radius: {value: 3, unit: "m"}
+      site:
+        layers:
+          - name: LOWK
+            thickness: {value: 1.0, unit: "m"}
+            porosity: 0.35
+            permeability: {value: 1e-12, unit: "m2"}
+          - name: HIGHK
+            thickness: {value: 1.0, unit: "m"}
+            porosity: 0.4
+            permeability: {value: 1e-8, unit: "m2"}
+        preferential_flow_notes: "observed river channel"
+      constraints:
+        target_caco3_content_kg_m3: 60
+        conversion_efficiency: 0.4
+    expect:
+      status: [SUCCESS, PARTIAL]
+      preferential_flow: HIGH
+
+  - id: eval-09
+    description: missing site permeability -> BLOCKED (MSI-E102) at site scale
+    scenario:
+      target:
+        scale_level: site
+        geometry:
+          volume: {value: 100, unit: "m3"}
+          depth: {value: 3, unit: "m"}
+          radius: {value: 3, unit: "m"}
+      site:
+        layers:
+          - name: A
+            thickness: {value: 3, unit: "m"}
+            porosity: 0.35
+    expect:
+      status: BLOCKED
+      error_code: MSI-E102
+      missing_field: permeability
+
+  - id: eval-10
+    description: simulated monitoring triggers stop + fallback
+    scenario:
+      lab:
+        recipe:
+          urea_conc: {value: 500, unit: "mol/m3"}
+          ca_conc: {value: 500, unit: "mol/m3"}
+          pore_volumes_per_treatment: 1.0
+          rounds: 5
+      target:
+        scale_level: metre
+        geometry:
+          volume: {value: 0.05, unit: "m3"}
+          length: {value: 1.0, unit: "m"}
+          radius: {value: 0.13, unit: "m"}
+      site:
+        layers:
+          - name: A
+            thickness: {value: 1.0, unit: "m"}
+            porosity: 0.4
+            permeability: {value: 1e-11, unit: "m2"}
+      constraints:
+        allowed_injection_pressure: {value: 500000, unit: "Pa"}
+        target_caco3_content_kg_m3: 60
+        ammonia_limit_mg_L: 50
+        conversion_efficiency: 0.5
+      monitoring:
+        injection_pressure_pa: 900000
+        nh4_conc_mol_m3: 2000
+    expect:
+      status: [SUCCESS, PARTIAL]
+      rt_stop: true
+      fallback_present: true

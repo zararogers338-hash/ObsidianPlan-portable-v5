@@ -1,0 +1,52 @@
+{
+  "$schema": "https://obsidian.dev/manifest.schema.json",
+  "name": "micp-ureolysis-chemistry",
+  "title": "MICP Ureolysis Chemistry | 尿素水解、碳酸盐平衡与反应动力学",
+  "version": "1.0.0",
+  "contract_version": "1.0.0",
+  "layer": "panshi-governed-capability",
+  "license": "MIT",
+  "compatibility": {
+    "opencode": ">=1.18",
+    "runtime": "python >=3.10",
+    "bun": ">=1.3 (optional)"
+  },
+  "entrypoint": "tools/cli.py",
+  "discovery": {
+    "format": "SKILL.md",
+    "locations": [".opencode/skills/", ".claude/skills/", ".agents/skills/"]
+  },
+  "inputs": {
+    "schema": "schemas/input.schema.json",
+    "reference": "https://obsidian.dev/skills/micp-ureolysis-chemistry/input.schema.json"
+  },
+  "outputs": {
+    "schema": "schemas/output.schema.json",
+    "statuses": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+  },
+  "errors": ["MUC-E1001", "MUC-E1002", "MUC-E1003", "MUC-E1004", "MUC-E1005", "MUC-E1006", "MUC-E1007", "MUC-E1008", "MUC-E1009", "MUC-E1010", "MUC-E2001", "MUC-E2002", "MUC-E2003", "MUC-E2004", "MUC-E3001", "MUC-E3002", "MUC-E3003", "MUC-E4001", "MUC-E4002"],
+  "tools": [
+    { "name": "balance", "entrypoint": "tools/cli.py", "subcommand": "balance", "purpose": "Elemental (N/C/Ca) and charge conservation checks; ureolysis stoichiometry" },
+    { "name": "speciate", "entrypoint": "tools/cli.py", "subcommand": "speciate", "purpose": "Carbonate equilibrium at fixed pH or from alkalinity; saturation index with activity corrections" },
+    { "name": "simulate", "entrypoint": "tools/cli.py", "subcommand": "simulate", "purpose": "Coupled batch ureolysis + carbonate + precipitation kinetics (kinetic vs equilibrium)" },
+    { "name": "fit", "entrypoint": "tools/cli.py", "subcommand": "fit", "purpose": "Kinetic parameter inversion (first-order k or MM vmax/km) from time series" },
+    { "name": "sens", "entrypoint": "tools/cli.py", "subcommand": "sens", "purpose": "One-at-a-time sensitivity and RSS uncertainty propagation" },
+    { "name": "units", "entrypoint": "tools/cli.py", "subcommand": "units", "purpose": "Unit/dimension validation of quantity lists" },
+    { "name": "phreeqc-in", "entrypoint": "tools/cli.py", "subcommand": "phreeqc-in", "purpose": "Generate PHREEQC input deck (no PHREEQC required)" },
+    { "name": "phreeqc-run", "entrypoint": "tools/cli.py", "subcommand": "phreeqc-run", "purpose": "Run PHREEQC if installed and parse results; offline degradation otherwise" },
+    { "name": "validate", "entrypoint": "tools/cli.py", "subcommand": "validate", "purpose": "Validate a controller input envelope structurally" },
+    { "name": "version", "entrypoint": "tools/cli.py", "subcommand": "version", "purpose": "Print skill/environment versions" }
+  ],
+  "permissions": {
+    "read": "project files (read-only)",
+    "write": "audit/ directory only",
+    "requires_approval": ["network access", "external writes", "PHREEQC execution", "experiment execution", "invoking other skills"]
+  },
+  "offline": true,
+  "deterministic": true,
+  "dependencies": {
+    "python_packages": ["numpy", "scipy"],
+    "optional": ["PyYAML (evals only)"],
+    "external": ["PHREEQC v3 (optional, for validation)"]
+  }
+}

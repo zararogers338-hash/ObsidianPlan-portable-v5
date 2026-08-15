@@ -1,0 +1,68 @@
+{
+  "contract_version": "1.0",
+  "task_id": "task-high-bias-003",
+  "project_id": "panshi-biocement",
+  "request": "移除一篇高偏倚研究,验证敏感性分析结果变化",
+  "action": "evidence.synthesize",
+  "skill_version": "1.0.0",
+  "controller_version": "1.0.0",
+  "timestamp": "2026-08-06T00:00:00Z",
+  "risk_level": "medium",
+  "pico": {
+    "population": "Ottawa sand, D50=0.4mm",
+    "intervention": "MICP, 1M cementation solution",
+    "outcome": "UCS at 7 d, MPa",
+    "unit": "MPa"
+  },
+  "evidence_cards": [
+    {
+      "ref_id": "doi:10.1000/highbias",
+      "study_id": "bias-study",
+      "study_type": "lab_experiment",
+      "layer": "engineering_performance",
+      "evidence_level": "L1_direct_observation",
+      "material": {"soil_type": "Ottawa sand", "grain_size_d50_mm": 0.4},
+      "outcome": {"name": "UCS", "value": 9.0, "unit": "MPa", "direction": "higher_is_better"},
+      "reported_effect": {
+        "arms": [
+          {"name": "MICP", "n": 6, "mean": 9.0, "sd": 0.4, "unit": "MPa"},
+          {"name": "control", "n": 6, "mean": 0.4, "sd": 0.1, "unit": "MPa"}
+        ]
+      },
+      "risk_of_bias": {"overall": "critical"},
+      "note": "outlier suspected, high bias"
+    },
+    {
+      "ref_id": "doi:10.1000/study1",
+      "study_id": "study-1",
+      "study_type": "lab_experiment",
+      "layer": "engineering_performance",
+      "evidence_level": "L1_direct_observation",
+      "material": {"soil_type": "Ottawa sand", "grain_size_d50_mm": 0.4},
+      "outcome": {"name": "UCS", "value": 3.2, "unit": "MPa", "direction": "higher_is_better"},
+      "reported_effect": {
+        "arms": [
+          {"name": "MICP", "n": 6, "mean": 3.2, "sd": 0.4, "unit": "MPa"},
+          {"name": "control", "n": 6, "mean": 0.4, "sd": 0.1, "unit": "MPa"}
+        ]
+      },
+      "risk_of_bias": {"overall": "low"}
+    },
+    {
+      "ref_id": "doi:10.1000/study2",
+      "study_id": "study-2",
+      "study_type": "lab_experiment",
+      "layer": "engineering_performance",
+      "evidence_level": "L1_direct_observation",
+      "material": {"soil_type": "Ottawa sand", "grain_size_d50_mm": 0.4},
+      "outcome": {"name": "UCS", "value": 2.9, "unit": "MPa", "direction": "higher_is_better"},
+      "reported_effect": {
+        "arms": [
+          {"name": "MICP", "n": 6, "mean": 2.9, "sd": 0.3, "unit": "MPa"},
+          {"name": "control", "n": 6, "mean": 0.4, "sd": 0.1, "unit": "MPa"}
+        ]
+      },
+      "risk_of_bias": {"overall": "low"}
+    }
+  ]
+}

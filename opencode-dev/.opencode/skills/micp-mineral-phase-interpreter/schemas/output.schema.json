@@ -1,0 +1,177 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-mineral-phase-interpreter/output.schema.json",
+  "title": "micp-mineral-phase-interpreter output contract",
+  "description": "Unified skill output envelope (Obsidian Plan spec §六). Every invocation returns this shape, success or failure. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version", "skill", "skill_version", "status", "summary",
+    "action", "project_id", "task_id",
+    "findings", "assumptions", "evidence_used", "uncertainty", "risks",
+    "artifacts", "requested_next_skills", "results", "validation", "provenance", "errors"
+  ],
+  "properties": {
+    "contract_version": {"type": "string", "pattern": "^1\\.\\d+$"},
+    "skill": {"type": "string", "const": "micp-mineral-phase-interpreter"},
+    "skill_version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+    },
+    "summary": {"type": "string"},
+    "action": {"type": ["string", "null"]},
+    "project_id": {"type": ["string", "null"]},
+    "task_id": {"type": ["string", "null"]},
+    "candidate_phases": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "候选矿物相(likely/candidate 置信度),与 confirmed_phases 严格区分(规格 §核心使命四级结论不得互相替代)。"
+    },
+    "confirmed_phases": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "确认矿物相(仅 confirmed 置信度,需多模态佐证)。"
+    },
+    "rejected_phases": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "被否定的矿物相(absent/weak 或无证据)。"
+    },
+    "unexplained_features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {"type": "string"},
+          "value": {"type": "number"},
+          "detail": {"type": "string"}
+        }
+      },
+      "description": "未归属任何已知矿物相的特征(未解释峰/带),需补充表征。"
+    },
+    "reflection_overlaps": {
+      "type": "array",
+      "items": {"type": "object"},
+      "description": "不同晶型参考反射在容差内重叠的冲突证据;相关反射不能单独判别晶型。"
+    },
+    "morphology": {
+      "type": "object",
+      "description": "晶体形貌汇总(来自 SEM;支持性证据,不可单独鉴定晶型)。"
+    },
+    "spatial_distribution": {
+      "type": "object",
+      "description": "沉淀空间分布(取样位置/颗粒数/覆盖估计)。"
+    },
+    "bridge_evidence": {
+      "type": "object",
+      "description": "颗粒接触处晶桥证据:几何接触候选(INFERRED)与工程贡献声明(必须由力学验证支持,绝不从矿物证据推导)。"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "statement"],
+        "properties": {
+          "label": {
+            "type": "string",
+            "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"],
+            "description": "Epistemic label (spec §六). INFERRED/HYPOTHESIS/RECOMMENDATION may never be reported as OBSERVED."
+          },
+          "statement": {"type": "string"},
+          "source": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "evidence_used": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref_id"],
+        "properties": {
+          "ref_id": {"type": "string"},
+          "uri": {"type": ["string", "null"]},
+          "media_type": {"type": ["string", "null"]},
+          "note": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "uncertainty": {"type": "array", "items": {"type": "string"}},
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "statement"],
+        "properties": {
+          "label": {"type": "string",
+                    "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]},
+          "statement": {"type": "string"}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind"],
+        "properties": {
+          "kind": {"type": "string"},
+          "path": {"type": ["string", "null"]},
+          "note": {}
+        }
+      }
+    },
+    "requested_next_skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill", "reason"],
+        "properties": {
+          "skill": {"type": "string"},
+          "reason": {"type": "string"},
+          "inputs_needed": {"type": "array", "items": {"type": "string"}}
+        }
+      },
+      "description": "Skill may request Router coordination but never invokes other skills directly (spec §七)."
+    },
+    "results": {
+      "type": "object",
+      "description": "Action-specific machine-readable payload (phase list, fusion scores, matches, etc.)."
+    },
+    "validation": {
+      "type": "object",
+      "required": ["input_schema", "output_schema", "self_check", "checks"],
+      "properties": {
+        "input_schema": {"type": "string", "enum": ["passed", "failed", "pending"]},
+        "output_schema": {"type": "string", "enum": ["passed", "failed", "pending"]},
+        "self_check": {"type": "string", "enum": ["passed", "failed", "not_run"]},
+        "checks": {"type": "array", "items": {"type": "object"}}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["started_at", "completed_at", "skill_version", "sources"],
+      "properties": {
+        "started_at": {"type": ["string", "null"]},
+        "completed_at": {"type": ["string", "null"]},
+        "skill_version": {"type": ["string", "null"]},
+        "sources": {"type": "array", "items": {"type": "string"}},
+        "audit_log": {"type": ["string", "null"]}
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {"type": "string", "pattern": "^OMM-E[0-9]{3}$"},
+          "message": {"type": "string"},
+          "detail": {"type": "object"},
+          "retryable": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

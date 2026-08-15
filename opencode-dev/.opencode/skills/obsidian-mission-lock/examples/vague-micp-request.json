@@ -1,0 +1,10 @@
+{
+  "task_id": "t-oml-001",
+  "project_id": "p-micp-research",
+  "request": "提高MICP效果",
+  "context": {},
+  "constraints": {},
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-controller-0.1.0",
+  "timestamp": "2026-08-06T10:00:00Z"
+}

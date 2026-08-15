@@ -1,0 +1,30 @@
+{
+  "task_id": "selftest-1",
+  "project_id": "selfboot",
+  "request": "模拟 pH 电极漂移和标准液失败,给出 QC 判定",
+  "skill_version": "1.0.0",
+  "controller_version": "1.0.0",
+  "timestamp": "2026-08-06T12:00:00+00:00",
+  "requested_output_format": "qc_report",
+  "qc_input": {
+    "instruments": [
+      {"instrument_id": "pH-1", "kind": "pH", "model": "Mettler S220",
+       "measurement_range": [0, 14], "saturation_threshold": 14.0}
+    ],
+    "calibrations": [
+      {"calibration_id": "cal-1", "instrument_id": "pH-1", "method": "linear",
+       "status": "failed", "standards": [
+         {"concentration": 4.0, "response": -200.0},
+         {"concentration": 7.0, "response": 50.0},
+         {"concentration": 10.0, "response": 300.0}]}
+    ],
+    "measurements": [
+      {"measurement_id": "m0", "instrument_id": "pH-1", "sample_id": "s1",
+       "value": 7.02, "unit": "pH", "timestamp": "2026-08-01T10:00:00",
+       "qc": {"mean": 7.0, "sd": 0.05}},
+      {"measurement_id": "m1", "instrument_id": "pH-1", "sample_id": "s2",
+       "value": 8.60, "unit": "pH", "timestamp": "2026-08-01T10:10:00",
+       "qc": {"mean": 7.0, "sd": 0.05}}
+    ]
+  }
+}

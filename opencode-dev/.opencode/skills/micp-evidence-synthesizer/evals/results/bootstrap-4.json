@@ -1,0 +1,51 @@
+{
+  "scenario": "bootstrap-4",
+  "input": "examples/01-caco3-similar-content.json",
+  "skill_version": "1.0.0",
+  "self_check_passed": true,
+  "conclusions_scoped": true,
+  "attack_checks": [],
+  "conclusions": [
+    {
+      "id": "C01",
+      "statement": "Pooled standardized effect 7.1241 (95% CI [5.095, 9.1531]), fixed effect across 2 studies.",
+      "label": "CALCULATED",
+      "evidence_level": "high",
+      "scope": "Ottawa sand, D50=0.4mm, Dr=60% under MICP, 1M cementation solution; effects standardized (Hedges' g)",
+      "counterexample": "Any single study outside the pooled heterogeneity band; prediction interval if reported",
+      "open_questions": [
+        "I2=33.95% — sources of residual heterogeneity",
+        "pooling model: fixed_effect"
+      ],
+      "conditions": [
+        "admissible (I2=33.9%)"
+      ]
+    },
+    {
+      "id": "C02",
+      "statement": "Cross-study comparability is insufficient across 13 checked dimensions.",
+      "label": "INFERRED",
+      "evidence_level": "moderate",
+      "scope": "Dimensions checked: strain, material, grain_size, saturation, concentration, scale, injection_protocol, measurement_method, endpoint, specimen_diameter, specimen_height, loading_rate, units",
+      "counterexample": "A study reporting a dimension as 'not reported' may change status if filled",
+      "open_questions": [
+        "loading_rate: not reported in any card"
+      ],
+      "conditions": [
+        "comparability is conditional on the reported dimensions"
+      ]
+    },
+    {
+      "id": "C03",
+      "statement": "Overall certainty for the synthesized conclusion set: high.",
+      "label": "RECOMMENDATION",
+      "evidence_level": "high",
+      "scope": "GRADE-style 5-domain rating",
+      "counterexample": "New high-quality randomized data could raise certainty",
+      "open_questions": [],
+      "conditions": [
+        "rating applies to this evidence set and outcome only"
+      ]
+    }
+  ]
+}

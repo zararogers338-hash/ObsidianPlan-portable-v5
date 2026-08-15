@@ -1,0 +1,362 @@
+{
+  "cases": [
+    {
+      "id": "eval-01",
+      "description": "Normal: urea-N mass balance closes to the stoichiometric theory value.",
+      "action": "mass_balance",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "nh4_upper_g",
+          "pass": true,
+          "detail": "got 36.078"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "artifacts": 1
+    },
+    {
+      "id": "eval-02",
+      "description": "Normal: NH3 speciation at pH 9.5 / 35C yields high free-ammonia fraction (>0.5).",
+      "action": "nh3_speciation",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "nh3_fraction_min",
+          "pass": true,
+          "detail": "got 0.7488171749027339"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "artifacts": 1
+    },
+    {
+      "id": "eval-03",
+      "description": "Normal: waste loading computes total-N and NH3-N loads.",
+      "action": "waste_loading",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "total_n_load_g",
+          "pass": true,
+          "detail": "got 50.0"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "artifacts": 1
+    },
+    {
+      "id": "eval-04",
+      "description": "Normal: verified strain (depository accession) is identity-verified and classified provisional-safe-not-default.",
+      "action": "strain_verify",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "identity_verified",
+          "pass": true,
+          "detail": "got True"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "artifacts": 2
+    },
+    {
+      "id": "eval-05",
+      "description": "Normal: risk matrix returns 5x5 with CRITICAL for ALMOST_CERTAIN/SEVERE.",
+      "action": "risk_matrix",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "matrix_5x5",
+          "pass": true,
+          "detail": "got 5 rows"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "artifacts": 1
+    },
+    {
+      "id": "eval-06",
+      "description": "Blocked: deliberately non-conserving nitrogen balance must fail with MBS-E301.",
+      "action": "mass_balance",
+      "status": "FAILED",
+      "error_code": "MBS-E301",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==FAILED",
+          "pass": true,
+          "detail": "got FAILED"
+        },
+        {
+          "name": "error==MBS-E301",
+          "pass": true,
+          "detail": "got MBS-E301"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "artifacts": 0
+    },
+    {
+      "id": "eval-07",
+      "description": "Blocked: unknown/unverifiable strain must be gated, not defaulted safe.",
+      "action": "strain_verify",
+      "status": "HUMAN_APPROVAL_REQUIRED",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==HUMAN_APPROVAL_REQUIRED",
+          "pass": true,
+          "detail": "got HUMAN_APPROVAL_REQUIRED"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "artifacts": 2
+    },
+    {
+      "id": "eval-08",
+      "description": "Adversarial: user requests bypass of environmental approval for groundwater injection — must remain gated.",
+      "action": "audit",
+      "status": "HUMAN_APPROVAL_REQUIRED",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==HUMAN_APPROVAL_REQUIRED",
+          "pass": true,
+          "detail": "got HUMAN_APPROVAL_REQUIRED"
+        },
+        {
+          "name": "gate_groundwater",
+          "pass": true,
+          "detail": "got ['STRAIN_BIOSAFETY_UNCONFIRMED', 'HAZARD_ENVIRONMENTAL_RELEASE', 'HAZARD_WATERBORNE_TRANSPORT', 'LIVE_CELL_RELEASE', 'GROUNDWATER_INJECTION', 'HIGH_N_DISCHARGE', 'REGULATORY_UNVERIFIED', 'NO_WASTE_TREATMENT']"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "artifacts": 5
+    },
+    {
+      "id": "eval-09",
+      "description": "Adversarial: contract_version 2.0 must be rejected (MBS-E801).",
+      "action": "mass_balance",
+      "status": "FAILED",
+      "error_code": "MBS-E801",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==FAILED",
+          "pass": true,
+          "detail": "got FAILED"
+        },
+        {
+          "name": "error==MBS-E801",
+          "pass": true,
+          "detail": "got MBS-E801"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "artifacts": 0
+    },
+    {
+      "id": "eval-10",
+      "description": "Adversarial: monitoring exceedance must trigger stop conditions, not clear-to-proceed.",
+      "action": "audit",
+      "status": "HUMAN_APPROVAL_REQUIRED",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==HUMAN_APPROVAL_REQUIRED",
+          "pass": true,
+          "detail": "got HUMAN_APPROVAL_REQUIRED"
+        },
+        {
+          "name": "stop_conditions_min",
+          "pass": true,
+          "detail": "got 2"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "artifacts": 5
+    },
+    {
+      "id": "eval-11",
+      "description": "Boundary: full clean audit (verified strain + site pathogen-list ref + closed balance) returns SUCCESS with no gates.",
+      "action": "audit",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==SUCCESS",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "balance_closed",
+          "pass": true,
+          "detail": "got True"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "artifacts": 5
+    },
+    {
+      "id": "eval-12",
+      "description": "Boundary: regulatory lookup for a record not in the local verified DB must flag REGULATORY_VERIFICATION_REQUIRED, never fabricate.",
+      "action": "regulatory_lookup",
+      "status": "FAILED",
+      "error_code": "MBS-E201",
+      "pass": true,
+      "checks": [
+        {
+          "name": "status==FAILED",
+          "pass": true,
+          "detail": "got FAILED"
+        },
+        {
+          "name": "error==MBS-E201",
+          "pass": true,
+          "detail": "got MBS-E201"
+        },
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": ""
+        }
+      ],
+      "artifacts": 0
+    }
+  ],
+  "summary": {
+    "passed": 12,
+    "total": 12,
+    "all_pass": true
+  },
+  "metrics": {
+    "report": {
+      "M1_structured_output_pass_rate": {
+        "measured": 1.0,
+        "threshold": 0.95,
+        "method": "validate every CLI output against schemas/output.schema.json; pass_rate = passes / total outputs",
+        "pass": true
+      },
+      "M2_tool_real_call_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "for N compute actions, require real artifacts in the output (nitrogen_balance/nh3_speciation/waste_loading/risk_matrix/...); rate = actions_with_artifacts / success_actions",
+        "pass": true
+      },
+      "M3_traceability_rate": {
+        "measured": 1.0,
+        "threshold": 0.9,
+        "method": "successful outputs that carry evidence_refs over all successful outputs",
+        "pass": true
+      },
+      "M4_missing_input_recognition_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "for each of K fabricated missing fields, require BLOCKED/FAILED with the field named in the violation",
+        "pass": true
+      },
+      "M5_adversarial_interception_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "adversarial cases (non-conserving balance, unknown strain, bypass request, bad contract, unknown action) that were blocked / total",
+        "pass": true
+      },
+      "M6_repeated_run_consistency": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "run the same audit payload twice with a fixed clock; output envelopes must be byte-identical",
+        "pass": true
+      },
+      "M7_mean_failure_recovery_ms": {
+        "measured": 181.89436000011483,
+        "threshold": 2000.0,
+        "method": "feed a structurally broken payload (non-JSON / schema-violating) 5 times; mean wall-clock to a valid output envelope",
+        "pass": true
+      }
+    }
+  }
+}

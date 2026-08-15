@@ -1,0 +1,20 @@
+{
+  "task_id": "selftest-2",
+  "project_id": "selfboot",
+  "request": "模拟样品编号重复和时间戳错位",
+  "skill_version": "1.0.0",
+  "controller_version": "1.0.0",
+  "timestamp": "2026-08-06T12:00:00+00:00",
+  "requested_output_format": "qc_report",
+  "qc_input": {
+    "instruments": [{"instrument_id": "pH-1", "kind": "pH", "model": "x"}],
+    "samples": [
+      {"sample_id": "S-001", "collection_time": "2026-08-01T09:00:00"},
+      {"sample_id": "S-001", "collection_time": "2026-08-01T09:00:00"}
+    ],
+    "measurements": [
+      {"measurement_id": "m0", "instrument_id": "pH-1", "sample_id": "S-001",
+       "value": 7.0, "unit": "pH", "timestamp": "2026-08-01T08:30:00"}
+    ]
+  }
+}

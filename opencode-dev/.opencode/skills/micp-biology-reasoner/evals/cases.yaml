@@ -1,0 +1,142 @@
+# Evaluation cases for micp-biology-reasoner (spec §三, §十一)
+# Each case is a full skill invocation through the real CLI. Cases cover:
+#   normal / missing / conflict / adversarial / boundary. No case leaks the
+#   expected answer into the input. Reference expectations are derived by the
+#   domain rules, never hardcoded "fixed answers".
+
+suite:
+  name: micp-biology-reasoner-evals
+  contract_version: "1.0"
+
+base:
+  contract_version: "1.0"
+  task_id: "eval"
+  project_id: "evals-project"
+  request: "eval suite case"
+  action: null
+  skill_version: "0.1.0"
+  timestamp: "2026-08-06T00:00:00Z"
+
+cases:
+  # --- normal -------------------------------------------------------------
+  - id: eval-01
+    description: "Normal: same OD600, different urease activity -> must NOT be treated as equivalent; ratio computed."
+    action: compare
+    extra:
+      culture: {od600: 1.2, urease_activity: 5.0, urease_activity_unit: "U/mL"}
+      baseline: {culture: {od600: 1.2, urease_activity: 8.0, urease_activity_unit: "U/mL"}}
+    expect:
+      status: SUCCESS
+      ratio_not_1: true
+      activity_not_identical: true
+
+  - id: eval-02
+    description: "Normal: unit conversion mmol/L/h -> U/mL (60 -> 1) computes through the real tool."
+    action: convert
+    extra:
+      culture: {urease_activity: 60.0, urease_activity_unit: "mmol/L/h"}
+      metric_query: {kind: activity_normalization}
+    expect:
+      status: SUCCESS
+      u_per_ml: 1.0
+
+  - id: eval-03
+    description: "Normal: salinity assessment of S. pasteurii must be REPORTED, not OBSERVED (no direct data)."
+    action: assess
+    extra:
+      culture: {name: "Sporosarcina pasteurii"}
+      conditions: {salinity: 35.0}
+    expect:
+      status: SUCCESS
+      evidence_label: REPORTED
+
+  - id: eval-04
+    description: "Normal: biostimulation vs augmentation for low-carbon soil surfaces the community/competition mechanism."
+    action: assess
+    extra:
+      treatment: biostimulation
+      context: {soil_organic_carbon: 0.2}
+    expect:
+      status: SUCCESS
+      findings_min: 2
+
+  # --- missing / blocked --------------------------------------------------
+  - id: eval-05
+    description: "Missing: activity without a unit must be BLOCKED as unit-inconsistent (MBR-E203), not silently interpreted."
+    action: convert
+    extra:
+      culture: {urease_activity: 5.0}
+      metric_query: {kind: activity_normalization}
+    expect:
+      status: FAILED
+      error_code: MBR-E203
+
+  - id: eval-06
+    description: "Missing: compare without baseline.culture must be BLOCKED naming the field (MBR-E102)."
+    action: compare
+    extra:
+      culture: {od600: 1.0, urease_activity: 2.0, urease_activity_unit: "U/mL"}
+    expect:
+      status: FAILED
+      error_code: MBR-E102
+
+  # --- conflict / adversarial ----------------------------------------------
+  - id: eval-07
+    description: "Adversarial: OD600 as an activity unit must be rejected as biomass-not-activity (MBR-E204)."
+    action: convert
+    extra:
+      culture: {urease_activity: 5.0, urease_activity_unit: "OD600"}
+      metric_query: {kind: activity_normalization}
+    expect:
+      status: FAILED
+      error_code: MBR-E204
+
+  - id: eval-08
+    description: "Adversarial: contract_version 2.0 must be rejected (MBR-E801)."
+    action: compare
+    extra:
+      contract_version: "2.0"
+    expect:
+      status: FAILED
+      error_code: MBR-E801
+
+  # --- boundary -------------------------------------------------------------
+  - id: eval-09
+    description: "Boundary: OD600->CFU/mL without calibration must refuse to guess (MBR-E203)."
+    action: convert
+    extra:
+      culture: {od600: 1.0}
+      metric_query: {kind: cell_concentration}
+    expect:
+      status: FAILED
+      error_code: MBR-E203
+
+  - id: eval-10
+    description: "Boundary: unknown strain at high salinity must be HYPOTHESIS + explicit evidence-insufficiency guidance."
+    action: assess
+    extra:
+      culture: {name: "Bacillus sp. NBS-7"}
+      conditions: {salinity: 60.0}
+    expect:
+      status: SUCCESS
+      evidence_label: HYPOTHESIS
+      insufficient_evidence: true
+
+  - id: eval-11
+    description: "Boundary: first-order retention fit on exact-decay data recovers the rate constant (CALCULATED, R2>0.99)."
+    action: evaluate
+    extra:
+      metric_query: {kind: retention_rate}
+      attachments: {retention: {time_points_h: [0, 1, 2, 4], retained_fraction: [1.0, 0.7408, 0.5488, 0.3012]}}
+    expect:
+      status: SUCCESS
+      k_in_range: [0.25, 0.35]
+
+  - id: eval-12
+    description: "Missing: analyze with neither records nor time-series must be BLOCKED listing obtainable fields."
+    action: analyze
+    extra:
+      request: "analyze nothing"
+    expect:
+      status: FAILED
+      error_code: MBR-E102

@@ -1,0 +1,31 @@
+{
+  "suite": "micp-modeling-optimizer-redteam",
+  "all_intercepted": true,
+  "attacks": [
+    {
+      "name": "overfitting",
+      "intercepted": true,
+      "detail": "status=SUCCESS holdout_ratio=2.90530759963369 risks=[{\"risk\": \"held-out performance much worse than training \\u2014 overfitting signal\", \"severity\": \"high\", \"mitigation\": \""
+    },
+    {
+      "name": "conservation",
+      "intercepted": true,
+      "detail": "conservation ok=False failing=['urea_mass_balance']"
+    },
+    {
+      "name": "fit_as_prediction",
+      "intercepted": true,
+      "detail": "status=BLOCKED codes=['MMO-E104']"
+    },
+    {
+      "name": "non_identifiability",
+      "intercepted": true,
+      "detail": "status=SUCCESS classes=['non_identifiable', 'non_identifiable'] verdict=partially_identifiable"
+    },
+    {
+      "name": "out_of_scale_claim",
+      "intercepted": true,
+      "detail": "status=SUCCESS scale_acknowledged=True"
+    }
+  ]
+}

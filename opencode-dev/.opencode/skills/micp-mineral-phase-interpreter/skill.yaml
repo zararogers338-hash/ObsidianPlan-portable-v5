@@ -1,0 +1,77 @@
+name: micp-mineral-phase-interpreter
+display_name: MICP Mineral Phase Interpreter｜晶型、晶体形貌与多模态表征解释
+version: 1.1.1
+description: "Interpret mineral phase, crystal morphology, nucleation sites and effective crystal bridges of MICP precipitates from combined XRD / SEM / EDS / FTIR / Raman / TGA characterization, with explicit uncertainty management."
+contract_version: 1.0
+risk_tier: medium
+entry:
+  cli: tools/mmpi_cli.py
+  mode: stdin_stdout
+dependencies:
+  - "python>=3.10"
+  - "numpy>=1.24"
+  - "scipy>=1.9"
+  - "Pillow>=9.0"
+  - "scikit-image>=0.20"
+  - "jsonschema>=4.0"
+  - pyyaml
+  - pytest
+capabilities:
+  - mineral_phase
+  - characterization
+  - evidence_fusion
+  - uncertainty_management
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - context
+  - evidence_refs
+  - data_refs
+  - upstream_outputs
+outputs:
+  - status
+  - summary
+  - findings
+  - assumptions
+  - evidence_used
+  - uncertainty
+  - risks
+  - artifacts
+  - requested_next_skills
+  - validation
+  - provenance
+  - errors
+tool_permissions:
+  - read
+network: false
+writes:
+  - "audit_dir/**"
+stop_conditions:
+  - output envelope generated and passes output schema
+  - all parse/fuse/self-check steps completed
+  - "missing critical inputs -> BLOCKED, no fabricated data"
+domain_keywords:
+  - 矿物相
+  - 方解石
+  - 球霰石
+  - 文石
+  - 碳酸钙
+  - XRD
+  - SEM
+  - EDS
+  - FTIR
+  - Raman
+  - TGA
+  - 晶体
+  - 晶桥
+  - 形貌
+compatibility:
+  opencode_loader: "discovery pattern {skill,skills}/**/SKILL.md; frontmatter name+description (verified in packages/opencode/src/skill/index.ts)"
+  contract_major: 1
+  schema_breaking_bump: major
+  optional_field_bump: minor
+  implementation_fix_bump: patch
+  migrate_or_reject: Inputs with contract_version major 2 are rejected with OMM-E501; outputs written under an older major contract are migrated by an explicit step or rejected — never silently reinterpreted.
+maintainer: Panshi / Obsidian Plan
+license: MIT (project convention; repo root LICENSE)

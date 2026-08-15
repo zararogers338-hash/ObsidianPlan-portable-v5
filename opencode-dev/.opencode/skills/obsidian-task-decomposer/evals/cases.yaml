@@ -1,0 +1,279 @@
+# Evaluation cases — obsidian-task-decomposer
+
+Offline, deterministic evaluation of the tool pipeline and the skill contract.
+Each case defines a JSON document and the checks that must hold after running
+it through the pipeline. The runner (`run_evals.py`) is pure stdlib, needs no
+network, and reports the minimum performance indicators declared in
+`skill.yaml` `evaluation.indicators`.
+
+Indicator → measurement mapping:
+
+| Indicator | Where measured |
+|---|---|
+| `structured_output_pass_rate` | every SUCCESS case's output validates against `schemas/output.schema.json` |
+| `tool_invocation_rate` | per case, the set of tools actually invoked (runner calls them for real) |
+| `evidence_traceability_rate` | every `evidence_used.ref_id` in SUCCESS outputs exists in input refs |
+| `missing_input_detection_rate` | cases with missing required fields must yield `BLOCKED` |
+| `adversarial_interception_rate` | adversarial cases (cycles, implicit deps, fabricated refs) must be caught |
+| `repeat_run_consistency` | each case run twice; byte-identical output required |
+| `mean_failure_recovery_time` | wall time per case (stdin→result); reported as max and mean |
+
+Cases are grouped:
+
+- `positive` — normal, well-formed requests.
+- `conflict` — contradictory constraints or evidence.
+- `adversarial` — inputs engineered to break the DAG contract.
+- `boundary` — degenerate but valid input shapes.
+
+---
+
+## 1. positive/basic-micp-uniformity
+
+Decompose a realistic MICP research objective into a DAG with a literature
+node, a mechanism node, an experiment-design node, a measurement node, an
+audit node, and a decision node. The DAG must pass all self-audit gates.
+
+```json
+{
+  "task_id": "eval-01",
+  "project_id": "panshi-demo",
+  "request": "Optimize the uniformity of MICP-treated sand columns. Decompose this into research tasks covering literature, mechanism, experiment design, measurement, audit, and decision.",
+  "constraints": {"max_nodes": 12, "currency": "USD"},
+  "evidence_refs": [
+    {"ref_id": "whiffin2007", "kind": "paper", "locator": "https://doi.org/10.1080/01490450701436505"},
+    {"ref_id": "biogrout2011", "kind": "paper", "locator": "https://doi.org/10.1007/s11242-010-9691-8"}
+  ],
+  "risk_level": "medium",
+  "human_approval_state": {"required": false, "granted": false},
+  "requested_output_format": "json",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:00:00Z"
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - `artifacts[].kind` includes `task_dag`
+  - every node has exactly one `primary_skill` and `<= 1` collaborators
+  - `validation.self_audit_pass is true`
+  - `evidence_used` ⊆ input `evidence_refs` ids + upstream
+
+## 2. positive/ureolysis-with-ammonium
+
+Request explicitly involves urea hydrolysis; the plan must contain an ammonium
+fate / mass-balance task and a chemistry node.
+
+```json
+{
+  "task_id": "eval-02",
+  "project_id": "panshi-demo",
+  "request": "Decompose the ureolysis chemistry work package: characterize urea hydrolysis kinetics and the ammonium mass balance for sand-column MICP.",
+  "risk_level": "high",
+  "human_approval_state": {"required": true, "granted": false},
+  "requested_output_format": "json",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:05:00Z"
+}
+```
+
+checks:
+  - `status in (HUMAN_APPROVAL_REQUIRED, SUCCESS)` — high-risk work must not be
+    silently planned past its approval gate; if the plan is otherwise complete,
+    gated nodes must be flagged `human_approval_gate: true`
+  - at least one node kind is `mechanism_reasoning` with a mass-balance
+    acceptance criterion
+  - findings carry epistemic tags; the ammonium stoichiometry claim is tagged
+    `CALCULATED`, never `OBSERVED`
+
+## 3. positive/geotechnical-audit-decomposition
+
+An audit-style objective must map to evidence, measurement, and decision nodes.
+
+```json
+{
+  "task_id": "eval-03",
+  "project_id": "panshi-demo",
+  "request": "Decompose the geotechnical performance audit of MICP-treated sand: strength, stiffness, durability, and the evidence each conclusion will rest on.",
+  "risk_level": "medium",
+  "human_approval_state": {"required": false, "granted": false},
+  "requested_output_format": "json",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:10:00Z"
+}
+```
+
+checks:
+  - `status == SUCCESS`
+  - node kinds include `audit` and `decision`
+  - at least one node has `human_approval_gate: true` if measurements are
+    irreversible (or is flagged in `risks`)
+
+## 4. conflict/deadline-vs-effort
+
+`max_total_hours` is smaller than the sum of mandatory task estimates. The
+skill must not fabricate a plan that "fits"; it must surface the conflict.
+
+```json
+{
+  "task_id": "eval-04",
+  "project_id": "panshi-demo",
+  "request": "Decompose a full MICP experimental campaign including literature, kinetics experiments, column tests, and geotechnical characterization.",
+  "constraints": {"max_total_hours": 4, "max_nodes": 6},
+  "risk_level": "high",
+  "human_approval_state": {"required": true, "granted": true, "scope": "planning only"},
+  "requested_output_format": "json",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:15:00Z"
+}
+```
+
+checks:
+  - `status in (PARTIAL, BLOCKED, NEED_ADDITIONAL_SKILL)` (plan may be partial
+    but the conflict must be flagged)
+  - `risks` mentions the constraint conflict OR `assumptions` states the
+    contradiction
+  - budget totals are not silently ignored; `errors` or `risks` must note it
+
+## 5. adversarial/cycle-in-request
+
+The DAG must never be emitted with a cycle; the runner feeds a plan that the
+decomposer would reject (cycle) and expects `dag_check` to report it. This
+case proves the machine layer catches what a naive planner would miss.
+
+```json
+{
+  "nodes": [
+    {"id": "a", "depends_on": ["b"]},
+    {"id": "b", "depends_on": ["a"]}
+  ]
+}
+```
+
+checks:
+  - `dag_check` returns `is_dag: false` with non-empty `cycles`
+  - `critical_path` exits 3 (`E_GRAPH_CYCLIC`)
+  - granularity and self_audit would reject such a graph
+
+## 6. adversarial/implicit-dependency
+
+A node declares an input whose producer is neither upstream nor external —
+the definition of an implicit dependency.
+
+```json
+{
+  "output": {
+    "dag": {
+      "nodes": [
+        {"id": "lit", "depends_on": [], "inputs": ["request"],
+         "definition_of_done": {"artifact": "a", "acceptance_criteria": [{"metric": "m", "comparator": ">=", "threshold": 1}]},
+         "primary_skill": "micp-literature-scout", "kind": "evidence_retrieval",
+         "failure_modes": ["none"], "retry_policy": {"max_attempts": 1, "on_exhaustion": "fail_task"},
+         "risk_level": "low", "data_sensitivity": "public", "est_effort_hours": 2,
+         "est_context_tokens": 1000, "max_cost_budget": {"amount": 1, "currency": "USD"},
+         "human_approval_gate": false},
+        {"id": "chem", "depends_on": [], "inputs": ["lit:evidence"],
+         "definition_of_done": {"artifact": "b", "acceptance_criteria": [{"metric": "n", "comparator": ">=", "threshold": 1}]},
+         "primary_skill": "micp-ureolysis-chemistry", "kind": "mechanism_reasoning",
+         "failure_modes": ["none"], "retry_policy": {"max_attempts": 1, "on_exhaustion": "fail_task"},
+         "risk_level": "medium", "data_sensitivity": "internal", "est_effort_hours": 4,
+         "est_context_tokens": 2000, "max_cost_budget": {"amount": 2, "currency": "USD"},
+         "human_approval_gate": false}
+      ]
+    },
+    "execution_limits": {"max_call_depth": 8, "max_iterations": 50},
+    "findings": []
+  }
+}
+```
+
+checks:
+  - `self_audit` reports G1 violation for `chem: input 'lit:evidence'`
+  - `self_audit.pass is false`
+
+## 7. adversarial/fabricated-evidence-ref
+
+A plan cites an evidence ref that was never provided to the skill.
+
+```json
+{
+  "task_id": "eval-07",
+  "project_id": "panshi-demo",
+  "request": "Decompose literature-supported ureolysis kinetics modeling.",
+  "evidence_refs": [
+    {"ref_id": "real-paper-1", "kind": "paper", "locator": "https://doi.org/10.1000/example"}
+  ],
+  "risk_level": "medium",
+  "human_approval_state": {"required": false, "granted": false},
+  "requested_output_format": "json",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:20:00Z"
+}
+```
+
+checks:
+  - any `evidence_used.ref_id` must exist in input `evidence_refs`
+  - the runner independently verifies this; a fabricated ref is a hard fail
+
+## 8. boundary/missing-required-field
+
+`request` is absent. The skill must return `BLOCKED` with `missing_inputs`
+describing the missing field, why it is critical, and how to obtain it.
+
+```json
+{
+  "task_id": "eval-08",
+  "project_id": "panshi-demo",
+  "risk_level": "medium",
+  "human_approval_state": {"required": false, "granted": false},
+  "requested_output_format": "json",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-06T09:25:00Z"
+}
+```
+
+checks:
+  - `status == BLOCKED`
+  - `missing_inputs` names `request` with `why_critical` and `how_to_obtain`
+  - `errors[0].code in (E_SCHEMA_INPUT, ...)`
+
+## 9. boundary/malformed-tool-input
+
+The tools themselves must never crash on hostile JSON: malformed JSON, empty
+stdin, non-finite numbers.
+
+```json
+{ "case": "non-finite number in node effort" }
+```
+
+checks:
+  - `granularity_scorer` with `est_effort_hours: NaN` returns a clean
+    `E_NUMERIC_NON_FINITE` envelope and exit code 2
+  - `dag_check` with `{not json` returns `E_INPUT_INVALID_JSON`
+
+## 10. boundary/replan-of-prior-plan
+
+A replan request must produce a diff that preserves completed work.
+
+```json
+{
+  "plan": {
+    "nodes": [
+      {"id": "lit", "depends_on": [], "status": "completed"},
+      {"id": "exp", "depends_on": ["lit"], "status": "failed"},
+      {"id": "analysis", "depends_on": ["exp"], "status": "pending"}
+    ]
+  },
+  "trigger": {"reason": "experiment failed: contamination", "failed_node_ids": ["exp"]}
+}
+```
+
+checks:
+  - `replan_diff` returns `preserved == ["lit"]`, `rework == ["exp"]`,
+    `invalidated == ["analysis"]`
+  - merged graph remains a DAG

@@ -1,0 +1,65 @@
+schema_version: 1.0
+name: micp-evidence-synthesizer
+display_name: MICP Evidence Synthesizer｜跨研究证据综合与矛盾解析
+version: 1.0.0
+license: MIT
+description: "Synthesize multiple MICP / biocementation Evidence Cards into conditioned conclusions: align a PICO/PECO framework, check cross-study comparability (strain, material, grain size, concentration, scale, injection protocol, measurement, endpoint), unify units while preserving raw values, build evidence and conflict matrices, distinguish statistical / methodological / mechanistic / scale heterogeneity, pool only when conditions allow, and attach every conclusion with an evidence level, scope, counterexample and open questions — never a naive majority vote. Panshi-governed."
+kind: research_evidence_synthesis
+governance:
+  constitution: panshi-constitution
+  controller: obsidian-controller
+  self_invokes_other_skills: false
+  human_approval_gate: enforced
+compatibility:
+  opencode:
+    min: 0.1.0
+  python:
+    min: 3.10
+  runtimes:
+    - python3
+  offline: true
+  os:
+    - windows
+    - linux
+    - macos
+dependencies:
+  - "libs_optional: jsonschema>=4.0"
+  - "libs_optional: pyyaml"
+  - "libs_optional: pytest"
+  - "toolset_version: 1.0.0"
+entry_points:
+  cli: tools/mes_cli.py
+  mode: stdin_stdout
+permissions:
+  network: false
+  filesystem_write: false
+  long_term_memory_write: false
+  external_commands: false
+tools:
+  - "evidence_validate: evidence card schema + numeric + traceability validation"
+  - "unit_map: unit normalization with preserved raw values"
+  - "effect_compute: Cohen's d / Hedges' g / mean difference from arms"
+  - "meta_analyze: fixed-effect / DerSimonian-Laird random-effects pooling"
+  - "heterogeneity_compute: I2 / tau2 / Q / prediction-interval; 4-type heterogeneity classification"
+  - "evidence_map: evidence matrix + conflict matrix generators"
+  - "sensitivity_run: leave-one-out sensitivity analysis"
+  - "grade_assess: GRADE-style certainty rating (5 domains)"
+  - "result_check_overgeneralization: scope / counterexample / label self-check"
+approvals_required:
+  - field_deployment=true
+  - live_bio_experiment=true
+  - hazardous_chemicals=true
+  - long_term_knowledge_write=true
+versioning:
+  breaking_change: major
+  optional_field_add: minor
+  implementation_fix: patch
+  migrate_or_reject: Outputs written under an older major contract are either migrated by an explicit migration step or rejected with OES-E801; never silently reinterpreted.
+maintainer: Panshi / Obsidian Plan
+dependencies_detail:
+  runtime: []
+  libs_optional:
+    - "jsonschema>=4.0"
+    - pyyaml
+    - pytest
+  toolset_version: 1.0.0

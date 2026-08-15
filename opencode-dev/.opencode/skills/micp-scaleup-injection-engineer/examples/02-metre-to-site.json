@@ -1,0 +1,63 @@
+{
+  "contract_version": "1.0",
+  "task_id": "T-METRE2SITE",
+  "project_id": "PRJ-SCALE-02",
+  "request": "把米级试验放大到场地试验（100 m3 处理体积），双层非均质土体，需要分区注入设计",
+  "action": "scaleup",
+  "skill_version": "1.0.0",
+  "controller_version": "1.4.2",
+  "timestamp": "2026-08-07T09:30:00Z",
+  "risk_level": "high",
+  "lab": {
+    "recipe": {
+      "urea_conc": {"value": 500, "unit": "mol/m3"},
+      "ca_conc": {"value": 500, "unit": "mol/m3"},
+      "pore_volumes_per_treatment": 1.0,
+      "rounds": 5,
+      "flow_mode": "constant_flux",
+      "flow_rate": {"value": 0.002, "unit": "m3/s"}
+    }
+  },
+  "target": {
+    "scale_level": "site",
+    "geometry": {
+      "volume": {"value": 100, "unit": "m3"},
+      "depth": {"value": 2.0, "unit": "m"},
+      "radius": {"value": 3.0, "unit": "m"}
+    },
+    "objective": "foundation_improvement",
+    "duration_days": 30
+  },
+  "site": {
+    "layers": [
+      {"name": "FILL-SAND", "thickness": {"value": 1.0, "unit": "m"},
+       "d50": {"value": 0.3, "unit": "mm"},
+       "fines_content": 0.05,
+       "porosity": 0.4,
+       "permeability": {"value": 5e-11, "unit": "m2"},
+       "saturation": 1.0},
+      {"name": "SILTY-SAND", "thickness": {"value": 1.0, "unit": "m"},
+       "d50": {"value": 0.12, "unit": "mm"},
+       "fines_content": 0.18,
+       "porosity": 0.38,
+       "permeability": {"value": 2e-12, "unit": "m2"},
+       "saturation": 1.0}
+    ],
+    "groundwater_level": {"value": 0.5, "unit": "m"},
+    "anisotropy": 2.0,
+    "preferential_flow_notes": "possible silty-layer slow zone"
+  },
+  "wells": {
+    "pattern": "triangular",
+    "spacing": {"value": 1.5, "unit": "m"}
+  },
+  "constraints": {
+    "allowed_injection_pressure": {"value": 300000, "unit": "Pa"},
+    "target_caco3_content_kg_m3": 60,
+    "ammonia_limit_mg_L": 100,
+    "conversion_efficiency": 0.4,
+    "pulse_strategy": "pulsed",
+    "retention_time": {"value": 7200, "unit": "s"},
+    "flushing_pv": 2.0
+  }
+}

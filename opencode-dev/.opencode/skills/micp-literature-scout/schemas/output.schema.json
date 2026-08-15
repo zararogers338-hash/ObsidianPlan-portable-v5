@@ -1,0 +1,273 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-literature-scout/output.schema.json",
+  "title": "micp-literature-scout output contract",
+  "description": "Unified skill output envelope (Obsidian Plan spec §六). Every CLI output, success or failure, must validate against this schema. contract_version 1.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status", "summary", "findings", "assumptions", "evidence_used",
+    "uncertainty", "risks", "artifacts", "requested_next_skills",
+    "validation", "provenance", "errors"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+    },
+    "summary": {"type": "string", "minLength": 1},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["statement", "label"],
+        "properties": {
+          "statement": {"type": "string"},
+          "label": {
+            "type": "string",
+            "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+          },
+          "scope": {"type": "string", "description": "Evidence scope: lab column | meter-scale | field trial | simulation | review | meta-analysis | standard | patent | dataset."},
+          "refs": {"type": "array", "items": {"type": "string"}, "description": "Evidence ref ids this statement is grounded in."}
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["statement", "label"],
+        "properties": {
+          "statement": {"type": "string"},
+          "label": {
+            "type": "string",
+            "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+          }
+        }
+      }
+    },
+    "evidence_used": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ref_id", "type"],
+        "properties": {
+          "ref_id": {"type": "string"},
+          "type": {"type": "string", "enum": ["evidence_ref", "data_ref", "upstream_output", "doi", "record"]},
+          "uri": {"type": "string"},
+          "media_type": {"type": "string"},
+          "note": {"type": "string"}
+        }
+      }
+    },
+    "uncertainty": {"type": "array", "items": {"type": "string"}},
+    "risks": {"type": "array", "items": {"type": "string"}},
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ref_id", "uri", "media_type"],
+        "properties": {
+          "ref_id": {"type": "string"},
+          "uri": {"type": "string"},
+          "media_type": {"type": "string"},
+          "note": {"type": "string"}
+        }
+      }
+    },
+    "requested_next_skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "required_inputs", "reason"],
+        "properties": {
+          "name": {"type": "string"},
+          "required_inputs": {"type": "array", "items": {"type": "string"}},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["self_check_passed", "output_schema_valid", "checks"],
+      "properties": {
+        "self_check_passed": {"type": "boolean"},
+        "output_schema_valid": {"type": "boolean"},
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "passed", "detail"],
+            "properties": {
+              "name": {"type": "string"},
+              "passed": {"type": "boolean"},
+              "detail": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill_name", "skill_version", "contract_version", "tool_version", "timestamp"],
+      "properties": {
+        "skill_name": {"type": "string", "enum": ["micp-literature-scout"]},
+        "skill_version": {"type": "string"},
+        "contract_version": {"type": "string"},
+        "tool_version": {"type": "string"},
+        "timestamp": {"type": "string"},
+        "trace_log_ref": {"type": "string"},
+        "repro_id": {"type": "string", "description": "SHA-256 (16 hex) of the normalized search/action fingerprint for reproduction."}
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message", "detail"],
+        "properties": {
+          "code": {"type": "string", "pattern": "^MLS-E\\d{3}$"},
+          "message": {"type": "string"},
+          "detail": {}
+        }
+      }
+    },
+    "search": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["database", "query", "filters", "result_count", "retrieved_at"],
+      "properties": {
+        "database": {"type": "string", "enum": ["openalex", "crossref", "pubmed", "offline_fixture", "none"]},
+        "query": {"type": "string"},
+        "filters": {"type": "object", "description": "Applied filters (time range, language, db filters, per-page)."},
+        "result_count": {"type": "integer", "minimum": 0},
+        "retrieved_at": {"type": "string"},
+        "records": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": ["ref_id", "doi", "title", "year", "container", "source_db"],
+            "properties": {
+              "ref_id": {"type": "string"},
+              "doi": {"type": "string"},
+              "title": {"type": "string"},
+              "year": {"type": "integer"},
+              "container": {"type": "string"},
+              "source_db": {"type": "string"},
+              "score": {"type": ["number", "null"], "description": "Source relevance score. Never a substitute for evidence strength."},
+              "doi_status": {"type": "string", "enum": ["verified", "unverified", "suspected_forged", "not_checked"]},
+              "kind": {"type": "string", "enum": ["research", "review", "model", "method", "standard", "patent", "dataset", "book", "other"]},
+              "scale": {"type": "string", "enum": ["lab_column", "meter_scale", "field", "simulation", "review", "unknown"]}
+            }
+          }
+        }
+      }
+    },
+    "doi_verifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["doi", "resolved", "status"],
+        "properties": {
+          "doi": {"type": "string"},
+          "resolved": {"type": "boolean"},
+          "status": {"type": "string", "enum": ["verified", "not_found", "suspected_forged", "check_failed", "offline_unverified"]},
+          "title": {"type": "string"},
+          "container": {"type": "string"},
+          "year": {"type": "integer"},
+          "evidence": {"type": "string", "enum": ["api", "offline_rule", "none"]},
+          "reason": {"type": "string"},
+          "mismatches": {"type": "array", "items": {"type": "object"}}
+        }
+      }
+    },
+    "dedup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_count", "output_count", "merged_groups"],
+      "properties": {
+        "input_count": {"type": "integer"},
+        "output_count": {"type": "integer"},
+        "merged_groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["canonical", "merged"],
+            "properties": {
+              "canonical": {"type": "string"},
+              "merged": {"type": "array", "items": {"type": "string"}},
+              "rule": {"type": "string", "enum": ["doi", "title_norm", "same_title_year_journal", "none"]}
+            }
+          }
+        }
+      }
+    },
+    "triage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["levels", "rejections"],
+      "properties": {
+        "levels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["ref_id", "level", "reason"],
+            "properties": {
+              "ref_id": {"type": "string"},
+              "level": {"type": "string", "enum": ["TIER1", "TIER2", "TIER3", "REJECT"]},
+              "reason": {"type": "string"},
+              "quality": {"type": "string", "enum": ["high", "medium", "low"]},
+              "comparability": {"type": "string", "enum": ["high", "medium", "low"]},
+              "bias": {"type": "string", "enum": ["low", "medium", "high"]},
+              "fulltext_available": {"type": "boolean"}
+            }
+          }
+        },
+        "rejections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["ref_id", "reason"],
+            "properties": {"ref_id": {"type": "string"}, "reason": {"type": "string"}}
+          }
+        }
+      }
+    },
+    "exports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["format", "content", "written_to"],
+        "properties": {
+          "format": {"type": "string", "enum": ["bibtex", "csv", "json", "ris"]},
+          "content": {"type": "string"},
+          "written_to": {"type": "string"}
+        }
+      }
+    },
+    "selfcheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed", "reasons"],
+      "properties": {
+        "passed": {"type": "boolean"},
+        "reasons": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

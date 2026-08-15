@@ -1,0 +1,11 @@
+# Runtime output
+obsidian-launch.log
+
+# Local credentials and machine-specific overrides
+.env
+.env.*
+*.local
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db

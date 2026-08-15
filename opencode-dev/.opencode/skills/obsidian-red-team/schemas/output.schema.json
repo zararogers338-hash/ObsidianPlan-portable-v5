@@ -1,0 +1,675 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/obsidian-red-team.output.json",
+  "title": "Obsidian Red Team — Output Contract",
+  "description": "Unified adversarial-review envelope. Every load-bearing claim carries an epistemic tag. BLOCKING findings force status != SUCCESS and state_recommendation in {REVIEW_FAIL, HOLD}. Version 1.0.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "summary",
+    "review_scope",
+    "findings",
+    "blocking_findings",
+    "counterexamples",
+    "alternative_explanations",
+    "required_evidence",
+    "required_fixes",
+    "retest_plan",
+    "state_recommendation",
+    "assumptions",
+    "evidence_used",
+    "uncertainty",
+    "risks",
+    "artifacts",
+    "requested_next_skills",
+    "validation",
+    "provenance",
+    "errors"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "SUCCESS",
+        "PARTIAL",
+        "BLOCKED",
+        "FAILED",
+        "NEED_ADDITIONAL_SKILL",
+        "HUMAN_APPROVAL_REQUIRED"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 6000
+    },
+    "review_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimensions", "targets", "state_gate"],
+      "properties": {
+        "dimensions": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["dimension", "status"],
+            "properties": {
+              "dimension": {
+                "type": "string",
+                "enum": [
+                  "source_authenticity",
+                  "epistemic_escalation",
+                  "units_dimension",
+                  "experimental_design",
+                  "statistical_analysis",
+                  "micp_mechanism",
+                  "model_boundary",
+                  "engineering_scaleup",
+                  "environment_safety",
+                  "decision_gate"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": ["reviewed", "skipped", "not_applicable"]
+              },
+              "reason": {
+                "type": "string",
+                "maxLength": 1000,
+                "description": "Required when status != reviewed."
+              }
+            }
+          }
+        },
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "state_gate": {
+          "type": "string",
+          "enum": ["VALIDATED", "PILOT_READY", "DEPLOYABLE", "REVIEW", "NONE"]
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "blocking_findings": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "counterexamples": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target_id", "attack", "consequence"],
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "attack": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "description": "The strongest attack scenario."
+          },
+          "consequence": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "epistemic_tag": {
+            "type": "string",
+            "enum": [
+              "OBSERVED",
+              "REPORTED",
+              "CALCULATED",
+              "INFERRED",
+              "HYPOTHESIS",
+              "RECOMMENDATION"
+            ],
+            "default": "HYPOTHESIS"
+          }
+        }
+      }
+    },
+    "alternative_explanations": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target_id", "explanation"],
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "explanation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "fits_evidence": {
+            "type": "boolean",
+            "description": "Whether the alternative also explains the observed evidence."
+          }
+        }
+      }
+    },
+    "required_evidence": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "evidence"],
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "description": "What evidence must be produced to close the finding."
+          }
+        }
+      }
+    },
+    "required_fixes": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "fix", "acceptance"],
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "fix": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "description": "Executable fix."
+          },
+          "acceptance": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "description": "The acceptance criterion the fix must meet."
+          },
+          "verify_by": {
+            "type": "string",
+            "maxLength": 4000,
+            "description": "Who/what verifies (tool, human, re-run)."
+          }
+        }
+      }
+    },
+    "retest_plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["steps", "reopen_on"],
+      "properties": {
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reopen_on": {
+          "type": "string",
+          "maxLength": 4000,
+          "description": "The condition under which the review re-opens."
+        }
+      }
+    },
+    "state_recommendation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recommendation", "reason", "blocking_count"],
+      "properties": {
+        "recommendation": {
+          "type": "string",
+          "enum": ["APPROVE", "NO_OBJECTION", "HOLD", "REVIEW_FAIL"]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "blocking_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["statement"],
+        "properties": {
+          "statement": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "falsifiable_by": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "evidence_used": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ref_id"],
+        "properties": {
+          "ref_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "how_used": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "verifiable": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "uncertainty": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["topic", "level"],
+        "properties": {
+          "topic": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "level": {
+            "type": "string",
+            "enum": ["low", "medium", "high"]
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["risk", "severity"],
+        "properties": {
+          "risk": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"]
+          },
+          "mitigation": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact_id", "kind", "content_type"],
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "review_report",
+              "blocking_findings",
+              "counterexamples",
+              "alternative_explanations",
+              "required_fixes",
+              "retest_plan",
+              "state_recommendation",
+              "audit_artifact"
+            ]
+          },
+          "content_type": {
+            "type": "string",
+            "enum": ["application/json", "text/plain", "text/markdown"]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "payload": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "requested_next_skills": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["skill", "reason"],
+        "properties": {
+          "skill": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "inputs_needed": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "maxItems": 20
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["self_audit_pass", "gates"],
+      "properties": {
+        "self_audit_pass": {
+          "type": "boolean"
+        },
+        "gates": {
+          "type": "object"
+        },
+        "tool_runs": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["tool", "ok"],
+            "properties": {
+              "tool": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "ok": {
+                "type": "boolean"
+              },
+              "detail": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill", "skill_version", "generated_at", "generator"],
+      "properties": {
+        "skill": {
+          "type": "string",
+          "const": "obsidian-red-team"
+        },
+        "skill_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "generated_at": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "generator": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "input_task_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "target_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tool_versions": {
+          "type": "object"
+        }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message", "retryable"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "details": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "missing_inputs": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "why_critical", "how_to_obtain"],
+        "properties": {
+          "field": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "why_critical": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "how_to_obtain": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "finding_id",
+        "target_id",
+        "location",
+        "dimension",
+        "severity",
+        "summary",
+        "evidence",
+        "why",
+        "counterexample",
+        "required_fix",
+        "verification_method",
+        "blocks_state_upgrade",
+        "status"
+      ],
+      "properties": {
+        "finding_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "target_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "dimension": {
+          "type": "string",
+          "enum": [
+            "source_authenticity",
+            "epistemic_escalation",
+            "units_dimension",
+            "experimental_design",
+            "statistical_analysis",
+            "micp_mechanism",
+            "model_boundary",
+            "engineering_scaleup",
+            "environment_safety",
+            "decision_gate",
+            "permission_boundary"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["INFO", "MINOR", "MAJOR", "CRITICAL", "BLOCKING"]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "evidence_epistemic_tag": {
+          "type": "string",
+          "enum": [
+            "OBSERVED",
+            "REPORTED",
+            "CALCULATED",
+            "INFERRED",
+            "HYPOTHESIS",
+            "RECOMMENDATION"
+          ],
+          "default": "REPORTED"
+        },
+        "why": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "counterexample": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "required_fix": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "verification_method": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "blocks_state_upgrade": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["OPEN", "FIXED", "ACCEPTED_RISK", "VERIFIED"],
+          "default": "OPEN"
+        },
+        "rule_id": {
+          "type": "string",
+          "maxLength": 64
+        }
+      }
+    }
+  }
+}

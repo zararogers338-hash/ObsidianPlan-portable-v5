@@ -1,0 +1,40 @@
+{
+  "task_id": "T-EX3",
+  "project_id": "PRJ-DEMO-AUDIT",
+  "request": "审查这份报告:声称 MICP 把强度提高了 50 倍,但没有对照组数据。请按证据等级审查。",
+  "skill_version": "1.0.0",
+  "controller_version": "1.0.0",
+  "timestamp": "2026-08-06T10:00:00Z",
+  "risk_level": "high",
+  "human_approval_state": "approved",
+  "requested_output_format": "audit_report",
+  "samples": [
+    {
+      "specimen_id": "A1",
+      "test_type": "ucs",
+      "group": "treated",
+      "dimensions": { "diameter": 38, "height": 76, "unit": "mm" },
+      "density": 1.78,
+      "density_unit": "g/cm3",
+      "caCO3_content": 14.0,
+      "data_points": [
+        { "strain": 0.0, "stress": 0, "stress_unit": "MPa" },
+        { "strain": 2.0, "stress": 3.0, "stress_unit": "MPa" },
+        { "strain": 4.0, "stress": 5.0, "stress_unit": "MPa" },
+        { "strain": 6.0, "stress": 4.2, "stress_unit": "MPa" }
+      ]
+    }
+  ],
+  "upstream_outputs": [
+    {
+      "skill": "micp-mineral-phase-interpreter",
+      "task_node": "mineral",
+      "summary": "XRD 证实方解石为主要矿相;CaCO3 以孔隙填充为主,接触点桥接证据有限",
+      "output": { "phase": "calcite", "evidence_level": "L2_strong_indirect" }
+    }
+  ],
+  "evidence_refs": [
+    { "ref_id": "ev:xrd-2026-05", "uri": "lab://2026-05/xrd", "media_type": "text/xml", "note": "XRD 矿相数据" },
+    { "ref_id": "ev:report-claim", "uri": "internal://report/micp-50x", "media_type": "text/plain", "note": "被审查报告中'强度提高 50 倍'的声称" }
+  ]
+}

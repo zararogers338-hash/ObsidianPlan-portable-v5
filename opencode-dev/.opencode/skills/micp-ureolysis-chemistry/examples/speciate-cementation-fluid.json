@@ -1,0 +1,23 @@
+{
+  "task_id": "ex-002",
+  "project_id": "panshi-bench",
+  "request": "同一 50 mM 钙液,pH 7.5 与 pH 9.0 下方解石饱和指数各是多少?解释沉淀趋势差异。",
+  "context": {
+    "pathway": "ureolysis",
+    "matrix": "batch"
+  },
+  "constraints": {},
+  "risk_level": "low",
+  "human_approval_state": "not_required",
+  "skill_version": "1.0.0",
+  "controller_version": "0.1.0",
+  "timestamp": "2026-08-06T10:00:00Z",
+  "tool": "speciate",
+  "params": {
+    "ph": 9.0,
+    "c_total": 0.05,
+    "ca_total": 0.05,
+    "cl_total": 0.1,
+    "t_k": 298.15
+  }
+}

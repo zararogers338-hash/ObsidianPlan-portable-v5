@@ -1,0 +1,78 @@
+{
+  "design": {
+    "objective": "三组浓度梯度,无阴性对照",
+    "pathway": "urea",
+    "replicates": 3,
+    "endpoints": [
+      {
+        "name": "强度",
+        "unit": "MPa"
+      }
+    ]
+  },
+  "sop": {
+    "mode": "generate",
+    "pass": false,
+    "blocking_issues": [
+      "negative_control",
+      "data_exclusion",
+      "stop_condition",
+      "safety",
+      "ammonium_accounting"
+    ],
+    "warnings": [
+      "positive_control",
+      "materials",
+      "injection",
+      "equipment",
+      "data_template",
+      "nitrogen_mass_balance"
+    ],
+    "sop": {
+      "title": "三组浓度梯度,无阴性对照",
+      "steps": [
+        {
+          "step_id": "STEP-01",
+          "action": "prepare",
+          "detail": "Prepare materials & equipment per batch list; verify calibration records."
+        },
+        {
+          "step_id": "STEP-02",
+          "action": "inoculate",
+          "detail": "Prepare cell / enzyme / reagent solutions per recipe; record lot numbers."
+        },
+        {
+          "step_id": "STEP-03",
+          "action": "assign",
+          "detail": "Randomize units to groups per the randomization allocation table (seed recorded)."
+        },
+        {
+          "step_id": "STEP-04",
+          "action": "treat",
+          "detail": "Apply treatment per group (negative control receives sham / vehicle only)."
+        },
+        {
+          "step_id": "STEP-05",
+          "action": "measure",
+          "detail": "Record endpoint measurements at each sampling point using the data template columns."
+        },
+        {
+          "step_id": "STEP-06",
+          "action": "stop",
+          "detail": "Apply stop conditions / failure thresholds; record deviations in the deviation log."
+        },
+        {
+          "step_id": "STEP-07",
+          "action": "cleanup",
+          "detail": "Clean equipment, dispose of biological & chemical waste per safety plan."
+        },
+        {
+          "step_id": "STEP-08",
+          "action": "archive",
+          "detail": "Archive raw data, logs, and allocation table; store under the project data directory."
+        }
+      ]
+    },
+    "next_action": "resolve blocking issues (see blocking_issues) before field execution"
+  }
+}

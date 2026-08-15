@@ -1,0 +1,76 @@
+# Machine-readable metadata for micp-data-analyst.
+# Consumed by the OSR registry indexer (tools/osr/registry.ts) and by Obsidian
+# Controller tooling. Fields mirror the effective contract; see schemas/.
+# Layout of error codes: MDA-E<category><ordinal> — see tools/micp/errors.py.
+
+name: micp-data-analyst
+version: 1.0.0
+entry: tools/micp/cli.py
+description: >-
+  MICP data analysis: traceable cleaning, statistical inference, effect-size
+  and uncertainty quantification, and engineering visualization for MICP
+  experiment and simulation data. Detects pseudo-replication, reports
+  effect sizes and CIs (not p-values alone), and scripts every cleaning step.
+
+capabilities:
+  - schema_and_unit_checking
+  - reproducible_cleaning_pipeline
+  - statistical_inference
+  - effect_size_quantification
+  - uncertainty_quantification
+  - sensitivity_analysis
+  - spatial_uniformity_metrics
+  - pseudo_replication_detection
+  - data_quality_reporting
+  - visualization_assets
+  - engineering_significance_assessment
+
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - skill_version
+  - controller_version
+  - timestamp
+
+outputs:
+  - analysis_report
+  - statistical_report
+  - effect_size_report
+  - sensitivity_report
+  - data_quality_report
+  - data_dictionary
+  - reproducibility_manifest
+
+units:
+  strength: MPa | kPa | kN/m2
+  permeability: m/s | cm/s | m/d
+  modulus: MPa | kPa
+  strain: dimensionless
+  caCO3_content: mass_percent
+  concentration: g/L | mg/L | mol/L | mol/m3
+  density: g/cm3 | kg/m3
+  dimension: mm | cm | m
+  loading_rate: mm/min | %/min
+
+tool_permissions:
+  - read
+  - write_local_audit
+
+network: false
+writes:
+  - audit/**
+
+stop_conditions:
+  - 输出通过 output.schema.json 自检后停止
+  - 任一硬门控失败即返回 BLOCKED/FAILED 并停止
+  - 需要下游能力返回 NEED_ADDITIONAL_SKILL 并停止
+  - 高风险待批准返回 HUMAN_APPROVAL_REQUIRED 并停止
+
+compatible_controller: ">=1.0.0"
+dependencies: []
+cost_estimate:
+  tokens: 2500
+  usd: 0.025
+
+risk_tier: low

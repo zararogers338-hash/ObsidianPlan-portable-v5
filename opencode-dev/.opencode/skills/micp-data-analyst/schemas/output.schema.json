@@ -1,0 +1,598 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-data-analyst.output.json",
+  "title": "MICP Data Analyst — Output Contract",
+  "description": "Machine-readable output for the micp-data-analyst skill (MDA). Every load-bearing claim carries one epistemic tag: OBSERVED | REPORTED | CALCULATED | INFERRED | HYPOTHESIS | RECOMMENDATION. INFERRED/HYPOTHESIS/RECOMMENDATION may never be presented as OBSERVED. Version 1.0.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "summary",
+    "findings",
+    "assumptions",
+    "evidence_used",
+    "uncertainty",
+    "risks",
+    "artifacts",
+    "requested_next_skills",
+    "validation",
+    "provenance",
+    "errors"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "SUCCESS",
+        "PARTIAL",
+        "BLOCKED",
+        "FAILED",
+        "NEED_ADDITIONAL_SKILL",
+        "HUMAN_APPROVAL_REQUIRED"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 6000
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "statement",
+          "epistemic_tag"
+        ],
+        "properties": {
+          "statement": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "epistemic_tag": {
+            "type": "string",
+            "enum": [
+              "OBSERVED",
+              "REPORTED",
+              "CALCULATED",
+              "INFERRED",
+              "HYPOTHESIS",
+              "RECOMMENDATION"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 2000,
+            "description": "Mandatory when epistemic_tag is OBSERVED or REPORTED."
+          }
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "statement"
+        ],
+        "properties": {
+          "statement": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "falsifiable_by": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "evidence_used": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ref_id"
+        ],
+        "properties": {
+          "ref_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "how_used": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "verifiable": {
+            "type": "boolean",
+            "description": "Whether the ref locator names a resolvable protocol (doi/http/s3). False means the skill could not check it offline and treats claims from it as REPORTED."
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 2000,
+            "description": "Verifiability note for the reference."
+          }
+        }
+      }
+    },
+    "uncertainty": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "topic",
+          "level"
+        ],
+        "properties": {
+          "topic": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "risk",
+          "severity"
+        ],
+        "properties": {
+          "risk": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "mitigation": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_id",
+          "kind",
+          "content_type"
+        ],
+        "properties": {
+          "artifact_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "data_quality_report",
+              "reproducible_pipeline_script",
+              "data_dictionary",
+              "statistical_report",
+              "effect_size_report",
+              "sensitivity_report",
+              "visualization_png",
+              "visualization_html",
+              "model_diagnostics",
+              "reproducibility_manifest",
+              "analysis_report"
+            ]
+          },
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "application/json",
+              "text/plain",
+              "text/csv",
+              "text/html",
+              "image/png"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "payload": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "requested_next_skills": {
+      "type": "array",
+      "maxItems": 50,
+      "description": "Capabilities this skill needs the Router to provide. This skill never invokes other skills directly.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "skill",
+          "reason"
+        ],
+        "properties": {
+          "skill": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "inputs_needed": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "maxItems": 20
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "self_audit_pass",
+        "gates"
+      ],
+      "properties": {
+        "self_audit_pass": {
+          "type": "boolean"
+        },
+        "gates": {
+          "type": "object"
+        },
+        "tool_runs": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "tool",
+              "ok"
+            ],
+            "properties": {
+              "tool": {
+                "type": "string",
+                "maxLength": 128
+              },
+              "ok": {
+                "type": "boolean"
+              },
+              "detail": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "skill",
+        "skill_version",
+        "generated_at",
+        "generator"
+      ],
+      "properties": {
+        "skill": {
+          "type": "string",
+          "const": "micp-data-analyst"
+        },
+        "skill_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "generated_at": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "generator": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "input_task_id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "tool_versions": {
+          "type": "object"
+        }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "retryable"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "details": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "missing_inputs": {
+      "type": "array",
+      "maxItems": 50,
+      "description": "Required when status is BLOCKED: each missing field, why it is critical, and how to obtain it.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "why_critical",
+          "how_to_obtain"
+        ],
+        "properties": {
+          "field": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "why_critical": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "how_to_obtain": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        }
+      }
+    },
+    "data_quality": {
+      "type": "object",
+      "description": "Schema/unit/missing/range/batch/time/independence checks. Populated on SUCCESS/PARTIAL when data was analyzed.",
+      "additionalProperties": false,
+      "required": [
+        "checks",
+        "issues"
+      ],
+      "properties": {
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "issues": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "severity",
+              "message"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "severity": {
+                "type": "string",
+                "enum": [
+                  "error",
+                  "warning",
+                  "info"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "details": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "pseudo_replication": {
+      "type": "object",
+      "description": "Detected pseudo-replication structure and the effective independent sample sizes. Populated whenever batch/position/time structure exists.",
+      "additionalProperties": false,
+      "required": [
+        "detected",
+        "findings"
+      ],
+      "properties": {
+        "detected": {
+          "type": "boolean"
+        },
+        "findings": {
+          "type": "array",
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "unit",
+              "reason"
+            ],
+            "properties": {
+              "unit": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "recommended_analysis": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "effective_n": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "statistics": {
+      "type": "object",
+      "description": "Machine-readable statistics for the response variables: descriptives, effect sizes, model diagnostics, sensitivity, uniformity. Populated on SUCCESS/PARTIAL when applicable.",
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "anyOf": [
+        {
+          "properties": {
+            "status": {
+              "const": "SUCCESS"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "PARTIAL"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "FAILED"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "NEED_ADDITIONAL_SKILL"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "HUMAN_APPROVAL_REQUIRED"
+            }
+          }
+        },
+        {
+          "properties": {
+            "status": {
+              "const": "BLOCKED"
+            }
+          },
+          "required": [
+            "missing_inputs"
+          ]
+        }
+      ]
+    },
+    {
+      "anyOf": [
+        {
+          "properties": {
+            "status": {
+              "enum": [
+                "SUCCESS",
+                "PARTIAL"
+              ]
+            }
+          },
+          "required": [
+            "artifacts"
+          ]
+        },
+        {
+          "properties": {
+            "status": {
+              "enum": [
+                "BLOCKED",
+                "FAILED",
+                "NEED_ADDITIONAL_SKILL",
+                "HUMAN_APPROVAL_REQUIRED"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

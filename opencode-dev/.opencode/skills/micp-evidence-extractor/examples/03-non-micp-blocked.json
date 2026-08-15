@@ -1,0 +1,26 @@
+{
+  "task_id": "ex-03",
+  "project_id": "panshi-demo",
+  "request": "从这篇论文提取 MICP 结构化证据卡并检查实验组隔离。",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T10:10:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "document": {
+    "source_id": "ex-not-micp",
+    "title": "Climate effects on crop yield",
+    "year": "2022",
+    "document_type": "original_research",
+    "sections": [
+      {
+        "kind": "results",
+        "heading": "Results",
+        "text": "Wheat yield increased by 12 percent under elevated temperature."
+      }
+    ],
+    "tables": [],
+    "figures": []
+  }
+}

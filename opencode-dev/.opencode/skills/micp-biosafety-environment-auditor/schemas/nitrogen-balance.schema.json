@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.panshi/skills/micp-biosafety-environment-auditor/nitrogen-balance.schema.json",
+  "title": "micp-biosafety-environment-auditor nitrogen mass balance",
+  "description": "Urea-nitrogen mass balance contract (task brief §二). Conservation failure must block environmental conclusions (MBS-E301). All nitrogen quantities are in grams of N unless stated otherwise.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["urea_input_g", "theoretical_total_n_g", "nh4_upper_bound_g", "nh3_potential_g", "mass_balance_closed"],
+  "properties": {
+    "urea_input_g": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Input urea mass (g)."
+    },
+    "urea_molar_mass": {"type": "number", "const": 60.06, "description": "Urea molar mass g/mol (CH4N2O)."},
+    "theoretical_total_n_g": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Total nitrogen if all urea-N is accounted (2 N per urea)."
+    },
+    "nh4_upper_bound_g": {
+      "type": "number",
+      "minimum": 0,
+      "description": "NH4+ mass upper bound if ureolysis is complete."
+    },
+    "nh4_n_upper_bound_g": {
+      "type": "number",
+      "minimum": 0,
+      "description": "NH4+-N upper bound (mass of N only)."
+    },
+    "nh3_potential_g": {
+      "type": "number",
+      "minimum": 0,
+      "description": "NH3-N potential if all nitrogen were volatile free ammonia."
+    },
+    "residual_paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["liquid_residual_g", "sorbed_retained_g", "discharged_treated_g"],
+      "properties": {
+        "liquid_residual_g": {"type": ["number", "null"], "minimum": 0},
+        "sorbed_retained_g": {"type": ["number", "null"], "minimum": 0},
+        "discharged_treated_g": {"type": ["number", "null"], "minimum": 0}
+      },
+      "description": "Measured nitrogen sink paths ONLY. nh3_potential_g is a computed speciation potential (same N, not a separate sink) and lives at the top level — never double-count it here."
+    },
+    "accounted_g": {"type": "number", "minimum": 0, "description": "Sum of the measured nitrogen paths."},
+    "balance_error_g": {"type": "number", "description": "theoretical_total_n_g - accounted_g."},
+    "balance_error_fraction": {"type": "number", "description": "Normalized balance error (fraction)."},
+    "mass_balance_closed": {
+      "type": "boolean",
+      "description": "True when |balance_error_fraction| <= tolerance. False => environmental conclusions are blocked."
+    },
+    "uses_only_theory": {
+      "type": "boolean",
+      "description": "True when no measured path was supplied; the balance is an ideal upper envelope only."
+    }
+  }
+}

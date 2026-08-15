@@ -1,0 +1,39 @@
+{
+  "cases": 12,
+  "passed": 12,
+  "passed_ids": [
+    "ev-01-science-ok-ammonia-fail",
+    "ev-02-tiny-sample",
+    "ev-03-model-no-external-validation",
+    "ev-04-red-team-blocking",
+    "ev-05-missing-approval",
+    "ev-06-lab-cylinder-direct-deploy",
+    "ev-07-pilot-full-monitoring",
+    "ev-08-cost-unacceptable",
+    "ev-09-regulatory-expired",
+    "ev-10-downgrade-new-evidence",
+    "ev-11-open-to-deployable",
+    "ev-12-failure-threshold"
+  ],
+  "failed": [],
+  "metrics": {
+    "M1_structured_output_pass_rate": 1.0,
+    "M2_tool_real_invocation_rate": 1.0,
+    "M3_traceability_rate": 1.0,
+    "M4_missing_input_identification": 1.0,
+    "M5_adversarial_interception_rate": 1.0,
+    "M6_repeatability": 1.0,
+    "M7_failure_recovery_time_ms": 388.5
+  },
+  "thresholds": {
+    "M1_structured_output_pass_rate": 0.95,
+    "M2_tool_real_invocation_rate": 1.0,
+    "M3_traceability_rate": 0.9,
+    "M4_missing_input_identification": 1.0,
+    "M5_adversarial_interception_rate": 1.0,
+    "M6_repeatability": 1.0,
+    "M7_failure_recovery_time_ms": 5000
+  },
+  "overall_pass": true,
+  "run_at": "2026-08-07T00:00:00Z"
+}

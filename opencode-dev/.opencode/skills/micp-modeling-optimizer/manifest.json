@@ -1,0 +1,45 @@
+{
+  "$schema": "https://obsidian.dev/manifest.schema.json",
+  "name": "micp-modeling-optimizer",
+  "title": "MICP Modeling Optimizer | 机理建模、参数反演与多目标优化器",
+  "version": "1.0.0",
+  "contract_version": "1.0.0",
+  "layer": "panshi-governed-capability",
+  "license": "MIT",
+  "compatibility": {
+    "opencode": ">=1.18",
+    "python": ">=3.10"
+  },
+  "entrypoint": "tools/modeling.py",
+  "discovery": {
+    "format": "SKILL.md",
+    "locations": ["skills/", ".opencode/skills/", ".claude/skills/", ".agents/skills/"]
+  },
+  "inputs": {
+    "schema": "schemas/input.schema.json"
+  },
+  "outputs": {
+    "schema": "schemas/output.schema.json",
+    "statuses": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"]
+  },
+  "errors": [
+    "MMO-E101", "MMO-E102", "MMO-E103", "MMO-E104", "MMO-E105", "MMO-E106",
+    "MMO-E201", "MMO-E202", "MMO-E203", "MMO-E204",
+    "MMO-E301", "MMO-E302",
+    "MMO-E401", "MMO-E402", "MMO-E403", "MMO-E404", "MMO-E405",
+    "MMO-E501", "MMO-E502",
+    "MMO-E601", "MMO-E602",
+    "MMO-E701", "MMO-E702", "MMO-E703",
+    "MMO-E801", "MMO-E802"
+  ],
+  "tools": [
+    { "name": "modeling", "entrypoint": "tools/modeling.py", "purpose": "Mechanistic model solve / fit / optimize / sensitivity / uq / doe dispatch over stdin JSON (actions: solve, fit, analyze, optimize, multiobjective, sensitivity, uq, doe, validate)" }
+  ],
+  "permissions": {
+    "read": "project files (read-only)",
+    "write": "audit/ directory only",
+    "requires_approval": ["network access", "external writes", "experiment execution", "invoking other skills"]
+  },
+  "offline": true,
+  "deterministic": true
+}

@@ -1,0 +1,22 @@
+{
+  "contract_version": "1.0",
+  "task_id": "exp-002",
+  "project_id": "coastal-soil-bioaug",
+  "request": "评估该菌株在高盐环境（海水盐度）下的适配性，明确证据等级",
+  "action": "assess",
+  "skill_version": "0.1.0",
+  "controller_version": "1.4.2",
+  "timestamp": "2026-08-06T10:00:00Z",
+  "risk_level": "medium",
+  "culture": {
+    "name": "Sporosarcina pasteurii",
+    "media": "NH4-YE medium"
+  },
+  "conditions": {
+    "salinity": 35.0,
+    "temperature": 30.0,
+    "nutrient_limitation": ["carbon"],
+    "measured_at_salinity": false
+  },
+  "evidence_refs": ["lit/mortensen-2011-jam", "lit/high-salt-2022"]
+}

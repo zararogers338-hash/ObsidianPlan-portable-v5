@@ -1,0 +1,19 @@
+{
+  "task_id": "EX-03",
+  "project_id": "P-MICROCELL",
+  "request": "Generate competing mechanisms for non-uniform calcite precipitation along the injection path and the minimum discriminating experiment set.",
+  "risk_level": "low",
+  "human_approval_state": "granted",
+  "requested_output_format": "both",
+  "skill_version": "1.0.0",
+  "controller_version": "0.1.0",
+  "timestamp": "2026-08-06T00:00:00Z",
+  "statement_to_forge": "Calcite precipitation is highest near the inlet and decays downstream",
+  "context": "30 cm column, 0.5 M urea, 0.5 M CaCl2, 28 C. Calcite content measured at 5 cm intervals.",
+  "evidence_refs": [
+    {"ref_id": "EV3", "source": "spatial calcite profile", "epistemic_label": "OBSERVED"}
+  ],
+  "constraints": {
+    "max_hypotheses": 4
+  }
+}

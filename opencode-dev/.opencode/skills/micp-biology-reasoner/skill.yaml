@@ -1,0 +1,91 @@
+name: micp-biology-reasoner
+display_name: MICP Biology Reasoner｜菌株、生长、脲酶、附着与群落机制
+version: 0.1.0
+description: "Evidence-constrained mechanistic reasoning over MICP biology: strains, growth state, urease activity, survival, attachment, transport, community competition and cultivation conditions. Distinguishes OD600/CFU/viability/ urease activity; flags unit-inconsistent or unverifiable inputs; never maps a strain name to field performance; never applies the urea-hydrolysis model to non-ureolytic pathways."
+contract_version: 1.0
+entry:
+  cli: tools/micp_bio_reasoner.py
+  mode: stdin_stdout
+capabilities:
+  - biology
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - context
+  - evidence_refs
+  - data_refs
+  - upstream_outputs
+outputs:
+  - status
+  - summary
+  - findings
+  - assumptions
+  - evidence_used
+  - uncertainty
+  - risks
+  - artifacts
+  - requested_next_skills
+  - validation
+  - provenance
+  - errors
+domain_keywords:
+  - 菌株
+  - 细菌
+  - 微生物
+  - 脲酶
+  - 酶活
+  - urease
+  - biology
+  - strain
+  - 生长
+  - growth
+  - 附着
+  - attachment
+  - 失活
+  - inactivation
+  - 群落
+  - community
+  - 生物刺激
+  - biostimulation
+  - 强化
+  - bioaugmentation
+  - OD600
+  - od600
+  - CFU
+  - cfu
+  - 活细胞
+  - viable
+  - 比活
+  - specific activity
+dependencies:
+  - "python3 >= 3.10"
+  - numpy
+  - scipy
+  - "jsonschema>=4.0"
+  - pyyaml
+  - pytest
+dependencies_detail:
+  runtime: "python3 (>= 3.10)"
+  libs:
+    - "jsonschema>=4.0"
+    - numpy
+    - scipy
+    - pyyaml
+    - pytest
+  network: none
+permissions:
+  filesystem: []
+  approvals_required:
+    - field.deployment
+    - knowledge.write
+  dry_run: true
+compatibility:
+  opencode_loader: "discovery pattern {skill,skills}/**/SKILL.md; frontmatter name+description (verified in packages/opencode/src/skill/index.ts)"
+  contract_major: 1
+  schema_breaking_bump: major
+  optional_field_bump: minor
+  implementation_fix_bump: patch
+  migrate_or_reject: Outputs written under an older major contract are either migrated by an explicit migration step or rejected with MBR-E802; never silently reinterpreted.
+maintainer: Panshi / Obsidian Plan
+license: MIT (project convention; repo root LICENSE)

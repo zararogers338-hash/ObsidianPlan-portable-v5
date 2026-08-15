@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-reproducibility-versioning.reproduction-manifest.json",
+  "title": "Reproduction Manifest",
+  "description": "Self-contained record of one reproducible run: versions, environment, seeds, inputs, outputs, commands, checks. Validated against this schema by the MRV tools and evals. Version 1.0.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "created_at",
+    "project_id",
+    "task_id",
+    "versions",
+    "environment",
+    "inputs",
+    "outputs",
+    "parameters",
+    "seed",
+    "commands",
+    "checks"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "manifest_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "created_at": {
+      "type": "string",
+      "maxLength": 40
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "versions": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "git_commit, skill, controller, constitution, schema, model, prompt, data, dependency_lock — present when determinable."
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "os, runtime, tools, dependency_lock_summary, git_present."
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/hashItem"
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/hashItem"
+      }
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "seed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value"
+      ],
+      "properties": {
+        "value": {
+          "type": "integer"
+        },
+        "policy": {
+          "type": "string",
+          "enum": [
+            "generate",
+            "reuse",
+            "require"
+          ]
+        }
+      }
+    },
+    "commands": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "cmd"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "cmd": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "cwd": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "exit_code": {
+            "type": "integer"
+          },
+          "stdout_digest": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "stderr_digest": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "output_hashes": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "check",
+          "passed"
+        ],
+        "properties": {
+          "check": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "detail": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "hashItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "hash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    }
+  }
+}

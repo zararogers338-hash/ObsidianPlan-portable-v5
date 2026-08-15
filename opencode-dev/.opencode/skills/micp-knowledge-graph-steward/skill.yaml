@@ -1,0 +1,80 @@
+name: micp-knowledge-graph-steward
+display_name: MICP Knowledge Graph Steward｜本体、知识图谱与长期记忆治理
+version: 1.0.0
+description: "Govern the MICP knowledge graph as an event-sourced, auditable, versioned long-term memory: entities (strains, enzymes, ions, mineral phases, porous media, processes, instruments, experiments, performance, environmental indicators), relations, claims with evidence chains, unit/epistemic-label checks, conflicting-fact coexistence, ontology schema evolution, migration, backup/restore, and versioned human approval for high-risk writes."
+contract_version: 1.0
+entry:
+  cli: tools/knowledge_graph_steward.py
+  mode: stdin_stdout
+capabilities:
+  - knowledge_graph_governance
+  - entity_relation_claim_ingestion
+  - evidence_chain_traceability
+  - conflict_detection_and_adjudication
+  - unit_and_epistemic_label_checks
+  - ontology_schema_evolution
+  - migration_backup_restore_integrity
+  - versioned_human_approval_gates
+inputs_required:
+  - contract_version
+  - task_id
+  - project_id
+  - request
+  - action
+  - skill_version
+  - timestamp
+outputs:
+  - unified_output_envelope
+  - graph_export_document
+  - evidence_chain_report
+  - conflict_report
+  - integrity_report
+units:
+  temperature: "degC | K"
+  caco3_content: "%"
+  urea_conc: "mol/L | mmol/L"
+  ph: dimensionless
+  strength: "MPa | kPa"
+  permeability: "m/s | cm/s | m/d"
+  concentration: "mol/L | g/L | mg/L"
+  pressure: "Pa | kPa | MPa"
+dependencies:
+  - "runtime: python3 (>= 3.10)"
+  - "libs: jsonschema>=4.0"
+  - "libs: pyyaml"
+  - "libs: pytest"
+  - "network: none"
+permissions:
+  filesystem:
+    - "write: {store}/**"
+  approvals_required:
+    - claim.add tier=VALIDATED
+    - kb.migrate
+    - kb.restore
+    - graph.conflict_resolve
+    - graph.ontology_update replace=true
+    - graph.import
+  dry_run: true
+compatibility:
+  opencode_loader: "discovery pattern {skill,skills}/**/SKILL.md; frontmatter name+description (verified in packages/opencode/src/skill/index.ts)"
+  contract_major: 1
+  schema_breaking_bump: major
+  optional_field_bump: minor
+  implementation_fix_bump: patch
+  migrate_or_reject: Outputs written under an older major contract are either migrated by an explicit migration step or rejected with KGE-E801/E802; never silently reinterpreted.
+stop_conditions:
+  - 输出通过 output.schema.json 自检后停止
+  - 任一硬门控失败即返回 BLOCKED/FAILED 并停止
+  - 需要下游能力返回 NEED_ADDITIONAL_SKILL 并停止
+  - 高危待批准返回 HUMAN_APPROVAL_REQUIRED 并停止
+compatible_controller: ">=1.0.0"
+maintainer: Panshi / Obsidian Plan
+license: MIT (project convention; repo root LICENSE)
+risk_tier: low
+dependencies_detail:
+  runtime: "python3 (>= 3.10)"
+  libs:
+    - "jsonschema>=4.0"
+    - pyyaml
+    - pytest
+  network: none

@@ -1,0 +1,372 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-geotechnical-performance.output.json",
+  "title": "MICP Geotechnical Performance — Output Contract",
+  "description": "Strict output contract. Every evaluation returns this envelope; machine-readable and controller-parseable. All material statements carry an epistemic label (OBSERVED | REPORTED | CALCULATED | INFERRED | HYPOTHESIS | RECOMMENDATION).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "summary",
+    "findings",
+    "assumptions",
+    "evidence_used",
+    "uncertainty",
+    "risks",
+    "artifacts",
+    "requested_next_skills",
+    "validation",
+    "provenance",
+    "errors"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "SUCCESS",
+        "PARTIAL",
+        "BLOCKED",
+        "FAILED",
+        "NEED_ADDITIONAL_SKILL",
+        "HUMAN_APPROVAL_REQUIRED"
+      ]
+    },
+    "summary": { "type": "string" },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/labeledStatement" }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/labeledStatement" }
+    },
+    "evidence_used": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ref" }
+    },
+    "uncertainty": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ref" }
+    },
+    "requested_next_skills": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "performance": { "$ref": "#/$defs/performance" },
+    "statistical": { "$ref": "#/$defs/statistical" },
+    "durability": { "$ref": "#/$defs/durability" },
+    "micro_macro_link": { "$ref": "#/$defs/microMacroLink" },
+    "engineering_judgment": { "$ref": "#/$defs/engineeringJudgment" },
+    "validation": { "$ref": "#/$defs/validation" },
+    "provenance": { "$ref": "#/$defs/provenance" },
+    "errors": { "type": "array", "items": { "$ref": "#/$defs/mgeError" } }
+  },
+  "$defs": {
+    "labeledStatement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statement", "label"],
+      "properties": {
+        "statement": { "type": "string" },
+        "label": {
+          "type": "string",
+          "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+        },
+        "source": { "type": "string", "description": "Required for OBSERVED/REPORTED statements." }
+      }
+    },
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref_id"],
+      "properties": {
+        "ref_id": { "type": "string", "minLength": 1 },
+        "uri": { "type": "string" },
+        "media_type": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+    "sampleSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["specimen_id", "test_type"],
+      "properties": {
+        "specimen_id": { "type": "string" },
+        "test_type": { "type": "string" },
+        "ucs": {
+          "type": "object",
+          "properties": {
+            "value": { "type": "number" },
+            "unit": { "type": "string" }
+          }
+        },
+        "peak_strength": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+        },
+        "residual_strength": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+        },
+        "peak_strain": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+        },
+        "initial_modulus_e0": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+        },
+        "secant_modulus_e50": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+        },
+        "brittleness_index": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+        },
+        "permeability": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+        },
+        "caCO3_content": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+        },
+        "conditions_checked": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "conditions_issues": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "samples": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sampleSummary" }
+        },
+        "mean_strength": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+        },
+        "median_strength": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+        },
+        "sample_size": { "type": "integer", "minimum": 0 },
+        "stddev": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+        },
+        "coefficient_of_variation": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+        },
+        "confidence_interval_95": {
+          "type": "object",
+          "properties": {
+            "lower": { "type": "number" },
+            "upper": { "type": "number" },
+            "unit": { "type": "string" }
+          }
+        },
+        "spatial_uniformity": {
+          "type": "object",
+          "properties": {
+            "segments": { "type": "integer" },
+            "segment_cv": {
+              "type": "object",
+              "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+            },
+            "trend": { "type": "string" },
+            "note": { "type": "string" }
+          }
+        },
+        "outliers": { "type": "array", "items": { "type": "string" } },
+        "reliability": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        }
+      }
+    },
+    "statistical": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "groups": { "type": "array", "items": { "type": "string" } },
+        "group_means": { "type": "object" },
+        "improvement_percent": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "unit": { "type": "string" } }
+        },
+        "cohens_d": {
+          "type": "object",
+          "properties": { "value": { "type": "number" }, "interpretation": { "type": "string" } }
+        },
+        "statistically_significant": { "type": "boolean" },
+        "significance_level": { "type": "number" },
+        "p_value": {
+          "description": "Welch t-test p-value; null when a group lacks ≥2 samples and no test is possible.",
+          "type": ["number", "null"]
+        },
+        "confidence_interval": {
+          "type": "object",
+          "properties": {
+            "lower": { "type": "number" },
+            "upper": { "type": "number" },
+            "unit": { "type": "string" }
+          }
+        }
+      }
+    },
+    "durability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "specimens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["specimen_id", "cycle_type"],
+            "properties": {
+              "specimen_id": { "type": "string" },
+              "cycle_type": { "type": "string" },
+              "cycle_count": { "type": "integer", "minimum": 0 },
+              "initial_strength": { "type": "number" },
+              "final_strength": { "type": "number" },
+              "residual_ratio": { "type": "number" },
+              "decay_per_cycle": { "type": "number" },
+              "model": { "type": "string" },
+              "r_squared": { "type": "number" },
+              "half_life_cycles": { "type": "number" },
+              "projected_cycles_to_threshold": { "type": "number" },
+              "note": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "microMacroLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pairs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["specimen_id", "caCO3_content", "strength"],
+            "properties": {
+              "specimen_id": { "type": "string" },
+              "caCO3_content": { "type": "number" },
+              "strength": { "type": "number" },
+              "strength_unit": { "type": "string" }
+            }
+          }
+        },
+        "correlation": {
+          "type": "object",
+          "properties": {
+            "pearson_r": { "type": "number" },
+            "sample_size": { "type": "integer" }
+          }
+        },
+        "evidence_level": {
+          "type": "string",
+          "enum": ["L1_direct", "L2_strong_indirect", "L3_weak_indirect", "L4_no_evidence"]
+        },
+        "causal_note": { "type": "string" }
+      }
+    },
+    "engineeringJudgment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["judgment", "basis"],
+      "properties": {
+        "judgment": { "type": "string" },
+        "basis": { "type": "string" },
+        "applies_to": { "type": "string" },
+        "scale_limitations": { "type": "string" },
+        "failure_modes": { "type": "array", "items": { "type": "string" } },
+        "required_additional_tests": { "type": "array", "items": { "type": "string" } },
+        "most_likely_counterexample": { "type": "string" },
+        "safety_margin": {
+          "type": "object",
+          "properties": {
+            "target": { "type": "number" },
+            "observed": { "type": "number" },
+            "ratio": { "type": "number" },
+            "unit": { "type": "string" }
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["self_check_passed", "output_schema_valid", "tool_calls", "checks"],
+      "properties": {
+        "self_check_passed": { "type": "boolean" },
+        "output_schema_valid": { "type": "boolean" },
+        "tool_calls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["tool", "subcommand", "status"],
+            "properties": {
+              "tool": { "type": "string" },
+              "subcommand": { "type": "string" },
+              "status": { "type": "string" },
+              "detail": { "type": "string" }
+            }
+          }
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "passed"],
+            "properties": {
+              "name": { "type": "string" },
+              "passed": { "type": "boolean" },
+              "detail": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill_version", "controller_version", "data_refs_hash", "timestamp"],
+      "properties": {
+        "skill_version": { "type": "string" },
+        "controller_version": { "type": "string" },
+        "data_refs_hash": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "artifact_ref": { "type": "string" }
+      }
+    },
+    "mgeError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "retryable"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^MGE-E\\d{3}$" },
+        "message": { "type": "string" },
+        "retryable": { "type": "boolean" },
+        "details": { "type": "object" }
+      }
+    }
+  }
+}

@@ -1,0 +1,105 @@
+schema_version: 1.0
+name: obsidian-task-decomposer
+display_name: Obsidian Task Decomposer
+version: 1.0.0
+license: MIT
+description: "Decompose a Mission Lock research contract into atomic, dependency-explicit, parallel, retryable, verifiable research tasks; emit a machine-readable DAG with granularity scores, budgets, critical path, and local-replan support for the Obsidian Plan engineering loop. Panshi-governed, controller-invoked."
+kind: research_planning
+governance:
+  constitution: panshi-constitution
+  controller: obsidian-controller
+  self_invokes_other_skills: false
+  human_approval_gate: enforced
+compatibility:
+  opencode:
+    min: 0.1.0
+  python:
+    min: 3.10
+  runtimes:
+    - python3
+  offline: true
+  os:
+    - windows
+    - linux
+    - macos
+dependencies:
+  - "toolset_version: 1.0.0"
+permissions:
+  network: false
+  filesystem_write: false
+  long_term_memory_write: false
+  external_commands: false
+entry_points:
+  validate:
+    command: python
+    args:
+      - tools/validate.py
+  dag_check:
+    command: python
+    args:
+      - tools/dag_check.py
+  granularity_scorer:
+    command: python
+    args:
+      - tools/granularity_scorer.py
+  critical_path:
+    command: python
+    args:
+      - tools/critical_path.py
+  budget_estimator:
+    command: python
+    args:
+      - tools/budget_estimator.py
+  replan_diff:
+    command: python
+    args:
+      - tools/replan_diff.py
+  self_audit:
+    command: python
+    args:
+      - tools/self_audit.py
+schemas:
+  input: schemas/input.schema.json
+  output: schemas/output.schema.json
+  task_node: schemas/task-node.schema.json
+version_policy:
+  major: "Breaking contract changes: removing or renaming required input/output fields, changing the status enum, renumbering error codes, changing a tool's exit-code contract."
+  minor: "Additive contract changes: new optional fields, new enum values, new tools, new optional schema keywords. Old documents remain valid."
+  patch: Implementation fixes that preserve every contract exactly (no schema/field/exit-code change).
+  migration:
+    - "When the controller sees an artifact carrying a provenance.skill_version whose MAJOR differs from the installed skill's MAJOR, it MUST NOT feed it straight into replan_diff; it either requests regeneration under the new contract or applies the documented conversion in CHANGELOG.md (v2 migration notes, when they exist)."
+    - "When MAJOR matches but MINOR differs, older documents remain valid (additive-only contract); replan_diff may proceed."
+  rejection: E_VERSION_MISMATCH (provenance.skill_version vs installed 1.0.0) is reported in provenance and errors; the request is not fabricated around.
+evaluation:
+  indicators:
+    - name: structured_output_pass_rate
+      min_threshold: 1
+      unit: ratio
+      measurement: evals/run_evals.py — every case output validates against output.schema.json
+    - name: tool_invocation_rate
+      min_threshold: 1
+      unit: ratio
+      measurement: agent must invoke at least 3 distinct tools per SUCCESS case; recorded in case logs
+    - name: evidence_traceability_rate
+      min_threshold: 1
+      unit: ratio
+      measurement: every evidence_used.ref_id exists in input evidence_refs/upstream_outputs
+    - name: missing_input_detection_rate
+      min_threshold: 1
+      unit: ratio
+      measurement: cases with missing required fields must return BLOCKED with missing_inputs
+    - name: adversarial_interception_rate
+      min_threshold: 1
+      unit: ratio
+      measurement: "adversarial cases (cycles, implicit deps, fabricated refs) must be caught"
+    - name: repeat_run_consistency
+      min_threshold: 1
+      unit: ratio
+      measurement: "deterministic tools: two runs on identical input produce identical output"
+    - name: mean_failure_recovery_time
+      min_threshold: 60
+      unit: seconds
+      measurement: "stdin-to-result wall time across all evals, worst case"
+dependencies_detail:
+  runtime: []
+  toolset_version: 1.0.0

@@ -1,0 +1,360 @@
+{
+  "cases": [
+    {
+      "id": "eval-01",
+      "description": "Normal: vaterite-dominant XRD + FTIR + EDS + TGA identifies vaterite with confidence.",
+      "action": "interpret.phases",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "got passed"
+        },
+        {
+          "name": "envelope_shape",
+          "pass": true,
+          "detail": "missing envelope keys"
+        },
+        {
+          "name": "status in ['SUCCESS']",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "fusion_winner==vaterite",
+          "pass": true,
+          "detail": "got vaterite"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "description": "Normal: calcite XRD alone is identified but capped at likely (no corroboration).",
+      "action": "tools.xrd_match",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "got passed"
+        },
+        {
+          "name": "envelope_shape",
+          "pass": true,
+          "detail": "missing envelope keys"
+        },
+        {
+          "name": "status in ['SUCCESS']",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "top_phase==calcite",
+          "pass": true,
+          "detail": "got calcite"
+        },
+        {
+          "name": "top_verdict==identified",
+          "pass": true,
+          "detail": "got identified"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "description": "Missing: required fields removed -> BLOCKED with named missing fields and guidance.",
+      "action": "interpret.phases",
+      "status": "BLOCKED",
+      "error_code": "OMM-E101",
+      "pass": true,
+      "checks": [
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "got passed"
+        },
+        {
+          "name": "envelope_shape",
+          "pass": true,
+          "detail": "missing envelope keys"
+        },
+        {
+          "name": "status in ['BLOCKED']",
+          "pass": true,
+          "detail": "got BLOCKED"
+        },
+        {
+          "name": "error in ['OMM-E101']",
+          "pass": true,
+          "detail": "got OMM-E101"
+        },
+        {
+          "name": "missing_fields_named",
+          "pass": true,
+          "detail": "detail: {\"issues\": [{\"path\": \"\", \"message\": \"missing required property \\\"project_id\\\"\"}, {\"path\": \"\", \"message\": \"missing required property \\\"timestamp\\\"\"}], \"missing_fields\": [\"project_id\", \"timestamp\"], \"fi"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "description": "Conflict: vaterite 3.29A overlaps aragonite 3.273A -> candidates listed, no single-modality certainty.",
+      "action": "tools.xrd_match",
+      "status": "SUCCESS",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "got passed"
+        },
+        {
+          "name": "envelope_shape",
+          "pass": true,
+          "detail": "missing envelope keys"
+        },
+        {
+          "name": "status in ['SUCCESS']",
+          "pass": true,
+          "detail": "got SUCCESS"
+        },
+        {
+          "name": "multiple_candidates",
+          "pass": true,
+          "detail": "got 3"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "description": "Adversarial: non-object stdin -> BLOCKED envelope, not crash.",
+      "action": null,
+      "status": "BLOCKED",
+      "error_code": "OMM-E101",
+      "pass": true,
+      "checks": [
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "got passed"
+        },
+        {
+          "name": "envelope_shape",
+          "pass": true,
+          "detail": "missing envelope keys"
+        },
+        {
+          "name": "status in ['BLOCKED']",
+          "pass": true,
+          "detail": "got BLOCKED"
+        },
+        {
+          "name": "error in ['OMM-E101']",
+          "pass": true,
+          "detail": "got OMM-E101"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "description": "Adversarial: contract_version 2.0 -> FAILED OMM-E501 (compat policy).",
+      "action": "tools.xrd_match",
+      "status": "FAILED",
+      "error_code": "OMM-E501",
+      "pass": true,
+      "checks": [
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "got passed"
+        },
+        {
+          "name": "envelope_shape",
+          "pass": true,
+          "detail": "missing envelope keys"
+        },
+        {
+          "name": "status in ['FAILED']",
+          "pass": true,
+          "detail": "got FAILED"
+        },
+        {
+          "name": "error in ['OMM-E501']",
+          "pass": true,
+          "detail": "got OMM-E501"
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "description": "Boundary: flat XRD profile -> no fabricated winner (PARTIAL/SUCCESS with winner=None).",
+      "action": "interpret.phases",
+      "status": "PARTIAL",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "got passed"
+        },
+        {
+          "name": "envelope_shape",
+          "pass": true,
+          "detail": "missing envelope keys"
+        },
+        {
+          "name": "status in ['SUCCESS', 'PARTIAL']",
+          "pass": true,
+          "detail": "got PARTIAL"
+        },
+        {
+          "name": "no_winner",
+          "pass": true,
+          "detail": "got None"
+        }
+      ]
+    },
+    {
+      "id": "eval-08",
+      "description": "Boundary: single SEM image with 12 particles -> PARTIAL, uncertainty flags non-representative.",
+      "action": "interpret.phases",
+      "status": "PARTIAL",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "got passed"
+        },
+        {
+          "name": "envelope_shape",
+          "pass": true,
+          "detail": "missing envelope keys"
+        },
+        {
+          "name": "status in ['SUCCESS', 'PARTIAL']",
+          "pass": true,
+          "detail": "got PARTIAL"
+        },
+        {
+          "name": "uncertainty_nonrepresentative",
+          "pass": true,
+          "detail": "uncertainty: ['SEM 颗粒样本量 12 < 阈值 30,不宜据此外推整体均匀性']"
+        }
+      ]
+    },
+    {
+      "id": "eval-09",
+      "description": "Boundary: EDS with no Ca -> no CaCO3 claim fabricated.",
+      "action": "interpret.phases",
+      "status": "PARTIAL",
+      "error_code": null,
+      "pass": true,
+      "checks": [
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "got passed"
+        },
+        {
+          "name": "envelope_shape",
+          "pass": true,
+          "detail": "missing envelope keys"
+        },
+        {
+          "name": "no_caco3_claim_without_ca",
+          "pass": true,
+          "detail": "EDS 无 Ca 却断言 CaCO3"
+        }
+      ]
+    },
+    {
+      "id": "eval-10",
+      "description": "Missing: NaN in XRD values -> typed OMM-E104 failure, not crash.",
+      "action": "tools.xrd_match",
+      "status": "FAILED",
+      "error_code": "OMM-E104",
+      "pass": true,
+      "checks": [
+        {
+          "name": "output_schema",
+          "pass": true,
+          "detail": "got passed"
+        },
+        {
+          "name": "envelope_shape",
+          "pass": true,
+          "detail": "missing envelope keys"
+        },
+        {
+          "name": "status in ['FAILED', 'BLOCKED']",
+          "pass": true,
+          "detail": "got FAILED"
+        },
+        {
+          "name": "error in ['OMM-E104']",
+          "pass": true,
+          "detail": "got OMM-E104"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "passed": 10,
+    "total": 10,
+    "all_pass": true
+  },
+  "metrics": {
+    "report": {
+      "M1_structured_output_pass_rate": {
+        "measured": 1.0,
+        "threshold": 0.95,
+        "method": "validate every CLI output against schemas/output.schema.json; pass_rate = passes / total outputs",
+        "pass": true
+      },
+      "M2_tool_real_call_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "for each case, the action handler must populate results/ (a real computation), not just echo; rate = cases_with_results / cases",
+        "pass": true
+      },
+      "M3_traceability_rate": {
+        "measured": 1.0,
+        "threshold": 0.9,
+        "method": "envelopes whose evidence_used or inline samples ground every conclusion / total envelopes",
+        "pass": true
+      },
+      "M4_missing_input_recognition_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "for each of K required fields, submit payload missing exactly it and require BLOCKED with the field named in the violation",
+        "pass": true
+      },
+      "M5_adversarial_interception_rate": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "adversarial cases (non-object stdin, contract v2, NaN, path traversal, unknown action, out-of-range TGA) that were blocked or failed with a typed OMM error / total",
+        "pass": true
+      },
+      "M6_repeated_run_consistency": {
+        "measured": 1.0,
+        "threshold": 1.0,
+        "method": "run the same payload twice; envelopes must be identical after stripping timestamps",
+        "pass": true
+      },
+      "M7_mean_recovery_time_ms": {
+        "measured": 1660.703900000044,
+        "threshold": 5000.0,
+        "method": "submit a known-bad payload (expect FAILED/BLOCKED), fix the payload, rerun; mean wall-clock over 3 rounds",
+        "pass": true
+      }
+    }
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "contract_version": "1.0",
+  "skill": "micp-modeling-optimizer",
+  "skill_version": "1.0.0",
+  "status": "SUCCESS",
+  "summary": "action=sensitivity completed with status SUCCESS.",
+  "action": "sensitivity",
+  "project_id": "P-BOOT",
+  "task_id": "BOOT",
+  "findings": [
+    {
+      "statement": "action=sensitivity completed with status FAILED",
+      "epistemic_tag": "CALCULATED"
+    }
+  ],
+  "assumptions": [],
+  "evidence_used": [],
+  "uncertainty": [],
+  "risks": [],
+  "artifacts": [],
+  "requested_next_skills": [],
+  "validation": {
+    "input_schema": true,
+    "output_schema": true,
+    "self_check": true,
+    "checks": [
+      {
+        "name": "envelope_shape",
+        "ok": true
+      },
+      {
+        "name": "status_valid",
+        "ok": true
+      },
+      {
+        "name": "epistemic_labels",
+        "ok": true
+      }
+    ]
+  },
+  "provenance": {
+    "skill": "micp-modeling-optimizer",
+    "skill_version": "1.0.0",
+    "started_at": "2026-08-06T15:58:58Z",
+    "completed_at": "2026-08-06T15:58:58Z",
+    "generator": "micp-modeling-optimizer/cli.py",
+    "seed": 7
+  },
+  "errors": [],
+  "sensitivity": {
+    "N": 150,
+    "d": 2,
+    "n_evaluations": 600,
+    "method": "sobol_saltelli_2002",
+    "first_order": [
+      1.0,
+      0.011423606980488422
+    ],
+    "total_order": [
+      0.0,
+      0.9215315663264781
+    ],
+    "rank_by_total_order": [
+      1,
+      0
+    ],
+    "mean_output": 0.6788537819884629,
+    "variance_output": 0.17347839612630198,
+    "seed": 7,
+    "note": "point estimates without confidence intervals; increase N for tighter estimates"
+  },
+  "model_purpose": "PARAMETER_INFERENCE",
+  "model_specification": {
+    "purpose": "PARAMETER_INFERENCE",
+    "model_kind": "ode",
+    "state_variables": [
+      "urea",
+      "ca",
+      "nh4",
+      "biomass",
+      "calcite"
+    ],
+    "parameters": [
+      {
+        "name": "k_ure",
+        "role": "calibration",
+        "value": 0.0001,
+        "unit": "1/s",
+        "bounds": [
+          1e-06,
+          0.01
+        ]
+      },
+      {
+        "name": "k_pre",
+        "role": "calibration",
+        "value": 0.0001,
+        "unit": "1/s",
+        "bounds": [
+          1e-06,
+          0.01
+        ]
+      }
+    ],
+    "equations": {
+      "kind": "ode",
+      "ureolysis": "michaelis_menten",
+      "precipitation": "first_order_min"
+    },
+    "initial_conditions": {
+      "urea0": 500,
+      "ca0": 500,
+      "biomass0": 1.0,
+      "phi0": 0.4
+    },
+    "observations": [
+      "urea",
+      "nh4",
+      "caco3"
+    ],
+    "error_model": "additive_gaussian",
+    "space_scale": "lab_column",
+    "time_scale": "days"
+  },
+  "equations": [
+    {
+      "name": "kind",
+      "expression": "ode"
+    },
+    {
+      "name": "ureolysis",
+      "expression": "michaelis_menten"
+    },
+    {
+      "name": "precipitation",
+      "expression": "first_order_min"
+    }
+  ]
+}

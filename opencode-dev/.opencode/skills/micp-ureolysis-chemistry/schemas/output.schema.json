@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://obsidian.dev/skills/micp-ureolysis-chemistry/output.schema.json",
+  "title": "micp-ureolysis-chemistry output envelope",
+  "description": "Machine-readable result envelope emitted by the skill. Custom project convention (Obsidian Plan), version 1.0.0. Downstream skills parse status/summary/findings without ambiguity.",
+  "type": "object",
+  "required": ["status", "summary", "validation", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL", "BLOCKED", "FAILED", "NEED_ADDITIONAL_SKILL", "HUMAN_APPROVAL_REQUIRED"],
+      "description": "SUCCESS=calculation complete and self-checked; PARTIAL=complete with caveats/non-blocking gaps; BLOCKED=critical input missing or hard violation (e.g. mass imbalance); FAILED=unprocessable/corrupt; NEED_ADDITIONAL_SKILL=another capability required; HUMAN_APPROVAL_REQUIRED=approval gate pending"
+    },
+    "summary": { "type": "string", "minLength": 1 },
+    "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "evidence_used": { "type": "array", "items": { "type": "string" }, "description": "S# source tags cited in this run" },
+    "uncertainty": { "type": "object", "properties": { "level": { "enum": ["low", "medium", "high"] }, "notes": { "type": "string" } }, "additionalProperties": false },
+    "risks": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+    "artifacts": { "type": "array", "items": { "$ref": "#/$defs/artifact" } },
+    "requested_next_skills": { "type": "array", "items": { "type": "object", "properties": { "skill": { "type": "string" }, "why": { "type": "string" }, "required_inputs": { "type": "array", "items": { "type": "string" } } }, "required": ["skill", "why"], "additionalProperties": false } },
+    "calculation": {
+      "type": "object",
+      "description": "The machine-readable calculation payload from the dispatched tool(s)",
+      "additionalProperties": true
+    },
+    "missing_inputs": { "type": "array", "items": { "$ref": "#/$defs/missing" } },
+    "validation": { "type": "object", "required": ["schema_passed", "self_check_passed", "tool_calls"], "properties": { "schema_passed": { "type": "boolean" }, "self_check_passed": { "type": "boolean" }, "tool_calls": { "type": "array", "items": { "type": "object", "properties": { "tool": { "type": "string" }, "ok": { "type": "boolean" }, "note": { "type": "string" } }, "required": ["tool", "ok"], "additionalProperties": false } } }, "additionalProperties": false },
+    "provenance": { "type": "object", "required": ["skill", "skill_version", "contract_version", "timestamp", "tools_used"], "properties": { "skill": { "type": "string" }, "skill_version": { "type": "string" }, "contract_version": { "type": "string" }, "timestamp": { "type": "string", "format": "date-time" }, "tools_used": { "type": "array", "items": { "type": "string" } }, "source_input": { "type": "string", "description": "Optional reference to the input envelope (path or digest) for audit" } }, "additionalProperties": false },
+    "errors": { "type": "array", "items": { "type": "object", "properties": { "code": { "type": "string", "pattern": "^MUC-E\\d{4}$" }, "message": { "type": "string" }, "retryable": { "type": "boolean" }, "details": { "type": "object" } }, "required": ["code", "message"], "additionalProperties": false } }
+  },
+  "$defs": {
+    "label": {
+      "type": "string",
+      "enum": ["OBSERVED", "REPORTED", "CALCULATED", "INFERRED", "HYPOTHESIS", "RECOMMENDATION"]
+    },
+    "finding": {
+      "type": "object",
+      "required": ["text", "label"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1 },
+        "label": { "$ref": "#/$defs/label" },
+        "source": { "type": "string", "description": "Required when label is OBSERVED or REPORTED; optional otherwise. Use S# tags." }
+      },
+      "additionalProperties": false
+    },
+    "artifact": {
+      "type": "object",
+      "required": ["path", "kind"],
+      "properties": {
+        "path": { "type": "string" },
+        "kind": { "type": "string", "enum": ["json", "csv", "md", "yaml", "deck", "log"] },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "missing": {
+      "type": "object",
+      "required": ["field", "why_critical", "how_to_obtain", "blocking"],
+      "properties": {
+        "field": { "type": "string" },
+        "why_critical": { "type": "string" },
+        "how_to_obtain": { "type": "string" },
+        "blocking": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

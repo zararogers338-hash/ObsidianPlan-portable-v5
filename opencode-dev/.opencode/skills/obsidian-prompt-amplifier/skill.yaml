@@ -1,0 +1,90 @@
+# obsidian-prompt-amplifier skill manifest
+#
+# OpenCode loader contract (native): the loader reads frontmatter from
+# SKILL.md (name + description). This YAML is the project-extension manifest
+# consumed by obsidian-skill-router's registry indexer (validateManifest in
+# tools/osr/registry.ts) — kept in sync with manifest.json.
+#
+# Constitutional note: this is the HIGHEST-PRIORITY entry skill (order 1),
+# meaning it runs FIRST on substantive tasks. Priority denotes run order only,
+# never supremacy: the Panshi Constitution v1.0 interpretation state governs
+# ALL conflicts, including any instruction this skill produces.
+name: obsidian-prompt-amplifier
+display_name: "Obsidian Prompt Amplifier｜提示词扩充机制 + 调动决策树(任务入口首检)"
+version: "1.1.0"
+contract_version: "1.0.0"
+layer: panshi-governed-capability
+license: MIT
+priority: highest
+constitution: panshi-constitution-v1.0
+compatibility:
+  opencode: ">=1.18"
+  python: ">=3.10"
+description: >-
+  Obsidian Prompt Amplifier (提示词扩充机制): entry-stage check for any
+  substantive task. Classifies the request, scores complexity per Panshi
+  Constitution Appendix B, suggests a three-tier model grouping (12
+  general / 6 review / 6 special), drafts an amplified prompt, and asks the
+  user to accept or decline. Max 2 amplification rounds; declining falls back
+  to the standard (still full-constitution) flow. Never lowers Red Team /
+  Decision Gate / environment / reproducibility / human-approval gates.
+  Constitutional supremacy: the Panshi Constitution governs all conflicts.
+entry:
+  cli: tools/prompt_amplifier.py
+  mode: stdin_stdout
+capabilities:
+  - prompt_amplification
+  - task_classification
+  - complexity_scoring
+  - tiered_grouping
+  - constitution_guard
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - context
+  - max_amplification_rounds
+outputs:
+  - amplification_report
+  - classification
+  - complexity_score
+  - tiered_plan
+  - amplified_prompt
+  - constitutional_conflicts
+  - acceptance_pending
+permissions:
+  read: request/context only (read-only)
+  write: "none (analysis + report only)"
+  approvals_required:
+    - real_experiment
+    - field_deployment
+    - long_term_knowledge_write
+    - state_upgrade
+network: false
+writes:
+  - none
+stop_conditions:
+  - amplification_round_limit
+  - constitutional_conflict
+  - input_schema_invalid
+domain_keywords:
+  - 提示词
+  - 扩充
+  - 强化
+  - amplify
+  - prompt
+  - 分析题目
+  - 先分析
+  - 任务分类
+  - 复杂度
+  - prompt amplification
+dependencies:
+  - python>=3.10
+  - jsonschema>=4.0
+  - pyyaml
+cost_estimate:
+  tokens: 1200
+  usd: 0.012
+risk_tier: low
+offline: true
+deterministic: true

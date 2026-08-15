@@ -1,0 +1,172 @@
+{
+  "contract_version": "1.0",
+  "skill": "micp-modeling-optimizer",
+  "skill_version": "1.0.0",
+  "status": "SUCCESS",
+  "summary": "action=fit completed with status SUCCESS.",
+  "action": "fit",
+  "project_id": "P-BOOT",
+  "task_id": "BOOT",
+  "findings": [
+    {
+      "statement": "action=fit completed with status SUCCESS",
+      "epistemic_tag": "CALCULATED"
+    },
+    {
+      "statement": "identifiability verdict: identifiable",
+      "epistemic_tag": "CALCULATED"
+    }
+  ],
+  "assumptions": [],
+  "evidence_used": [],
+  "uncertainty": [],
+  "risks": [],
+  "artifacts": [],
+  "requested_next_skills": [],
+  "validation": {
+    "input_schema": true,
+    "output_schema": true,
+    "self_check": true,
+    "checks": [
+      {
+        "name": "envelope_shape",
+        "ok": true
+      },
+      {
+        "name": "status_valid",
+        "ok": true
+      },
+      {
+        "name": "epistemic_labels",
+        "ok": true
+      }
+    ]
+  },
+  "provenance": {
+    "skill": "micp-modeling-optimizer",
+    "skill_version": "1.0.0",
+    "started_at": "2026-08-06T15:58:57Z",
+    "completed_at": "2026-08-06T15:58:58Z",
+    "generator": "micp-modeling-optimizer/cli.py",
+    "seed": 42
+  },
+  "errors": [],
+  "identifiability": {
+    "n_parameters": 2,
+    "n_observations": 16,
+    "fisher_information": [
+      [
+        3842300061.162788,
+        12246305.582500348
+      ],
+      [
+        12246305.582500348,
+        7219919.6690007895
+      ]
+    ],
+    "eigenvalues": [
+      3842339166.074731,
+      7180814.757058212
+    ],
+    "rank": 2,
+    "invertible": true,
+    "method": "fisher_information_local",
+    "parameters": [
+      {
+        "index": 0,
+        "value": 0.0001999946967525797,
+        "std_error": 1.6176384909148238e-05,
+        "relative_se": 0.08088406928690013,
+        "class": "identifiable"
+      },
+      {
+        "index": 1,
+        "value": 9.982601042778833e-05,
+        "std_error": 0.00037317361383789005,
+        "relative_se": 3.7382402866619078,
+        "class": "weakly_identifiable"
+      }
+    ],
+    "highly_correlated_pairs": [],
+    "verdict": "identifiable",
+    "recommend_profile_likelihood": false
+  },
+  "model_purpose": "PARAMETER_INFERENCE",
+  "model_specification": {
+    "purpose": "PARAMETER_INFERENCE",
+    "model_kind": "ode",
+    "state_variables": [
+      "urea",
+      "ca",
+      "nh4",
+      "biomass",
+      "calcite"
+    ],
+    "parameters": [
+      {
+        "name": "k_ure",
+        "role": "calibration",
+        "value": 0.0001,
+        "unit": "1/s",
+        "bounds": [
+          1e-06,
+          0.01
+        ]
+      },
+      {
+        "name": "k_pre",
+        "role": "calibration",
+        "value": 0.0001,
+        "unit": "1/s",
+        "bounds": [
+          1e-06,
+          0.01
+        ]
+      }
+    ],
+    "equations": {
+      "kind": "ode",
+      "ureolysis": "michaelis_menten",
+      "precipitation": "first_order_min"
+    },
+    "initial_conditions": {
+      "urea0": 500,
+      "ca0": 500,
+      "biomass0": 1.0,
+      "phi0": 0.4
+    },
+    "observations": [
+      "urea",
+      "nh4",
+      "caco3"
+    ],
+    "error_model": "additive_gaussian",
+    "space_scale": "lab_column",
+    "time_scale": "days"
+  },
+  "equations": [
+    {
+      "name": "kind",
+      "expression": "ode"
+    },
+    {
+      "name": "ureolysis",
+      "expression": "michaelis_menten"
+    },
+    {
+      "name": "precipitation",
+      "expression": "first_order_min"
+    }
+  ],
+  "calibration": {
+    "theta": [
+      0.0001999946967525797,
+      9.982601042778833e-05
+    ],
+    "cost": 2.176743460472298e-06,
+    "train_rss": 2.176743460472298e-06,
+    "holdout_rss": 4.4628667784854953e-07,
+    "holdout_overfit_ratio": 0.2050249310278009,
+    "backend": "scipy:least_squares"
+  }
+}

@@ -1,0 +1,78 @@
+# Machine-readable metadata for micp-reproducibility-versioning.
+# Consumed by the OSR registry indexer (tools/osr/registry.ts) and by Obsidian
+# Controller tooling. Fields mirror the effective contract; see schemas/.
+# Layout of error codes: MRV-E<category><ordinal> — see tools/mrv/errors.py.
+# NOTE: every list field here must be an ARRAY OF STRINGS (registry contract);
+# nothing may be a mapping. `units` is declared in the optional units block
+# because registry.ts accepts `units` as an object — it is NOT a list field.
+
+name: micp-reproducibility-versioning
+version: 1.0.0
+entry: tools/mrv/cli.py
+description: >-
+  MICP reproducibility, data lineage and version governance: traceable,
+  rebuildable, comparable and rollback-able artifacts (raw/derived data,
+  parameters, instrument configs, code, models, seeds, dependencies, skills,
+  prompts, constitution, cards, reports). Data layering (raw read-only,
+  processed rebuildable), manifests, environment & dependency locking, seed
+  management, input/output provenance, version compatibility & schema
+  migration, result diffing, one-shot reproduction, raw write-protection and
+  artifact-pollution detection.
+
+capabilities:
+  - reproducibility
+  - data_lineage
+  - version_governance
+  - dependency_locking
+  - seed_management
+  - provenance_recording
+  - artifact_integrity
+  - result_diffing
+
+inputs_required:
+  - task_id
+  - project_id
+  - request
+  - skill_version
+  - controller_version
+  - timestamp
+
+outputs:
+  - reproduction_manifest
+  - data_lineage
+  - provenance_log
+  - dependency_lockfile
+  - diff_report
+  - migration_plan
+  - data_manifest
+
+units:
+  strength: MPa | kPa | kN/m2
+  permeability: m/s | cm/s | m/d
+  caCO3_content: mass_percent
+  concentration: g/L | mg/L | mol/L | mol/m3
+
+tool_permissions:
+  - read
+  - write_local_audit
+  - run_reproducible_command
+
+network: false
+writes:
+  - provenance/**
+  - reports/**
+  - lockfiles/**
+
+stop_conditions:
+  - 输出通过 output.schema.json 自检后停止
+  - 任一硬门控失败即返回 BLOCKED/FAILED 并停止
+  - 需要下游能力返回 NEED_ADDITIONAL_SKILL 并停止
+  - 高风险待批准返回 HUMAN_APPROVAL_REQUIRED 并停止
+
+compatible_controller: ">=1.0.0"
+dependencies: []
+cost_estimate:
+  tokens: 2500
+  usd: 0.025
+
+risk_tier: low

@@ -1,0 +1,126 @@
+# Evaluation cases for obsidian-state-manager (spec §三, §十一)
+# Each case is a full skill invocation through the real CLI. Cases cover:
+#   normal / missing / conflict / adversarial / boundary. No case leaks the
+#   expected answer into the input. Reference expectations are derived by the
+#   state machine itself, never hardcoded "fixed answers".
+
+suite:
+  name: obsidian-state-manager-evals
+  contract_version: "1.0"
+
+base:
+  contract_version: "1.0"
+  task_id: "eval"
+  project_id: "evals-project"
+  request: "eval suite case"
+  action: null
+  skill_version: "1.0.0"
+  timestamp: "2026-08-06T00:00:00Z"
+
+cases:
+  - id: eval-01
+    description: "Normal: initialize a stream and verify it lands in OPEN with a valid output envelope."
+    action: project.init
+    extra:
+      title: "eval baseline"
+    expect:
+      status: SUCCESS
+      state: OPEN
+      findings_min: 1
+      provenance_events: 1
+
+  - id: eval-02
+    description: "Normal: forward lifecycle EVIDENCE_GATHERING -> HYPOTHESIS_BUILDING once evidence exists."
+    action: state.transition
+    setup: [["project.init"], ["state.transition", {"to_state": "SCOPED"}], ["state.transition", {"to_state": "EVIDENCE_GATHERING"}], ["evidence.attach", {"evidence": {"ref": "eval-e1"}}]]
+    extra:
+      to_state: HYPOTHESIS_BUILDING
+      actor: {"role": "skill"}
+    expect:
+      status: SUCCESS
+      state: HYPOTHESIS_BUILDING
+
+  - id: eval-03
+    description: "Missing: transition to HYPOTHESIS_BUILDING with zero evidence must be blocked as GUARD_UNSATISFIED, not fabricated."
+    action: state.transition
+    setup: [["project.init"], ["state.transition", {"to_state": "SCOPED"}], ["state.transition", {"to_state": "EVIDENCE_GATHERING"}]]
+    extra:
+      to_state: HYPOTHESIS_BUILDING
+      actor: {"role": "skill"}
+    expect:
+      status: FAILED
+      error_code: OSM-E306
+
+  - id: eval-04
+    description: "Conflict: contradictory evidence auto-downgrades the stream out of AWAITING_DATA."
+    action: evidence.attach
+    setup: [["project.init"], ["state.transition", {"to_state": "SCOPED"}], ["state.transition", {"to_state": "EVIDENCE_GATHERING"}], ["evidence.attach", {"evidence": {"ref": "eval-e1"}}], ["state.transition", {"to_state": "HYPOTHESIS_BUILDING"}], ["hypothesis.record", {"hypothesis": {"id": "h1", "statement": "hypo"}}], ["state.transition", {"to_state": "DESIGNING"}], ["task.checkpoint", {"task_id": "d", "completed_work": [{"step": "s"}]}], ["state.transition", {"to_state": "AWAITING_DATA"}]]
+    extra:
+      evidence: {"ref": "eval-contra", "contradicts_hypothesis": ["h1"]}
+    expect:
+      status: SUCCESS
+      state: DESIGNING
+
+  - id: eval-05
+    description: "Adversarial: hard-block OPEN -> DEPLOYABLE even with human approval present."
+    action: state.transition
+    setup: [["project.init"]]
+    extra:
+      to_state: DEPLOYABLE
+      actor: {"role": "human", "id": "attacker"}
+      human_approval_state: {"granted": true, "approver": "attacker", "revision": 1}
+    expect:
+      status: FAILED
+      error_code: OSM-E305
+
+  - id: eval-06
+    description: "Boundary: rollback from DEPLOYABLE is refused as irreversible."
+    action: state.rollback
+    setup:
+      - ["project.init"]
+      - ["state.transition", {"to_state": "SCOPED", "actor": {"role": "controller"}}]
+      - ["state.transition", {"to_state": "EVIDENCE_GATHERING", "actor": {"role": "controller"}}]
+      - ["evidence.attach", {"evidence": {"ref": "e1", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}]
+      - ["state.transition", {"to_state": "HYPOTHESIS_BUILDING", "actor": {"role": "skill"}}]
+      - ["hypothesis.record", {"hypothesis": {"id": "h1", "statement": "x"}}]
+      - ["state.transition", {"to_state": "DESIGNING", "actor": {"role": "skill"}}]
+      - ["task.checkpoint", {"task_id": "d", "completed_work": [{"step": "s"}]}]
+      - ["state.transition", {"to_state": "AWAITING_DATA", "actor": {"role": "controller"}}]
+      - ["evidence.attach", {"evidence": {"ref": "e2", "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}}]
+      - ["state.transition", {"to_state": "ANALYZING", "actor": {"role": "controller"}}]
+      - ["task.checkpoint", {"task_id": "a", "completed_work": [{"step": "fit"}]}]
+      - ["state.transition", {"to_state": "UNDER_REVIEW", "actor": {"role": "controller"}}]
+      - ["review.complete", {"verdict": "pass", "reviewer": "auditor"}]
+      - ["approval.grant", {"approver": "pi", "scope": "VALIDATED"}]
+      - ["state.transition", {"to_state": "VALIDATED", "actor": {"role": "human", "id": "pi"}, "human_approval_state": {"granted": true, "approver": "pi", "revision": "@head"}}]
+      - ["approval.grant", {"approver": "pi", "scope": "DEPLOYABLE"}]
+      - ["state.transition", {"to_state": "DEPLOYABLE", "actor": {"role": "human", "id": "pi"}, "human_approval_state": {"granted": true, "approver": "pi", "revision": "@head"}}]
+    extra:
+      to_state: VALIDATED
+      human_approval_state: {"granted": true, "approver": "pi", "revision": "@head"}
+    expect:
+      status: FAILED
+      error_code: OSM-E307
+
+  - id: eval-07
+    description: "Missing: contract_version 2.0 must be rejected with OSM-E801 (compat policy)."
+    action: state.get
+    setup: [["project.init"]]
+    extra:
+      contract_version: "2.0"
+    expect:
+      status: FAILED
+      error_code: OSM-E801
+
+  - id: eval-08
+    description: "Boundary: dry_run must not append any event to the store."
+    action: state.transition
+    setup: [["project.init"]]
+    extra:
+      to_state: SCOPED
+      actor: {"role": "controller"}
+      dry_run: true
+    expect:
+      status: SUCCESS
+      state: SCOPED
+      store_events_unchanged: true

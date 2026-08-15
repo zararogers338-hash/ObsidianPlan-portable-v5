@@ -1,0 +1,41 @@
+{
+  "contract_version": "1.0",
+  "task_id": "ex-01",
+  "project_id": "demo-vaterite",
+  "request": "鉴定 MICP 沉淀物的矿物相、晶体形貌并说明证据与置信度",
+  "action": "interpret.phases",
+  "skill_version": "1.0.0",
+  "controller_version": "0.1.0",
+  "timestamp": "2026-08-06T00:00:00Z",
+  "risk_level": "medium",
+  "samples": [
+    {
+      "id": "x1",
+      "data_type": "xrd_twotheta_intensity",
+      "source": "实验室 XRD(Cu K-alpha)",
+      "wavelength_A": 1.540598,
+      "values": [24.9,14,25.0,20,25.1,14,27.0,18,27.1,25,27.2,18,32.7,22,32.8,30,32.9,22,25.3,100,25.4,85,25.5,70]
+    },
+    {
+      "id": "f1",
+      "data_type": "ftir_spectrum",
+      "source": "实验室 FTIR(ATR)",
+      "channels": [700,705,710,715,720,740,745,750,770,820,860,870,875,880,1080,1085,1090,1400,1450,1490,1520],
+      "intensities": [5,5,5,5,5,12,100,12,5,5,5,8,9,8,15,22,15,18,25,60,20]
+    },
+    {
+      "id": "e1",
+      "data_type": "eds_spectrum",
+      "source": "SEM-EDS",
+      "channels": [1.0,2.0,3.0,3.4,3.5,3.69,3.8,4.0,5.0],
+      "intensities": [0,0,0,20,50,100,50,10,0]
+    },
+    {
+      "id": "t1",
+      "data_type": "tga_curve",
+      "source": "TGA(N2, 10C/min)",
+      "channels": [25,100,200,400,600,700,800,900],
+      "intensities": [100,99,98,97,80,60,50,56]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "task_id": "T-EX2",
+  "project_id": "PRJ-DEMO-DUR",
+  "request": "评估 MICP 处理砂在 20 次干湿循环后的强度衰减,给出残余强度比与衰减模型。",
+  "skill_version": "1.0.0",
+  "controller_version": "1.0.0",
+  "timestamp": "2026-08-06T10:00:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "approved",
+  "samples": [
+    {
+      "specimen_id": "DW-A",
+      "test_type": "ucs",
+      "group": "treated",
+      "dimensions": { "diameter": 38, "height": 76, "unit": "mm" },
+      "density": 1.78,
+      "density_unit": "g/cm3",
+      "treatment": "MICP, 0.5 M urea + 0.5 M CaCl2, 6 injections",
+      "durability_cycles": [
+        { "cycle_count": 0, "strength": 3000, "strength_unit": "kPa", "cycle_type": "wetting_drying" },
+        { "cycle_count": 5, "strength": 2100, "strength_unit": "kPa", "cycle_type": "wetting_drying" },
+        { "cycle_count": 10, "strength": 1600, "strength_unit": "kPa", "cycle_type": "wetting_drying" },
+        { "cycle_count": 20, "strength": 1200, "strength_unit": "kPa", "cycle_type": "wetting_drying" }
+      ]
+    }
+  ],
+  "evidence_refs": [
+    { "ref_id": "ev:dw-2026-06", "uri": "lab://2026-06/wet-dry", "media_type": "text/csv", "note": "干湿循环残余强度" }
+  ]
+}

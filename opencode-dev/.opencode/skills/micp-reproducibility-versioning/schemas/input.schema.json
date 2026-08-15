@@ -1,0 +1,328 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-reproducibility-versioning.input.json",
+  "title": "MICP Reproducibility & Versioning — Input Contract",
+  "description": "Strict input contract for the micp-reproducibility-versioning skill (MRV). Every required field is mandatory; missing required fields MUST be reported with explicit field names, why they are critical, and how to obtain them (never a generic '信息不足'). Version 1.0.0. Breaking changes require a major version bump.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "project_id",
+    "request",
+    "skill_version",
+    "controller_version",
+    "timestamp"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "description": "Task node identifier. Required: audit anchor and provenance event key."
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "description": "Project/experiment identifier. Required: selects provenance, manifest and lockfile names."
+    },
+    "request": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000,
+      "description": "The natural-language governance request (must state a deliverable)."
+    },
+    "skill_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version of THIS skill (micp-reproducibility-versioning). Required: version compatibility gate."
+    },
+    "controller_version": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:\\-]*$",
+      "description": "Version of the calling Obsidian Controller (e.g. obsidian-ctl-0.1.0). Required: permission model version gate."
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}",
+      "description": "ISO 8601 timestamp of the request."
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "reproduce",
+        "manifest",
+        "env",
+        "lock",
+        "seed",
+        "record",
+        "diff",
+        "compat",
+        "migrate",
+        "check-raw",
+        "check-pollution",
+        "validate",
+        "service"
+      ],
+      "description": "Explicit governance action. When omitted, the service infers it from the request text; inference failure is MRV-E106."
+    },
+    "root": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "description": "Project root to govern. Optional; defaults to the current working directory. When provided, it must exist (MRV-E104)."
+    },
+    "targets": {
+      "type": "array",
+      "maxItems": 500,
+      "description": "Paths to govern (files or directories, relative to root). Optional.",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2000
+      }
+    },
+    "commands": {
+      "type": "array",
+      "description": "Execution steps for action=reproduce: {id, cmd, cwd, expected_outputs}. Required for reproduce.",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "cmd"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "cmd": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "description": "Shell command to execute. Deterministic by construction (no wall-clock or RNG); if the command is not deterministic the manifest records a risk."
+          },
+          "cwd": {
+            "type": "string",
+            "maxLength": 2000,
+            "description": "Working directory relative to root. Default: root."
+          },
+          "expected_outputs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 2000
+            },
+            "maxItems": 200,
+            "description": "Output paths (relative to root) this step is expected to produce; hashed after the run."
+          }
+        }
+      }
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Experiment parameters recorded in the reproduction manifest (folded into the parameter fingerprint)."
+    },
+    "schema_versions": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Schema/artifact versions to check (compat) or migrate (migrate), e.g. { 'manifest': '2.0.0', 'provenance': '1.0.0' }."
+    },
+    "seed_policy": {
+      "type": "string",
+      "enum": [
+        "generate",
+        "reuse",
+        "require"
+      ],
+      "description": "generate: mint a new seed. reuse: reuse the provided random_seed (default). require: reuse AND record as required (fails if absent)."
+    },
+    "random_seed": {
+      "type": "integer",
+      "minimum": -9223372036854775808,
+      "maximum": 9223372036854775807,
+      "description": "Seed to reuse. Default 0. Deterministic RNG in this skill uses splitmix64/PCG so the same seed produces byte-identical runs."
+    },
+    "previous_manifest": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Path (relative to root) of a previous reproduction-manifest to diff against (action=diff)."
+    },
+    "previous_provenance": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Path (relative to root) of a previous provenance log to diff against (action=diff)."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "$ref": "#/$defs/ref"
+      }
+    },
+    "data_refs": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "$ref": "#/$defs/ref"
+      }
+    },
+    "upstream_outputs": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "$ref": "#/$defs/upstreamOutput"
+      }
+    },
+    "context": {
+      "type": "object",
+      "description": "Execution context: task graph, memory refs, call chain, environment snapshot.",
+      "additionalProperties": true
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "timeout_sec": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 3600,
+          "description": "Per-command timeout in seconds. Default 120."
+        },
+        "fail_on_dirty": {
+          "type": "boolean",
+          "description": "When true, reproduction fails if the working tree is dirty (unregistered modifications). Default false."
+        },
+        "ignore_raw_write_protection": {
+          "type": "boolean",
+          "description": "When true and the raw write-protection check fails, degrade to PARTIAL instead of BLOCKED. Default false."
+        },
+        "record_inputs": {
+          "type": "boolean",
+          "description": "Hash and record the input fileset in the manifest. Default true."
+        },
+        "record_outputs": {
+          "type": "boolean",
+          "description": "Hash and record the output fileset in the manifest. Default true."
+        },
+        "write_output_dir": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Where to persist manifests/provenance (relative to root). Default: provenance/."
+        }
+      }
+    },
+    "reproducibility": {
+      "type": "object",
+      "description": "Seed material for deterministic re-runs. This skill's own RNG is splitmix64+PCG.",
+      "additionalProperties": false,
+      "properties": {
+        "random_seed": {
+          "type": "integer"
+        },
+        "rng_algorithm": {
+          "type": "string",
+          "enum": [
+            "python_random",
+            "numpy_random",
+            "splitmix64"
+          ]
+        },
+        "input_fingerprint": {
+          "type": "string"
+        }
+      }
+    },
+    "requested_output_format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "markdown+json"
+      ],
+      "description": "'json' = output.schema.json document only; 'markdown+json' = human summary plus the JSON document."
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "human_approval_state": {
+      "type": "string",
+      "enum": [
+        "not_required",
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "description": "When risk_level is high/critical and a real experiment, field deployment, hazardous-chemical handling, or long-term knowledge write is involved, approved is required before SUCCESS."
+    }
+  },
+  "$defs": {
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_id",
+        "locator"
+      ],
+      "properties": {
+        "ref_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "media_type": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "upstreamOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "skill",
+        "task_node",
+        "output"
+      ],
+      "properties": {
+        "skill": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "task_node": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 4000
+        },
+        "output": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

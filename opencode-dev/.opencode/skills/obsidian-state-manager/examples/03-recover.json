@@ -1,0 +1,10 @@
+{
+  "contract_version": "1.0",
+  "task_id": "eval-demo-recover",
+  "project_id": "demo-micp-03",
+  "request": "登记实验设计阶段检查点并生成恢复计划",
+  "action": "project.init",
+  "title": "MICP 中断恢复示例",
+  "skill_version": "1.0.0",
+  "timestamp": "2026-08-06T00:00:00Z"
+}

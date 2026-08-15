@@ -1,0 +1,17 @@
+{
+  "task_id": "EX-01",
+  "project_id": "P-UR-COLUMN",
+  "request": "Explain why high urease activity lowers unconfined compressive strength in sand columns — generate one main + two competing mechanism hypotheses with refutation conditions.",
+  "risk_level": "low",
+  "human_approval_state": "granted",
+  "requested_output_format": "both",
+  "skill_version": "1.0.0",
+  "controller_version": "0.1.0",
+  "timestamp": "2026-08-06T00:00:00Z",
+  "statement_to_forge": "High urease activity reduces unconfined compressive strength",
+  "context": "Lab sand columns, 1.0 M cementation solution, 25 C, 14-day treatment. UCS measured at day 14; NH4+ in effluent monitored.",
+  "evidence_refs": [
+    {"ref_id": "EV1", "source": "column test log", "epistemic_label": "OBSERVED"},
+    {"ref_id": "EV2", "source": "prior ureolysis stoichiometry note", "epistemic_label": "CALCULATED"}
+  ]
+}

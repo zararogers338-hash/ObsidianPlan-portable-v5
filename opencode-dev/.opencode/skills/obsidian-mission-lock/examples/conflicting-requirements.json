@@ -1,0 +1,15 @@
+{
+  "task_id": "t-oml-002",
+  "project_id": "p-micp-research",
+  "request": "最大化强度、保持原始渗透率、零氨排放、最低成本,采用尿素水解路径",
+  "constraints": {
+    "strength": "maximize UCS",
+    "permeability": "keep original permeability unchanged",
+    "ammonium_emission": "zero NH4 emission",
+    "cost": "minimum cost",
+    "pathway": "urea hydrolysis"
+  },
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-controller-0.1.0",
+  "timestamp": "2026-08-06T10:00:00Z"
+}

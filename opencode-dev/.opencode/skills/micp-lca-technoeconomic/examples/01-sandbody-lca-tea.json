@@ -1,0 +1,124 @@
+{
+  "contract_version": "1.0",
+  "task_id": "sandbody-example-1",
+  "project_id": "panshi-micp-demo",
+  "request": "对 MICP 处理 1 m3 砂体的加固方案做全生命周期评价(LCA)与技术经济分析: 两个 MICP 情景(工业尿素+CaCl2、含废液回收)与一个水泥搅拌桩基准, 比较碳排、能耗、氮负荷与成本。",
+  "action": "compare",
+  "skill_version": "1.0.0",
+  "controller_version": "obsidian-ctl-0.1.0",
+  "timestamp": "2026-08-07T09:00:00Z",
+  "risk_level": "medium",
+  "human_approval_state": "not_required",
+  "requested_output_format": "json",
+  "constraints": {
+    "analysis_year": 2026,
+    "random_seed": 42,
+    "run_monte_carlo": true,
+    "monte_carlo_iterations": 300
+  },
+  "functional_unit": {
+    "description": "处理 1 m3 松散砂体并达到目标 UCS >= 1.0 MPa(工程性能目标), 服务期 5 年。",
+    "reference_flow": { "value": 1, "unit": "m3" },
+    "performance_target": { "metric": "UCS", "value": 1.0, "unit": "MPa" },
+    "service_life_years": 5
+  },
+  "scope": {
+    "time_boundary": "2026, 一次性施工 + 5 年服务期",
+    "geography": "中国华北地区",
+    "energy_mix": "中国电网平均(如华北燃煤为主请改用 gwp.electricity_cn_north)",
+    "transport": "材料公路运输 100 km(尿素/CaCl2/水泥产地至现场)",
+    "material_source": "工业级尿素、工业 CaCl2、P·O42.5 水泥",
+    "waste_route": "MICP 废液经硝化-反硝化处理氨氮后达标排放; 水泥施工废浆合规处置",
+    "recycling": "MICP 处理后场地可重复利用; 未回收尿素/氨",
+    "equipment_utilization": "现场中试规模, 设备利用率 70%",
+    "service_life": "5 年(加固体设计寿命)",
+    "technology_readiness": "TRL 6 现场中试",
+    "analysis_size": { "value": 100, "unit": "m3" },
+    "reference_scale": { "value": 100, "unit": "m3" }
+  },
+  "baseline": {
+    "id": "cement-dsm",
+    "type": "cement",
+    "description": "水泥搅拌桩(DSM)处理 1 m3 砂体至相同 UCS 目标, 边界含施工废浆处置"
+  },
+  "scenarios": [
+    {
+      "id": "micp-a-standard",
+      "type": "micp",
+      "description": "MICP 情景 A: 工业级尿素 + CaCl2, 废液经硝化处理, 现场中试规模",
+      "materials": {
+        "urea_kg": 40.0,
+        "cacl2_kg": 30.0,
+        "media_kg": 2.0,
+        "culture_kg": 1.0,
+        "water_m3": 0.5,
+        "price_tier": "industrial"
+      },
+      "energy": { "electricity_kwh": 15.0, "diesel_L": 2.0, "natural_gas_kg": 0.0 },
+      "transport": { "material_distance_km": 100.0 },
+      "waste": { "route": "nitrification", "derive_from_urea": true },
+      "labour": { "hours": 6.0 },
+      "monitoring": { "electricity_kwh": 2.0, "cost_cny": 5000.0 },
+      "capex": {
+        "equipment_cny": 80000,
+        "injection_system_cny": 30000,
+        "site_setup_cny": 20000,
+        "engineering_cny": 15000,
+        "monitoring_rig_cny": 10000,
+        "lab_scaleup_cny": 0
+      },
+      "opex": { "monitoring_cny": 5000, "maintenance_cny": 3000, "insurance_cny": 1000 },
+      "contingency": { "risk_reserve_pct": 10.0, "failure_cost_cny": 20000, "downtime_pct": 5.0 },
+      "performance_target": { "metric": "UCS", "value": 1.0, "unit": "MPa" }
+    },
+    {
+      "id": "micp-b-ammonia-recovery",
+      "type": "micp",
+      "description": "MICP 情景 B: 同 A, 但废液采用氨吹脱回收(氨氮回收为肥料副产), 处理碳排与成本更低",
+      "materials": {
+        "urea_kg": 40.0,
+        "cacl2_kg": 30.0,
+        "media_kg": 2.0,
+        "culture_kg": 1.0,
+        "water_m3": 0.5,
+        "price_tier": "industrial"
+      },
+      "energy": { "electricity_kwh": 18.0, "diesel_L": 2.0 },
+      "transport": { "material_distance_km": 100.0 },
+      "waste": { "route": "stripping", "derive_from_urea": true },
+      "labour": { "hours": 7.0 },
+      "monitoring": { "electricity_kwh": 3.0, "cost_cny": 6000.0 },
+      "capex": {
+        "equipment_cny": 90000,
+        "injection_system_cny": 30000,
+        "site_setup_cny": 22000,
+        "engineering_cny": 16000,
+        "monitoring_rig_cny": 10000,
+        "lab_scaleup_cny": 0
+      },
+      "opex": { "monitoring_cny": 5500, "maintenance_cny": 3500, "insurance_cny": 1200 },
+      "contingency": { "risk_reserve_pct": 12.0, "failure_cost_cny": 20000, "downtime_pct": 5.0 },
+      "performance_target": { "metric": "UCS", "value": 1.0, "unit": "MPa" }
+    },
+    {
+      "id": "cement-dsm",
+      "type": "cement",
+      "description": "基准: 水泥搅拌桩(DSM)处理 1 m3 砂体至相同 UCS, 含施工废浆处置",
+      "materials": { "cement_kg": 350.0, "water_m3": 0.2, "price_tier": "industrial" },
+      "energy": { "electricity_kwh": 8.0, "diesel_L": 3.0 },
+      "transport": { "material_distance_km": 50.0 },
+      "waste": { "slurry_m3": 0.1 },
+      "labour": { "hours": 2.0 },
+      "capex": {
+        "equipment_cny": 50000,
+        "injection_system_cny": 20000,
+        "site_setup_cny": 15000,
+        "engineering_cny": 8000
+      },
+      "opex": { "monitoring_cny": 2000, "maintenance_cny": 1000, "insurance_cny": 500 },
+      "contingency": { "risk_reserve_pct": 8.0, "failure_cost_cny": 0, "downtime_pct": 3.0 },
+      "performance_target": { "metric": "UCS", "value": 1.0, "unit": "MPa" }
+    }
+  ],
+  "factors": []
+}

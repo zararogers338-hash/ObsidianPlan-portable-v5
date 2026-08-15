@@ -1,0 +1,249 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obsidian.local/schemas/micp-geotechnical-performance.input.json",
+  "title": "MICP Geotechnical Performance — Input Contract",
+  "description": "Strict input contract for the micp-geotechnical-performance skill (MGE). Every required field is mandatory; missing required fields MUST be reported with explicit field names, why they are critical, and how to obtain them (never a generic '信息不足').",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "project_id",
+    "request",
+    "skill_version",
+    "controller_version",
+    "timestamp"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Task node identifier. Required: audit anchor and reproducibility."
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Project/experiment identifier. Required: selects the data provenance file."
+    },
+    "request": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000,
+      "description": "The natural-language evaluation request. Required: primary signal for what to evaluate."
+    },
+    "skill_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version of THIS skill (micp-geotechnical-performance). Required: version compatibility gate."
+    },
+    "controller_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version of the calling Obsidian Controller. Required: permission model version gate."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of the request."
+    },
+    "samples": {
+      "type": "array",
+      "description": "Geotechnical test specimens. Required when the request asks for strength/permeability/durability evaluation.",
+      "items": { "$ref": "#/$defs/sample" }
+    },
+    "context": {
+      "type": "object",
+      "description": "Execution context: task graph, memory refs, call chain, completed calls, environment snapshot.",
+      "properties": {
+        "task_graph": { "type": "object" },
+        "memory_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        },
+        "call_chain": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "completed_calls": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "prior_decisions": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "environment": { "type": "object" },
+        "knowledge_base_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ref" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Analysis bounds. Invalid numeric values are ignored; missing values fall back to skill defaults.",
+      "properties": {
+        "max_samples": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "max_data_points": { "type": "integer", "minimum": 2, "maximum": 100000 },
+        "output_units": {
+          "type": "object",
+          "description": "Requested output units, e.g. { strength: 'kPa', permeability: 'm/s' }.",
+          "additionalProperties": { "type": "string" }
+        },
+        "significance_level": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "engineering_thresholds": { "type": "object" },
+        "allowed_modes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["performance_evaluation", "statistical_report", "durability_forecast", "audit_report"]
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ref" }
+    },
+    "data_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ref" }
+    },
+    "upstream_outputs": {
+      "type": "array",
+      "description": "Machine outputs from upstream specialist skills (chemistry, mineral-phase, transport) for cross-layer evidence linking.",
+      "items": { "$ref": "#/$defs/upstreamOutput" }
+    },
+    "requested_output_format": {
+      "type": "string",
+      "enum": ["performance_evaluation", "statistical_report", "durability_forecast", "audit_report"],
+      "description": "Default 'performance_evaluation'."
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "description": "Default 'medium'."
+    },
+    "human_approval_state": {
+      "type": "string",
+      "enum": ["not_required", "pending", "approved", "rejected"],
+      "description": "Default 'not_required'. If a required approval gate is not 'approved', return HUMAN_APPROVAL_REQUIRED (MGE-E701)."
+    }
+  },
+  "$defs": {
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref_id"],
+      "properties": {
+        "ref_id": { "type": "string", "minLength": 1 },
+        "uri": { "type": "string" },
+        "media_type": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+    "sample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["specimen_id", "test_type"],
+      "properties": {
+        "specimen_id": { "type": "string", "minLength": 1 },
+        "test_type": {
+          "type": "string",
+          "enum": ["ucs", "direct_shear", "triaxial", "tensile_split", "tensile_flexural", "shear_wave", "permeability", "other"]
+        },
+        "test_standard": { "type": "string" },
+        "dimensions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "diameter": { "type": "number", "exclusiveMinimum": 0 },
+            "height": { "type": "number", "exclusiveMinimum": 0 },
+            "length": { "type": "number", "exclusiveMinimum": 0 },
+            "width": { "type": "number", "exclusiveMinimum": 0 },
+            "unit": { "type": "string", "description": "Default 'mm'." }
+          }
+        },
+        "density": { "type": "number", "exclusiveMinimum": 0 },
+        "density_unit": { "type": "string", "description": "Default 'g/cm3'." },
+        "relative_density": { "type": "number", "minimum": 0, "maximum": 100 },
+        "moisture_content": { "type": "number", "minimum": 0 },
+        "saturation": { "type": "number", "minimum": 0, "maximum": 100 },
+        "loading_rate": { "type": "number", "exclusiveMinimum": 0 },
+        "loading_rate_unit": { "type": "string", "description": "Default 'mm/min'." },
+        "confining_pressure": { "type": "number", "minimum": 0 },
+        "confining_pressure_unit": { "type": "string", "description": "Default 'kPa'." },
+        "data_points": {
+          "type": "array",
+          "description": "Stress–strain curve points. strain (%, or 0–1 fraction) and stress in consistent units.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["strain", "stress"],
+            "properties": {
+              "strain": { "type": "number" },
+              "stress": { "type": "number" },
+              "strain_unit": { "type": "string", "description": "One of '%' (default) or 'fraction'." },
+              "stress_unit": { "type": "string", "description": "Default 'kPa'." }
+            }
+          }
+        },
+        "permeability": { "type": "number", "minimum": 0 },
+        "permeability_unit": { "type": "string", "description": "Default 'm/s'." },
+        "caCO3_content": { "type": "number", "minimum": 0 },
+        "caCO3_unit": { "type": "string", "description": "Default 'mass_percent'." },
+        "treatment": { "type": "string", "description": "Free-form description of the MICP treatment (bacteria, cementation solution, cycles)." },
+        "group": { "type": "string", "description": "Comparison group label (e.g. 'A', 'control', 'B')." },
+        "durability_cycles": {
+          "type": "array",
+          "description": "Durability cycling data: residual strength after each cycle count.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["cycle_count", "strength"],
+            "properties": {
+              "cycle_count": { "type": "integer", "minimum": 0 },
+              "strength": { "type": "number" },
+              "strength_unit": { "type": "string", "description": "Default 'kPa'." },
+              "cycle_type": {
+                "type": "string",
+                "enum": ["wetting_drying", "freeze_thaw", "salt", "acid", "scour", "cyclic_loading", "other"]
+              }
+            }
+          }
+        },
+        "layer_data": {
+          "type": "array",
+          "description": "Spatial uniformity data: strength (or CaCO3) by position along the specimen/column.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["position", "value"],
+            "properties": {
+              "position": { "type": "number" },
+              "position_unit": { "type": "string", "description": "Default 'mm'." },
+              "value": { "type": "number" },
+              "metric": { "type": "string", "enum": ["strength", "caCO3_content", "permeability", "other"] }
+            }
+          }
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "upstreamOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill", "task_node"],
+      "properties": {
+        "skill": { "type": "string", "minLength": 1 },
+        "task_node": { "type": "string", "minLength": 1 },
+        "output_ref": { "$ref": "#/$defs/ref" },
+        "output": { "type": "object" },
+        "summary": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "contract_version": "1.0",
+  "task_id": "task-ucs-scale-002",
+  "project_id": "panshi-biocement",
+  "request": "面对不同 UCS 试样尺寸和加载速率,验证不会直接合并",
+  "action": "evidence.synthesize",
+  "skill_version": "1.0.0",
+  "controller_version": "1.0.0",
+  "timestamp": "2026-08-06T00:00:00Z",
+  "risk_level": "medium",
+  "pico": {
+    "population": "sand, two different specimen sizes",
+    "intervention": "MICP treatment",
+    "outcome": "UCS, MPa",
+    "unit": "MPa"
+  },
+  "evidence_cards": [
+    {
+      "ref_id": "doi:10.1000/scale.a",
+      "study_id": "small-specimen",
+      "study_type": "lab_experiment",
+      "layer": "engineering_performance",
+      "evidence_level": "L1_direct_observation",
+      "material": {"soil_type": "Ottawa sand", "grain_size_d50_mm": 0.4},
+      "sample": {"diameter_mm": 30, "height_mm": 60, "loading_rate_mm_min": 0.5},
+      "measurement": {"method": "UCS", "endpoint_timing": "7 d"},
+      "outcome": {"name": "UCS", "value": 4.8, "unit": "MPa", "direction": "higher_is_better"},
+      "reported_effect": {},
+      "risk_of_bias": {"overall": "low"}
+    },
+    {
+      "ref_id": "doi:10.1000/scale.b",
+      "study_id": "large-specimen",
+      "study_type": "lab_experiment",
+      "layer": "engineering_performance",
+      "evidence_level": "L1_direct_observation",
+      "material": {"soil_type": "Ottawa sand", "grain_size_d50_mm": 0.4},
+      "sample": {"diameter_mm": 100, "height_mm": 200, "loading_rate_mm_min": 0.1},
+      "measurement": {"method": "UCS", "endpoint_timing": "7 d"},
+      "outcome": {"name": "UCS", "value": 2.9, "unit": "MPa", "direction": "higher_is_better"},
+      "reported_effect": {},
+      "risk_of_bias": {"overall": "low"}
+    }
+  ]
+}
